@@ -1,3 +1,6 @@
+#define MAXFPS			30
+#define TICK			10
+
 #define BOARD_LEFT		72
 #define BOARD_TOP		64
 
@@ -15,7 +18,7 @@
 
 /* There is no reason why you would want the speed to be less than the
  * normal tickin of the game. */
-#define DROP_SPEED		33
+#define DROP_SPEED		16
 #define DROP_COLOR_R		15
 #define DROP_COLOR_G		127
 #define DROP_COLOR_B		255

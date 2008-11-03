@@ -260,6 +260,8 @@ main(int ac, char **av)
 {
 	Uint32 start, now, framecount = 0, fps_lastframe = 0, lastframe = 0;
 	Uint8 playing = 1;
+	Uint32 fps_lastframedisplay = 0;
+	Sint32 elapsed;
 	SDL_Event event;
 
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
@@ -292,7 +294,8 @@ main(int ac, char **av)
 //	intro_studio();
 //	intro_title();
 
-	/* Main loop */
+	/* Main loop, every loop is separated by a TICK (~10ms). 
+	 * The board is refreshed every 1/MAXFPS seconds. */
 	start = SDL_GetTicks();
 	while (playing) {
 		while (SDL_PollEvent(&event)) {
@@ -300,19 +303,25 @@ main(int ac, char **av)
 		}
 
 		now = SDL_GetTicks();
+		board_update(board, now);
 
 		/* Print Frame Per Second. */
-		if (now - fps_lastframe > 1000) {
+		if (now - fps_lastframedisplay > 1000) {
 			fprintf(stderr, "FPS: %u\n", framecount);
-			fps_lastframe = now;
+			fps_lastframedisplay = now;
 			framecount = 0;
 		}
-		framecount++;
 
-		if (now - lastframe > 33) {
-			board_update(board, now);
+		/* Every 1.0 / MAXFPS seconds, refresh the screen. */
+		if (fps_lastframe < (now - (1000/MAXFPS))) {
+			framecount++;
+			fps_lastframe = now;
 			board_refresh(board);
-			lastframe = now;
+		}
+
+		elapsed = SDL_GetTicks() - now;
+		if (elapsed < TICK) {
+			SDL_Delay(TICK - elapsed);
 		}
 	}
 

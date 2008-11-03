@@ -64,6 +64,7 @@ board_refresh_blocks(Board *board)
 			continue;
 
 		s = block_get_surface(block);
+	//	fprintf(stderr, "refreshing block %d %p\n", i, s);
 		block_get_rectangle(block, &r);
 
 		r.x += board->offset_x;
@@ -129,12 +130,12 @@ board_update_blocks(Board *board, Uint32 now)
 				board->current_block = NULL;
 				block->falling = 0;
 				/* XXX: remove that and implement properly. */
-				if (block->y > 0)
-//					FIXME
+				if (block->y > 0) {
 //					board_launch_next_block(board);
 					printf("launch_next_block()\n");
-				else
+				} else {
 					printf("STOPPING (too high)\n");
+				}
 
 			}
 

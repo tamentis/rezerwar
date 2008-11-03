@@ -13,7 +13,6 @@ Uint16
 board_add_drop(Board *b, Drop *p)
 {
 	Uint16 c;
-	printf("board_add_drop\n");
 
 	b->drop_count++;
 
@@ -32,11 +31,7 @@ void
 board_launch_new_drop(Board *board, Sint16 x, Sint16 y)
 {
 	Drop *p = drop_new(x, y);
-
-	printf("Launching drop\n");
-
 	board_add_drop(board, p);
-	printf("new_drop done\n");
 }
 
 
@@ -82,13 +77,6 @@ board_get_pixel_area_type(Board *board, Sint16 x, Sint16 y)
 	if (type == 1)
 		return ATYPE_BLOCK;
 	    
-
-	/* If nothing has happened before, we can update the map and check
-	 * for drops.
-	 * TODO: make atomic changes to the map as we go instead of always
-	 * refreshing completely. */
-//	board_update_drop_map(board);
-
 	/* index of the pixel */
 	p = y * board->width * BSIZE + x;
 
@@ -204,9 +192,6 @@ board_find_drop_space(Board *board, Drop *drop)
 	Sint16 max = oxmax;
 	Uint8 reached_left = 0, reached_right = 0;
 	
-	printf("Looking for free slot on row at %d\n", drop->y + 1);
-//	board_dump_drop_map_bmp(board);
-
 	/* This crazy for will have ox increase of one alternatively negative
 	 * and positive. In clear: 1 -1 2 -2 3 -3 4 -4, etc.. */
 	for (ox = 1; ox < oxmax; ox < 0 ? ox-- : 1, ox *= -1) {
@@ -219,7 +204,6 @@ board_find_drop_space(Board *board, Drop *drop)
 
 		/* Found free slot within the range. */
 		if (type == ATYPE_FREE && i > min && i < max) {
-			printf("found one at x=%d\n", i);
 			drop->y++;
 			drop->x = i;
 			return;
@@ -270,16 +254,12 @@ board_update_single_drop(Board *board, Drop *drop)
 
 		case ATYPE_BLOCK:
 		case ATYPE_BOARD_BOTTOM:
-			printf("hit the hard\n");
-//			board_dump_drop_map(board);
 			drop->moving = 0;
 			board_update_drop_map(board);
 			break;
 
 		case ATYPE_DROP:
-			printf("Other drop underneath (y=%d)\n", drop->y);
 			board_find_drop_space(board, drop);
-//			drop->moving = 0;
 			break;
 	}
 }
