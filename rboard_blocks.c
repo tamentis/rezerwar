@@ -244,8 +244,6 @@ board_move_check(Board *board, Block *block, Sint8 x, Sint8 y)
 	Uint16 i, j;
 	Uint8 *pos = block->positions[block->current_position];
 
-	printf("move_check\n");
-
 	/* Update the map. */
 	board_update_map(board);
 

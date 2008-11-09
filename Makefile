@@ -10,7 +10,7 @@ LIBS=`sdl-config --libs` -lSDL_image
 
 PROGRAM=rezerwar
 OBJECTS=main.o rmalloc.o rboard.o rboard_blocks.o rboard_drops.o rblock.o \
-	rdrop.o routput.o rboard_output.o
+	rdrop.o routput.o rboard_output.o rcube.o
 
 $(PROGRAM): $(OBJECTS)
 	$(CC) $(OBJECTS) $(LIBS) -o $(PROGRAM)

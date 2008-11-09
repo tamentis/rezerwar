@@ -37,6 +37,16 @@ void		 r_checkmem();
 void		 r_setpixel(Uint16, Uint16, Uint8, Uint8, Uint8);
 void		 r_setline(Uint16, Uint16, Uint16, Uint8, Uint8, Uint8);
 
+
+/* rcube.c */
+typedef struct _cube {
+	Sint8 current_position;
+	Sint8 position_count;
+	Sint16 x;
+	Sint16 y;
+} Cube;
+
+
 /* rdrop.c */
 typedef struct _drop {
 	Sint16 x;

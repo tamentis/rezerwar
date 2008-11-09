@@ -99,12 +99,25 @@ board_drop_check_move(Board *board, Drop *drop, Sint8 x, Sint8 y)
 
 
 /**
+ * Add one drop to the drop map manually.
+ */
+void
+board_drop_map_append(Board *board, Drop *drop)
+{
+	Uint16 p;
+
+	p = drop->y * board->width * BSIZE + drop->x;
+	board->drop_map[p] = drop;
+}
+
+
+/**
  * Flush the whole map and add all the moving drops.
  */
 void
 board_update_drop_map(Board *board)
 {
-	Uint16 i, p;
+	Uint16 i;
 	Drop *drop;
 
 	/* Set all the pointers of the map to zero. */
@@ -119,8 +132,7 @@ board_update_drop_map(Board *board)
 		if (drop->moving)
 			continue;
 
-		p = drop->y * board->width * BSIZE + drop->x;
-		board->drop_map[p] = drop;
+		board_drop_map_append(board, drop);
 	}
 }
 
@@ -202,10 +214,14 @@ board_find_drop_space(Board *board, Drop *drop)
 		if (i < min) continue;
 		if (i > max) continue;
 
-		/* Found free slot within the range. */
+		/* Found free slot within the range. Add this drop to the map temporarily, this
+		 * way the next drops in the same tick will not be positionned at the same place. */
 		if (type == ATYPE_FREE && i > min && i < max) {
 			drop->y++;
 			drop->x = i;
+
+			board_drop_map_append(board, drop);
+
 			return;
 		}
 
