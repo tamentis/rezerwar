@@ -61,6 +61,7 @@ void		 cube_init_texture();
 SDL_Surface	*cube_get_surface(Cube *);
 void		 cube_get_rectangle(Cube *, SDL_Rect *);
 void		 cube_rotate_cw(Cube *);
+Uint8		 cube_get_plugs(Cube *);
 
 
 /* rdrop.c */
@@ -101,7 +102,6 @@ typedef struct _block_data {
 	Uint8 prev_y;
 	Uint32 tick;
 	Uint8 type;
-//	Uint8 *map;
 } Block;
 
 void		 block_init_btex();
@@ -132,12 +132,11 @@ typedef struct _board_data {
 	Uint16 cube_count;
 	Cube **cubes;
 	/* blocks */
-	Uint8 *map;
 	Uint16 block_speed;
 	Block **blocks;
+	Uint16 block_count;
 	Block *current_block;
 	Block *next_block;
-	Uint16 block_count;
 	/* drops */
 	Drop **drops;
 	Uint16 drop_count;
@@ -163,6 +162,7 @@ void		 board_update(Board *, Uint32);
 /* rboard_cubes.c */
 void		 board_add_cube(Board *);
 void		 board_refresh_cubes(Board *);
+void		 board_dump_cube_map(Board *);
 /* rboard_blocks.c */
 void		 board_refresh_blocks(Board *);
 void		 board_refresh_next(Board *);

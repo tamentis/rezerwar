@@ -1,7 +1,11 @@
 CC=gcc
 
-# Standard (with extra debug)
-CFLAGS=`sdl-config --cflags` -Wall -ggdb -O2
+# Standard
+CFLAGS=`sdl-config --cflags` -Wall -O2
+LIBS=`sdl-config --libs` -lSDL_image
+
+# Debug (no optimization)
+CFLAGS=`sdl-config --cflags` -Wall -ggdb
 LIBS=`sdl-config --libs` -lSDL_image
 
 # Profiling

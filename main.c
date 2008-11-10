@@ -108,7 +108,7 @@ handle_events_keydown(SDL_Event *event)
 			board_launch_new_drop(board, 120, 20);
 			break;
 		case SDLK_F10:
-			board_dump_block_map(board);
+			board_water_all_cubes(board);
 			break;
 		case SDLK_F9:
 			board_dump_drop_map_bmp(board);
@@ -117,7 +117,8 @@ handle_events_keydown(SDL_Event *event)
 			board_random_output(board);
 			break;
 		case SDLK_F7:
-			board_add_cube(board);
+//			board_add_cube(board);
+			board_dump_cube_map(board);
 			break;
 		case SDLK_LEFT:
 			board_move_current_block_left(board);
@@ -278,8 +279,8 @@ main(int ac, char **av)
 	board_loadbg(board, "gfx/gameback.png");
 
 	/* Create main window */
-	screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE|SDL_DOUBLEBUF);
-//	screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE|SDL_DOUBLEBUF|SDL_FULLSCREEN);
+//	screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE|SDL_DOUBLEBUF);
+	screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE|SDL_DOUBLEBUF|SDL_FULLSCREEN);
 	SDL_WM_SetCaption("rezerwar", NULL);
 
 	/* Slap the original bg. */

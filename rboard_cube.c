@@ -38,8 +38,9 @@ board_refresh_cubes(Board *board)
 	SDL_Rect r;
 	Cube *cube;
 	SDL_Surface *s;
+	int size = board->width * board->height;
 
-	for (i = 0; i < board->cube_count; i++) {
+	for (i = 0; i < size; i++) {
 		cube = board->cubes[i];
 		if (cube == NULL)
 			continue;
@@ -58,36 +59,49 @@ board_refresh_cubes(Board *board)
 }
 
 
-#if 0
 void
-board_refresh_next(Board *board)
+board_water_all_cubes(Board *board)
 {
-	SDL_Surface *s;
-	SDL_Rect r;
+	int x, y, i;
 
-	if (board->next_cube != NULL) {
-		s = cube_get_surface(board->next_cube);
-		cube_get_rectangle(board->next_cube, &r);
+	fprintf(stderr, "water_all_cubes\n");
 
-		/* Increment of the position of the preview window. */
-		r.x += board->offset_x + board->width * BSIZE + BSIZE;
-		r.y += board->offset_y + BSIZE;
+	for (y = 0; y < board->height; y++) {
+		for (x = 0; x < board->width; x++) {
+			i = y * board->width + x;
 
-		/* Increment of the alignement correction. */
-		r.x += (Uint8)((5 - board->next_cube->size) * BSIZE / 2);
-		r.y += (Uint8)((5 - board->next_cube->size) * BSIZE / 2);
+			if (board->cubes[i] == NULL)
+				continue;
 
-		/* Squares get a special favor. */
-		if (board->next_cube->type == cube_TYPE_SQUARE)
-			r.y += (Uint8)(BSIZE / 2);
-
-		SDL_BlitSurface(s, NULL, screen, &r);
-
-		SDL_FreeSurface(s);
+			board->cubes[i]->water = 1;
+		}
 	}
 }
 
 
+void
+board_dump_cube_map(Board *board)
+{
+	Uint8 x, y;
+	Uint16 i;
+
+	for (y = 0; y < board->height; y++) {
+		for (x = 0; x < board->width; x++) {
+			i = y * board->width + x;
+			if (board->cubes[i]) {
+				printf("x");
+			} else {
+				printf(" ");
+			}
+		}
+		printf("\n");
+	}
+
+}
+
+
+#if 0
+void
 void
 board_update_cubes(Board *board, Uint32 now)
 {
@@ -142,27 +156,6 @@ board_update_cubes(Board *board, Uint32 now)
 			board->lateral_tick = now;
 		}
 	}
-}
-
-
-void
-board_dump_cube_map(Board *board)
-{
-	Uint8 x, y;
-	Uint16 i;
-
-	for (y = 0; y < board->height; y++) {
-		for (x = 0; x < board->width; x++) {
-			i = y * board->width + x;
-			if (board->map[i]) {
-				printf("x");
-			} else {
-				printf(" ");
-			}
-		}
-		printf("\n");
-	}
-
 }
 
 

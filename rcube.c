@@ -10,10 +10,38 @@ extern SDL_Surface *screen;
 SDL_Surface *ctex = NULL;
 
 
+/* The following defines the plugs (opened pipe) on the specific cube styles
+ * as defined in the block.png file. It is represented as 4 bits as follow:
+ *
+ *     1
+ *   +---+
+ * 8 |   | 2
+ *   +---+
+ *     4
+ */
+
+Uint8 cube_plugs[] = {
+	 9, 11, 10,  8, 15,
+	 3,  7,  5,  1, 15,
+	 6, 14, 10,  2, 15,
+	12, 13,  5,  4, 15 
+};
+
+
 void
 cube_init_texture()
 {
 	ctex = loadimage("gfx/block.png");
+}
+
+
+/**
+ * Return the current 4 bits representing the current opened plugs for the
+ * current cube. */
+Uint8
+cube_get_plugs(Cube *cube)
+{
+	return (cube->current_position * 5 + cube->type);
 }
 
 
@@ -76,7 +104,6 @@ cube_get_surface(Cube *cube)
 {
 	SDL_Surface *s;
 	SDL_Rect src;
-//	Uint8 *pos = cube->positions[cube->current_position];
 	
 	/* All blocks are fixed size. Set DestRect and SourceRect. */
 	src.w = BSIZE;
@@ -88,6 +115,12 @@ cube_get_surface(Cube *cube)
 			0, 0, 0, 0);
 
 	SDL_BlitSurface(ctex, &src, s, NULL);
+
+	/* If this cube has water, find the water mask 64 px lower. */
+	if (cube->water) {
+		src.y += 64;
+		SDL_BlitSurface(ctex, &src, s, NULL);
+	}
 
 	SDL_SetColorKey(s, SDL_SRCCOLORKEY, 0);
 

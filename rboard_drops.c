@@ -59,7 +59,7 @@ board_get_pixel_area_type(Board *board, Sint16 x, Sint16 y)
 {
 	Uint16 p;
 	Sint16 cx, cy;
-	Uint8 type;
+	Cube *cube;
 
 	/* Left, right and bottom of the board. */
 	if (x < 0)
@@ -70,11 +70,11 @@ board_get_pixel_area_type(Board *board, Sint16 x, Sint16 y)
 		return ATYPE_BOARD_BOTTOM;
 
 	/* Block in the way. */
-	board_update_map(board);
+//	board_update_map(board);
 	cx = x / BSIZE;
 	cy = y / BSIZE;
-	type = board->map[cy * board->width + cx];
-	if (type == 1)
+	cube = board->cubes[cy * board->width + cx];
+	if (cube != NULL)
 		return ATYPE_BLOCK;
 	    
 	/* index of the pixel */

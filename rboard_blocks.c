@@ -106,6 +106,39 @@ board_refresh_next(Board *board)
 }
 
 
+/**
+ * Transfer all the cubes from a block to the board. This is anticipating the
+ * death of a block. */
+void
+board_transfer_cubes(Board *board, Block *block)
+{
+	int x, y, i, j;
+	Uint8 *pos = block->positions[block->current_position];
+	Cube *cube;
+
+	for (y = 0; y < block->size; y++) {
+		for (x = 0; x < block->size; x++) {
+			i = (y + block->y) * board->width + (x + block->x);
+			j = y * block->size + x;
+
+			if (pos[j] < 1)
+				continue;
+
+			cube = block->cubes[pos[j] - 1];
+
+			board->cubes[i] = cube;
+				
+			if (cube != NULL) {
+				cube->x = block->x + x;
+				cube->y = block->y + y;
+			}
+
+			block->cubes[pos[j] - 1] = NULL;
+		}
+	}
+}
+
+
 void
 board_update_blocks(Board *board, Uint32 now)
 {
@@ -129,13 +162,16 @@ board_update_blocks(Board *board, Uint32 now)
 			if (block->prev_y == block->y) {
 				board->current_block = NULL;
 				block->falling = 0;
-				/* XXX: remove that and implement properly. */
 				if (block->y > 0) {
-//					board_launch_next_block(board);
 					printf("launch_next_block()\n");
+					board_launch_next_block(board);
 				} else {
 					printf("STOPPING (too high)\n");
 				}
+				board_transfer_cubes(board, block);
+				block_kill(block);
+				board->blocks[i] = NULL;
+				return;
 
 			}
 
@@ -163,6 +199,7 @@ board_update_blocks(Board *board, Uint32 now)
 }
 
 
+#if 0
 void
 board_dump_block_map(Board *board)
 {
@@ -225,6 +262,7 @@ board_update_map(Board *board)
 		board_add_block_to_map(board, board->blocks[i]);
 	}
 }
+#endif
 
 
 /* move_check() - 
@@ -245,7 +283,7 @@ board_move_check(Board *board, Block *block, Sint8 x, Sint8 y)
 	Uint8 *pos = block->positions[block->current_position];
 
 	/* Update the map. */
-	board_update_map(board);
+//	board_update_map(board);
 
 	/* For every cubes in this block, you need to check if there is a
 	 * space in whatever direction. */
@@ -272,7 +310,7 @@ board_move_check(Board *board, Block *block, Sint8 x, Sint8 y)
 			
 			/* There is a block in this direction. */
 			j = (my + block->y + y) * board->width + (mx + block->x + x);
-			if (board->map[j]) {
+			if (board->cubes[j]) {
 				return bside;
 			}
 		}

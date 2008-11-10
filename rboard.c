@@ -28,12 +28,11 @@ board_new(Uint8 width, Uint8 height)
 
 	/* Cube related members initialization. */
 	b->cube_count = 0;
-	b->cubes = NULL;
+	b->cubes = r_malloc(size * sizeof(Cube *));
+	for (i = 0; i < size; i++)
+		b->cubes[i] = NULL;
 
 	/* Block related members. */
-	b->map = r_malloc(size);
-	memset(b->map, 0, size);
-
 	b->block_count = 0;
 	b->blocks = NULL;
 	b->current_block = NULL;
@@ -90,6 +89,7 @@ board_kill(Board *b)
 		drop_kill(b->drops[i]);
 	}
 	free(b->drops);
+	r_free(b->drop_map);
 
 
 	/* Output clean up */
@@ -102,9 +102,6 @@ board_kill(Board *b)
 	free(b->outputs);
 
 	/* General board clean up */
-	r_free(b->map);
-	r_free(b->drop_map);
-
 	SDL_FreeSurface(b->bg);
 	r_free(b);
 }

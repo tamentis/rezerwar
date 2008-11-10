@@ -348,42 +348,6 @@ block_kill(Block *block)
 	r_free(block);
 }
 
-#if 0
-SDL_Surface *
-block_get_surface(Block *block)
-{
-	SDL_Surface *s;
-	SDL_Rect sr;
-	SDL_Rect dr;
-	Uint8 x, y, i;
-	Uint8 *pos = block->positions[block->current_position];
-	
-	/* All blocks are fixed size. Set DestRect and SourceRect. */
-	dr.w = sr.w = BSIZE;
-	dr.h = sr.h = BSIZE;
-	sr.y = 0;
-
-	s = SDL_CreateRGBSurface(0, block->size * BSIZE, block->size * BSIZE,
-		screen->format->BitsPerPixel, 0, 0, 0, 0);
-
-	for (y = 0; y < block->size; y++) {
-		for (x = 0; x < block->size; x++) {
-			i = y * block->size + x;
-			if (pos[i]) {
-				dr.x = x * BSIZE;
-				dr.y = y * BSIZE;
-				sr.x = pos[i] * BSIZE;
-				SDL_BlitSurface(btex, &sr, s, &dr);
-			}
-		}
-	}
-
-	SDL_SetColorKey(s, SDL_SRCCOLORKEY, 0);
-
-	return s;
-}
-#endif
-
 
 SDL_Surface *
 block_get_surface(Block *block)
