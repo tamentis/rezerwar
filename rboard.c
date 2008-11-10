@@ -26,6 +26,10 @@ board_new(Uint8 width, Uint8 height)
 
 	b->bg = NULL;
 
+	/* Cube related members initialization. */
+	b->cube_count = 0;
+	b->cubes = NULL;
+
 	/* Block related members. */
 	b->map = r_malloc(size);
 	memset(b->map, 0, size);
@@ -141,6 +145,9 @@ board_refresh(Board *board)
 
 	/* Redraw the next block. */
 	board_refresh_next(board);
+
+	/* Redraw all the cubes. */
+	board_refresh_cubes(board);
 
 	/* Redraw the drops. */
 	board_refresh_drops(board);

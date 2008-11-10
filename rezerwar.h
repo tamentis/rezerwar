@@ -20,8 +20,8 @@
  * normal tickin of the game. */
 #define DROP_SPEED		16
 #define DROP_COLOR_R		15
-#define DROP_COLOR_G		127
-#define DROP_COLOR_B		255
+#define DROP_COLOR_G		96
+#define DROP_COLOR_B		190
 
 /* Area types. */
 #define ATYPE_FREE		0
@@ -30,6 +30,14 @@
 #define ATYPE_BOARD_LEFT	3
 #define ATYPE_BOARD_RIGHT	4
 #define ATYPE_BLOCK		5
+
+/* Cube types */
+#define CTYPE_EMPTY		0
+#define CTYPE_ANGLE		1
+#define CTYPE_TEE		2
+#define CTYPE_FLAT		3
+#define CTYPE_KNOB		4
+#define CTYPE_ALL		5
 
 void		*r_malloc(size_t);
 void		 r_free(void *);
@@ -44,7 +52,15 @@ typedef struct _cube {
 	Sint8 position_count;
 	Sint16 x;
 	Sint16 y;
+	int type;
+	int water;
 } Cube;
+Cube		*cube_new(Uint8);
+Cube		*cube_new_random();
+void		 cube_init_texture();
+SDL_Surface	*cube_get_surface(Cube *);
+void		 cube_get_rectangle(Cube *, SDL_Rect *);
+void		 cube_rotate_cw(Cube *);
 
 
 /* rdrop.c */
@@ -76,6 +92,8 @@ typedef struct _block_data {
 	Uint8 size;
 	Uint8 falling;
 	Uint8 **positions;
+	Cube **cubes;
+	int cube_count;
 	Uint8 current_position;
 	Uint8 position_count;
 	Sint8 x;
@@ -99,6 +117,7 @@ Block		*block_new_ess();
 Block		*block_new_square();
 Block		*block_new_bar();
 Block		*block_new_random();
+void		 block_rotate_cw(Block *);
 
 /* board.c */
 typedef struct _board_data {
@@ -109,6 +128,9 @@ typedef struct _board_data {
 	Uint8 offset_y;
 	char bgfilename[256];
 	SDL_Surface *bg;
+	/* cubes */
+	Uint16 cube_count;
+	Cube **cubes;
 	/* blocks */
 	Uint8 *map;
 	Uint16 block_speed;
@@ -138,6 +160,9 @@ SDL_Surface	*loadimage(char *);
 void		 board_loadbg(Board *, char *);
 void		 board_refresh(Board *);
 void		 board_update(Board *, Uint32);
+/* rboard_cubes.c */
+void		 board_add_cube(Board *);
+void		 board_refresh_cubes(Board *);
 /* rboard_blocks.c */
 void		 board_refresh_blocks(Board *);
 void		 board_refresh_next(Board *);

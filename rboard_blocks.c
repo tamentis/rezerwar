@@ -324,11 +324,7 @@ board_rotate_cw(Board *board)
 	Block *block = board->current_block;
 	Uint8 x;
 
-	block->current_position++;
-
-	if (block->current_position >= block->position_count) {
-		block->current_position = 0;
-	}
+	block_rotate_cw(block);
 
 	/* Check if the new position is conflicting, if the conflict is on the
 	 * left (1), x+1, if the conflict is on the right, x-1. */
@@ -338,3 +334,6 @@ board_rotate_cw(Board *board)
 	else if (x == 2)
 		block->x--;
 }
+
+
+

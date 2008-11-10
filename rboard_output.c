@@ -13,10 +13,12 @@ void
 board_random_output(Board *board)
 {
 	WaterOutput *wo;
+	int x = random() % 160;
+	int y = random() % 160;
 
 	printf("board_random_output\n");
 
-	wo = wateroutput_new(2, 100, 100);
+	wo = wateroutput_new(1, x, y);
 	board_register_output(board, wo);
 }
 

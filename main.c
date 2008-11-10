@@ -116,6 +116,9 @@ handle_events_keydown(SDL_Event *event)
 		case SDLK_F8:
 			board_random_output(board);
 			break;
+		case SDLK_F7:
+			board_add_cube(board);
+			break;
 		case SDLK_LEFT:
 			board_move_current_block_left(board);
 			board_refresh(board);
@@ -258,7 +261,7 @@ intro_title(void)
 int
 main(int ac, char **av)
 {
-	Uint32 start, now, framecount = 0, fps_lastframe = 0, lastframe = 0;
+	Uint32 start, now, framecount = 0, fps_lastframe = 0;
 	Uint8 playing = 1;
 	Uint32 fps_lastframedisplay = 0;
 	Sint32 elapsed;
@@ -284,6 +287,7 @@ main(int ac, char **av)
 
 	/* Load the block textures. */
 	block_init_btex();
+	cube_init_texture();
 
 	/* Get the first block ready. */
 	board_load_next_block(board);
