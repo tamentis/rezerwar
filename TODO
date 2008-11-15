@@ -1,0 +1,11 @@
+FEATURES:
+ - Menu
+ - Music
+ - Create a block_allocate when creating new blocks to avoid always pushing
+   blocks at the end of the array.
+
+BUGS:
+ - If a block is stuck between two columns of block or the side of the board,
+   don't let the block rotate or it will get stuck.
+
+

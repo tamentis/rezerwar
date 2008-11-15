@@ -138,6 +138,13 @@ handle_events_keydown(SDL_Event *event)
 		case SDLK_a:
 			board_rotate_cw(board);
 			break;
+		case SDLK_f:
+			if (SDL_WM_ToggleFullScreen(screen) == 0) {
+				fprintf(stderr, "Unable to toggle fullscreen/windowed mode.\n");
+				exit(-1);
+			}
+			break;
+
 	}
 	return 1;
 }
@@ -279,8 +286,8 @@ main(int ac, char **av)
 	board_loadbg(board, "gfx/gameback.png");
 
 	/* Create main window */
-//	screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE|SDL_DOUBLEBUF);
-	screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE|SDL_DOUBLEBUF|SDL_FULLSCREEN);
+	screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE|SDL_DOUBLEBUF);
+//	screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE|SDL_DOUBLEBUF|SDL_FULLSCREEN);
 	SDL_WM_SetCaption("rezerwar", NULL);
 
 	/* Slap the original bg. */

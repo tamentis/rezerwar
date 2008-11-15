@@ -10,13 +10,14 @@ extern SDL_Surface *screen;
 
 
 void
-board_add_block(Board *b, Block *block)
+board_add_block(Board *board, Block *block)
 {
-	b->block_count++;
+	board->block_count++;
 
-	b->blocks = realloc(b->blocks, b->block_count * sizeof(Block *));
+	board->blocks = realloc(board->blocks,
+			board->block_count * sizeof(Block *));
 
-	b->blocks[b->block_count - 1] = block;
+	board->blocks[board->block_count - 1] = block;
 }
 
 
@@ -108,7 +109,8 @@ board_refresh_next(Board *board)
 
 /**
  * Transfer all the cubes from a block to the board. This is anticipating the
- * death of a block. */
+ * death of a block.
+ */
 void
 board_transfer_cubes(Board *board, Block *block)
 {
@@ -139,130 +141,77 @@ board_transfer_cubes(Board *board, Block *block)
 }
 
 
+/**
+ * Loop through all the blocks and call the individual block update, skipping
+ * NULL blocks (previously killed).
+ */
 void
 board_update_blocks(Board *board, Uint32 now)
 {
 	Uint16 i;
 	Block *block;
 
-	/* How often to update blocks. */
 	for (i = 0; i < board->block_count; i++) {
 		block = board->blocks[i];
 		if (block == NULL)
 			continue;
 
-		if (block->falling && now - block->tick > board->block_speed) {
-			/* Can this block fit one unit lower? */
-			if (board_move_check(board, block, 0, 1) == 0) {
-				block->y++;
-				block->tick = now;
-			}
-
-			/* If the block didn't move, block it, and un-current */
-			if (block->prev_y == block->y) {
-				board->current_block = NULL;
-				block->falling = 0;
-				if (block->y > 0) {
-					printf("launch_next_block()\n");
-					board_launch_next_block(board);
-				} else {
-					printf("STOPPING (too high)\n");
-				}
-				board_transfer_cubes(board, block);
-				block_kill(block);
-				board->blocks[i] = NULL;
-				return;
-
-			}
-
-			/* Keep a reference to see if the block moved. */
-			block->prev_y = block->y;
-		}
-
-		/* Ticking for the lateral moves. */
-		if (now - board->lateral_tick > board->lateral_speed) {
-			if (board->moving_left > 1) {
-				board->moving_left--;
-			} else if (board->moving_left == 1) {
-				board_move_current_block_left(board);
-			}
-
-			if (board->moving_right > 1) {
-				board->moving_right--;
-			} else if (board->moving_right == 1) {
-				board_move_current_block_right(board);
-			}
-
-			board->lateral_tick = now;
-		}
+		board_update_single_block(board, now, block);
 	}
 }
 
 
-#if 0
+/**
+ * Update an individual block during the current tick (which time is
+ * reprensented by 'now'.
+ */
 void
-board_dump_block_map(Board *board)
-{
-	Uint8 x, y;
-	Uint16 i;
+board_update_single_block(Board *board, Uint32 now, Block *block) {
+	/* This block's tick has expired, we need to move it. */
+	if (block->falling && now - block->tick > board->block_speed) {
+		/* Can it fit one unit lower? */
+		if (board_move_check(board, block, 0, 1) == 0) {
+			block->y++;
+			block->tick = now;
+		}
 
-	for (y = 0; y < board->height; y++) {
-		for (x = 0; x < board->width; x++) {
-			i = y * board->width + x;
-			if (board->map[i]) {
-				printf("x");
+		/* If the block didn't move, block it, and un-current */
+		if (block->prev_y == block->y) {
+			board->current_block = NULL;
+			block->falling = 0;
+			if (block->y > 0) {
+				printf("launch_next_block()\n");
+				board_launch_next_block(board);
 			} else {
-				printf(" ");
+				printf("STOPPING (too high)\n");
 			}
+			board_transfer_cubes(board, block);
+			block_kill(block);
+			board->blocks[i] = NULL;
+			return;
 		}
-		printf("\n");
+
+		/* Keep a reference to see if the block moved. */
+		block->prev_y = block->y;
 	}
 
-}
-
-
-void
-board_add_block_to_map(Board *board, Block* block)
-{
-	Uint8 x, y;
-	Uint16 i, j;
-	Uint8 *pos = block->positions[block->current_position];
-
-	for (y = 0; y < block->size; y++) {
-		for (x = 0; x < block->size; x++) {
-			j = y * block->size + x;
-			i = (block->y + y) * board->width + (block->x + x);
-			if (pos[j]) {
-				board->map[i] = 1;
-			}
+	/* Ticking for the lateral moves. */
+	if (now - board->lateral_tick > board->lateral_speed) {
+		if (board->moving_left > 1) {
+			board->moving_left--;
+		} else if (board->moving_left == 1) {
+			board_move_current_block_left(board);
 		}
+
+		if (board->moving_right > 1) {
+			board->moving_right--;
+		} else if (board->moving_right == 1) {
+			board_move_current_block_right(board);
+		}
+
+		board->lateral_tick = now;
 	}
-}
-
-
-
-
-
-/* board_update_map() - Loop through all the blocks and populate the board
- * map with inactive blocks. */
-void
-board_update_map(Board *board)
-{
-	Uint8 i;
-
-	memset(board->map, 0, board->width * board->height);
-	for (i = 0; i < board->block_count; i++) {
-		if (board->blocks[i] == NULL)
-			continue;
-
-		/* Don't count the current block. */
-		if (board->blocks[i] == board->current_block)
-			continue;
-
-		board_add_block_to_map(board, board->blocks[i]);
-	}
-}
-#endif
+}	
 
 
 /* move_check() - 

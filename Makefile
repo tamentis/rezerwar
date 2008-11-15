@@ -26,6 +26,11 @@ $(OBJECTS): %.o: %.c rezerwar.h
 
 clean:
 	rm -f $(OBJECTS) $(PROGRAM) tags TAGS LOG
+	rm -rf doc
 
 tags:
 	etags *.c *.h
+
+doc:
+	mkdir -p doc/
+	doxygen Doxyfile

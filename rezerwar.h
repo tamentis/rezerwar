@@ -39,6 +39,16 @@
 #define CTYPE_KNOB		4
 #define CTYPE_ALL		5
 
+
+/**
+ * @file rezerwar.h
+ * @brief Main header
+ *
+ * This header provides all the structures and prototypes for the whole
+ * game.
+ */
+
+
 void		*r_malloc(size_t);
 void		 r_free(void *);
 void		 r_checkmem();
@@ -46,7 +56,6 @@ void		 r_setpixel(Uint16, Uint16, Uint8, Uint8, Uint8);
 void		 r_setline(Uint16, Uint16, Uint16, Uint8, Uint8, Uint8);
 
 
-/* rcube.c */
 typedef struct _cube {
 	Sint8 current_position;
 	Sint8 position_count;
