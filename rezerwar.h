@@ -39,6 +39,15 @@
 #define CTYPE_KNOB		4
 #define CTYPE_ALL		5
 
+/* Plug types */
+#define PLUG_NORTH		1
+#define PLUG_EAST		2
+#define PLUG_SOUTH		4
+#define PLUG_WEST		8
+
+/* Plug statuses */
+#define PSTAT_CONNECTED		7
+#define PSTAT_OPENED		1
 
 /**
  * @file rezerwar.h
@@ -63,6 +72,9 @@ typedef struct _cube {
 	Sint16 y;
 	int type;
 	int water;
+	int network_integrity;
+	int network_size;
+	struct _cube **network;
 } Cube;
 Cube		*cube_new(Uint8);
 Cube		*cube_new_random();
@@ -71,6 +83,9 @@ SDL_Surface	*cube_get_surface(Cube *);
 void		 cube_get_rectangle(Cube *, SDL_Rect *);
 void		 cube_rotate_cw(Cube *);
 Uint8		 cube_get_plugs(Cube *);
+int		 cube_plug_match(Cube *, Uint8);
+int		 cube_get_plug_status(Cube *, Uint8, Cube *, Uint8);
+void		 cube_network_add(Cube *, Cube *);
 
 
 /* rdrop.c */
@@ -99,8 +114,8 @@ typedef struct _wateroutput {
 
 /* block.c */
 typedef struct _block_data {
-	Uint8 size;
 	Uint8 falling;
+	Uint8 size;
 	Uint8 **positions;
 	Cube **cubes;
 	int cube_count;
@@ -138,7 +153,6 @@ typedef struct _board_data {
 	char bgfilename[256];
 	SDL_Surface *bg;
 	/* cubes */
-	Uint16 cube_count;
 	Cube **cubes;
 	/* blocks */
 	Uint16 block_speed;
@@ -172,10 +186,13 @@ void		 board_update(Board *, Uint32);
 void		 board_add_cube(Board *);
 void		 board_refresh_cubes(Board *);
 void		 board_dump_cube_map(Board *);
+void		 board_spread_water(Board *, Cube *, Cube *);
+void		 board_update_water(Board *, Uint32);
 /* rboard_blocks.c */
 void		 board_refresh_blocks(Board *);
 void		 board_refresh_next(Board *);
 void		 board_update_blocks(Board *, Uint32);
+void		 board_update_single_block(Board *, Uint32, Uint16);
 void		 board_add_block(Board *, Block *);
 void		 board_launch_next_block(Board *);
 void		 board_load_next_block(Board *);

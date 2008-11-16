@@ -9,28 +9,6 @@
 extern SDL_Surface *screen;
 
 
-/**
- * This is a test function used for debugging, in real context, you would
- * not spawn a cube by itself. */
-void
-board_add_cube(Board *b)
-{
-	Cube *cube;
-	
-	fprintf(stderr, "board_add_cube()\n");
-
-	cube = cube_new(1);
-	cube->x = (Uint8)(b->width / 2) - 1;
-	cube->y = 0;
-
-	b->cube_count++;
-
-	b->cubes = realloc(b->cubes, b->cube_count * sizeof(Cube *));
-
-	b->cubes[b->cube_count - 1] = cube;
-}
-
-
 void
 board_refresh_cubes(Board *board)
 {
@@ -60,26 +38,6 @@ board_refresh_cubes(Board *board)
 
 
 void
-board_water_all_cubes(Board *board)
-{
-	int x, y, i;
-
-	fprintf(stderr, "water_all_cubes\n");
-
-	for (y = 0; y < board->height; y++) {
-		for (x = 0; x < board->width; x++) {
-			i = y * board->width + x;
-
-			if (board->cubes[i] == NULL)
-				continue;
-
-			board->cubes[i]->water = 1;
-		}
-	}
-}
-
-
-void
 board_dump_cube_map(Board *board)
 {
 	Uint8 x, y;
@@ -100,217 +58,125 @@ board_dump_cube_map(Board *board)
 }
 
 
-#if 0
 void
-void
-board_update_cubes(Board *board, Uint32 now)
+board_remove_water(Board *board)
 {
-	Uint16 i;
-	cube *cube;
+	int i;
+	int bs = board->width * board->height;
 
-	/* How often to update cubes. */
-	for (i = 0; i < board->cube_count; i++) {
-		cube = board->cubes[i];
-		if (cube == NULL)
-			continue;
-
-		if (cube->falling && now - cube->tick > board->cube_speed) {
-			/* Can this cube fit one unit lower? */
-			if (board_move_check(board, cube, 0, 1) == 0) {
-				cube->y++;
-				cube->tick = now;
-			}
-
-			/* If the cube didn't move, cube it, and un-current */
-			if (cube->prev_y == cube->y) {
-				board->current_cube = NULL;
-				cube->falling = 0;
-				/* XXX: remove that and implement properly. */
-				if (cube->y > 0) {
-//					board_launch_next_cube(board);
-					printf("launch_next_cube()\n");
-				} else {
-					printf("STOPPING (too high)\n");
-				}
-
-			}
-
-			/* Keep a reference to see if the cube moved. */
-			cube->prev_y = cube->y;
-		}
-
-		/* Ticking for the lateral moves. */
-		if (now - board->lateral_tick > board->lateral_speed) {
-			if (board->moving_left > 1) {
-				board->moving_left--;
-			} else if (board->moving_left == 1) {
-				board_move_current_cube_left(board);
-			}
-
-			if (board->moving_right > 1) {
-				board->moving_right--;
-			} else if (board->moving_right == 1) {
-				board_move_current_cube_right(board);
-			}
-
-			board->lateral_tick = now;
-		}
-	}
-}
-
-
-void
-board_add_cube_to_map(Board *board, cube* cube)
-{
-	Uint8 x, y;
-	Uint16 i, j;
-	Uint8 *pos = cube->positions[cube->current_position];
-
-	for (y = 0; y < cube->size; y++) {
-		for (x = 0; x < cube->size; x++) {
-			j = y * cube->size + x;
-			i = (cube->y + y) * board->width + (cube->x + x);
-			if (pos[j]) {
-				board->map[i] = 1;
-			}
-		}
-	}
-}
-
-
-
-
-
-/* board_update_map() - Loop through all the cubes and populate the board
- * map with inactive cubes. */
-void
-board_update_map(Board *board)
-{
-	Uint8 i;
-
-	memset(board->map, 0, board->width * board->height);
-	for (i = 0; i < board->cube_count; i++) {
+	/* Get rid of all the water. */
+	for (i = 0; i < bs; i++) {
 		if (board->cubes[i] == NULL)
 			continue;
 
-		/* Don't count the current cube. */
-		if (board->cubes[i] == board->current_cube)
+		board->cubes[i]->water = 0;
+	}
+}
+
+
+void
+board_update_water(Board *board, Uint32 now)
+{
+	int i;
+	Cube *cube;
+
+	board_remove_water(board);
+
+	/* Check the whole left side for cubes. If any, run the routine for 
+	 * path finder. */
+	for (i = 0; i < board->height; i++) {
+		cube = board->cubes[i * board->width];
+		if (cube == NULL)
 			continue;
 
-		board_add_cube_to_map(board, board->cubes[i]);
-	}
-}
-
-
-/* move_check() - 
- * 	bside is the value telling if the cube is on the left of the whole
- * 		cube (1) or on the right side (2).
- *
- * Return values:
- * 	0 when path is clear
- * 	3 when touching the bottom
- * 	1 when a cube from the left side cubeed
- * 	2 when a cube from the right side cubeed */
-Uint8
-board_move_check(Board *board, cube *cube, Sint8 x, Sint8 y)
-{
-	Uint8 mx, my;
-	Uint8 bside;
-	Uint16 i, j;
-	Uint8 *pos = cube->positions[cube->current_position];
-
-	/* Update the map. */
-	board_update_map(board);
-
-	/* For every cubes in this cube, you need to check if there is a
-	 * space in whatever direction. */
-	for (my = 0; my < cube->size; my++) {
-		for (mx = 0; mx < cube->size; mx++) {
-			i = my * cube->size + mx;
-			bside = mx < cube->size / 2 ? 1 : 2;
-
-			/* Skip void cubes. */
-			if (pos[i] == 0)
-				continue;
-
-			/* Reached the bottom of the board. */
-			if (cube->y + my + y >= board->height)
-				return 3;
-
-			/* Reached the left border. */
-			if (cube->x + mx + x < 0)
-				return 1;
-
-			/* Reach the right border. */
-			if (cube->x + mx + x >= board->width)
-				return 2;
-			
-			/* There is a cube in this direction. */
-			j = (my + cube->y + y) * board->width + (mx + cube->x + x);
-			if (board->map[j]) {
-				return bside;
-			}
+		if (cube_plug_match(cube, PLUG_WEST)) {
+			board_spread_water(board, cube, NULL);
 		}
-	}
 
-	return 0;
+	}
 }
 
 
-void
-board_move_current_cube_left(Board *board)
+/**
+ * Return a cube at the given coordinates, return NULL if not found or if
+ * border of the board.
+ */
+Cube *
+board_get_cube(Board *board, Sint16 x, Sint16 y)
 {
-	cube *cube = board->current_cube;
+	/* Bad x value */
+	if (x < 0 || x > board->width)
+		return NULL;
 
-	if (cube == NULL)
+	/* Bad y value */
+	if (y < 0 || y > board->height)
+		return NULL;
+
+	return (board->cubes[x + board->width * y]);
+}
+
+
+/**
+ * Take a cube and check its neighbors for propagation. 'n' is always the
+ * neighbor cube.
+ */
+void
+board_spread_water(Board *board, Cube *cube, Cube *root)
+{
+	Cube *n;
+	int status;
+
+	/* Don't continue if this cube is already watered. */
+	if (cube->water == 1)
 		return;
 
-	if (board_move_check(board, cube, -1, 0) == 0) {
-		cube->x--;
-	}
-//	board_dump_cube_map(board);
-}
-
-
-void
-board_move_current_cube_right(Board *board)
-{
-	cube *cube = board->current_cube;
-
-	if (cube == NULL)
-		return;
-
-	if (board_move_check(board, cube, 1, 0) == 0) {
-		cube->x++;
-	}
-}
-
-
-void
-board_set_cube_speed(Board *board, Uint32 speed)
-{
-	board->cube_speed = speed;
-}
-
-
-void
-board_rotate_cw(Board *board)
-{
-	cube *cube = board->current_cube;
-	Uint8 x;
-
-	cube->current_position++;
-
-	if (cube->current_position >= cube->position_count) {
-		cube->current_position = 0;
+	/* Add 'cube' to the network, it doesn't seem to be a starting point. */
+	if (root == NULL) {
+		root = cube;
+	} else {
+		cube_network_add(root, cube);
 	}
 
-	/* Check if the new position is conflicting, if the conflict is on the
-	 * left (1), x+1, if the conflict is on the right, x-1. */
-	x = board_move_check(board, cube, 0, 0);
-	if (x == 1)
-		cube->x++;
-	else if (x == 2)
-		cube->x--;
+	cube->water = 1;
+
+	/* North cube */
+	n = board_get_cube(board, cube->x, cube->y - 1);
+	status = cube_get_plug_status(cube, PLUG_NORTH, n, PLUG_SOUTH);
+	if (status == PSTAT_CONNECTED) {
+		board_spread_water(board, n, cube);
+	} else if (status == PSTAT_OPENED && root != NULL) {
+		root->network_integrity = 0;
+	}
+
+	/* East cube */
+	n = board_get_cube(board, cube->x + 1, cube->y);
+	status = cube_get_plug_status(cube, PLUG_EAST, n, PLUG_WEST);
+	if (status == PSTAT_CONNECTED) {
+		board_spread_water(board, n, cube);
+	} else if (status == PSTAT_OPENED && root != NULL) {
+		root->network_integrity = 0;
+	}
+
+	/* South cube */
+	n = board_get_cube(board, cube->x, cube->y + 1);
+	status = cube_get_plug_status(cube, PLUG_SOUTH, n, PLUG_NORTH);
+	if (status == PSTAT_CONNECTED) {
+		board_spread_water(board, n, cube);
+	} else if (status == PSTAT_OPENED && root != NULL) {
+		root->network_integrity = 0;
+	}
+
+	/* West cube */
+	n = board_get_cube(board, cube->x - 1, cube->y);
+	status = cube_get_plug_status(cube, PLUG_WEST, n, PLUG_EAST);
+	if (status == PSTAT_CONNECTED) {
+		board_spread_water(board, n, cube);
+	} else if (status == PSTAT_OPENED && root != NULL) {
+		root->network_integrity = 0;
+	}
+
+	if (root == cube) {
+		printf("INTEGRITY:%d\n", cube->network_integrity);
+	}
 }
-#endif
+

@@ -21,10 +21,10 @@ SDL_Surface *ctex = NULL;
  */
 
 Uint8 cube_plugs[] = {
-	 9, 11, 10,  8, 15,
-	 3,  7,  5,  1, 15,
-	 6, 14, 10,  2, 15,
-	12, 13,  5,  4, 15 
+	0,  9, 11, 10,  8, 15,
+	0,  3,  7,  5,  1, 15,
+	0,  6, 14, 10,  2, 15,
+	0, 12, 13,  5,  4, 15 
 };
 
 
@@ -41,7 +41,7 @@ cube_init_texture()
 Uint8
 cube_get_plugs(Cube *cube)
 {
-	return (cube->current_position * 5 + cube->type);
+	return cube_plugs[cube->current_position * 6 + cube->type];
 }
 
 
@@ -62,7 +62,22 @@ cube_new(Uint8 poscount)
 
 	cube->water = 0;
 
+	cube->network_integrity = 1;
+	cube->network_size = 0;
+	cube->network = NULL;
+
 	return cube;
+}
+
+
+void
+cube_network_add(Cube *root, Cube *cube)
+{
+	int i = root->network_size++;
+
+	root->network = realloc(root->network, root->network_size * 
+			sizeof(Cube *));
+	root->network[i] = cube;
 }
 
 
@@ -146,5 +161,42 @@ cube_rotate_cw(Cube *cube)
 	if (cube->current_position >= 4) {
 		cube->current_position = 0;
 	}
+}
+
+
+/**
+ * Return true if the cube has the 'mask' plugs opened.
+ */
+int
+cube_plug_match(Cube *cube, Uint8 mask)
+{
+	Uint8 plugs = cube_get_plugs(cube);
+
+	if ((plugs & mask) == mask)
+		return 1;
+
+	return 0;
+}
+
+
+int
+cube_get_plug_status(Cube *cube1, Uint8 plug1, Cube *cube2, Uint8 plug2) {
+	int status = 0;
+
+	/* Cube1 has an output in this direction */
+	if (cube_plug_match(cube1, plug1))
+		status += 1;
+
+	/* Cube2 is inexistant. */
+	if (cube2 == NULL)
+		return status;
+
+	status += 2;
+
+	/* Cube2 has an output in the receptive direciton */
+	if (cube_plug_match(cube2, plug2))
+		status += 4;
+
+	return status;
 }
 

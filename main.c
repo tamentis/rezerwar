@@ -108,7 +108,6 @@ handle_events_keydown(SDL_Event *event)
 			board_launch_new_drop(board, 120, 20);
 			break;
 		case SDLK_F10:
-			board_water_all_cubes(board);
 			break;
 		case SDLK_F9:
 			board_dump_drop_map_bmp(board);

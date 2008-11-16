@@ -149,14 +149,12 @@ void
 board_update_blocks(Board *board, Uint32 now)
 {
 	Uint16 i;
-	Block *block;
 
 	for (i = 0; i < board->block_count; i++) {
-		block = board->blocks[i];
-		if (block == NULL)
+		if (board->blocks[i] == NULL)
 			continue;
 
-		board_update_single_block(board, now, block);
+		board_update_single_block(board, now, i);
 	}
 }
 
@@ -166,7 +164,9 @@ board_update_blocks(Board *board, Uint32 now)
  * reprensented by 'now'.
  */
 void
-board_update_single_block(Board *board, Uint32 now, Block *block) {
+board_update_single_block(Board *board, Uint32 now, Uint16 i) {
+	Block *block = board->blocks[i];
+
 	/* This block's tick has expired, we need to move it. */
 	if (block->falling && now - block->tick > board->block_speed) {
 		/* Can it fit one unit lower? */
@@ -321,6 +321,4 @@ board_rotate_cw(Board *board)
 	else if (x == 2)
 		block->x--;
 }
-
-
 

@@ -1,3 +1,7 @@
+CONTINUATION:
+ - Instead of getting the neighbor cube by default... use get the type first,
+   then decide what to do.
+
 FEATURES:
  - Menu
  - Music

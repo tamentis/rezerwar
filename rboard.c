@@ -27,7 +27,6 @@ board_new(Uint8 width, Uint8 height)
 	b->bg = NULL;
 
 	/* Cube related members initialization. */
-	b->cube_count = 0;
 	b->cubes = r_malloc(size * sizeof(Cube *));
 	for (i = 0; i < size; i++)
 		b->cubes[i] = NULL;
@@ -160,5 +159,6 @@ board_update(Board *board, Uint32 now)
 	board_update_blocks(board, now);
 	board_update_outputs(board, now);
 	board_update_drops(board, now);
+	board_update_water(board, now);
 }
 
