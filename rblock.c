@@ -131,9 +131,9 @@ block_new_square()
 
 	block = block_new(4, 4);
 	block_set_position(block, 0, pos0);
-	block_set_position(block, 0, pos1);
-	block_set_position(block, 0, pos2);
-	block_set_position(block, 0, pos3);
+	block_set_position(block, 1, pos1);
+	block_set_position(block, 2, pos2);
+	block_set_position(block, 3, pos3);
 
 	block_generate_cubes(block, 4);
 
