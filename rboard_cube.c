@@ -70,6 +70,7 @@ board_remove_water(Board *board)
 			continue;
 
 		board->cubes[i]->water = 0;
+		board->cubes[i]->network_integrity = 1;
 	}
 }
 
@@ -117,15 +118,61 @@ board_get_cube(Board *board, Sint16 x, Sint16 y)
 
 
 /**
+ * Returns an integer representing the type of area at x,y
+ */
+int
+board_get_area_type(Board *board, Sint16 x, Sint16 y)
+{
+	if (x < 0)
+		return ATYPE_BOARD_LEFT;
+
+	if (x > board->width)
+		return ATYPE_BOARD_RIGHT;
+
+	if (y >= board->height)
+		return ATYPE_BOARD_BOTTOM;
+
+	if (board->cubes[x + board->width * y] != NULL)
+		return ATYPE_BLOCK;
+
+	return ATYPE_FREE;
+}
+
+
+void
+board_spread_attempt(Board *board, Cube *cube, Cube *root, Sint8 ox, Sint8 oy,
+		Uint8 src_plug, Uint8 dest_plug)
+{
+	Cube *n;
+	int status;
+	int type;
+
+	type = board_get_area_type(board, cube->x + ox, cube->y + oy);
+	switch (type) {
+		case ATYPE_FREE:
+			if (cube_plug_match(cube, src_plug))
+				root->network_integrity = 0;
+			break;
+		case ATYPE_BLOCK:
+			n = board_get_cube(board, cube->x + ox, cube->y + oy);
+			status = cube_get_plug_status(cube, src_plug, n, 
+					dest_plug);
+			if (status == PSTAT_CONNECTED)
+				board_spread_water(board, n, cube);
+			break;
+		default:
+			break;
+	}
+}
+
+
+/**
  * Take a cube and check its neighbors for propagation. 'n' is always the
  * neighbor cube.
  */
 void
 board_spread_water(Board *board, Cube *cube, Cube *root)
 {
-	Cube *n;
-	int status;
-
 	/* Don't continue if this cube is already watered. */
 	if (cube->water == 1)
 		return;
@@ -139,41 +186,11 @@ board_spread_water(Board *board, Cube *cube, Cube *root)
 
 	cube->water = 1;
 
-	/* North cube */
-	n = board_get_cube(board, cube->x, cube->y - 1);
-	status = cube_get_plug_status(cube, PLUG_NORTH, n, PLUG_SOUTH);
-	if (status == PSTAT_CONNECTED) {
-		board_spread_water(board, n, cube);
-	} else if (status == PSTAT_OPENED && root != NULL) {
-		root->network_integrity = 0;
-	}
-
-	/* East cube */
-	n = board_get_cube(board, cube->x + 1, cube->y);
-	status = cube_get_plug_status(cube, PLUG_EAST, n, PLUG_WEST);
-	if (status == PSTAT_CONNECTED) {
-		board_spread_water(board, n, cube);
-	} else if (status == PSTAT_OPENED && root != NULL) {
-		root->network_integrity = 0;
-	}
-
-	/* South cube */
-	n = board_get_cube(board, cube->x, cube->y + 1);
-	status = cube_get_plug_status(cube, PLUG_SOUTH, n, PLUG_NORTH);
-	if (status == PSTAT_CONNECTED) {
-		board_spread_water(board, n, cube);
-	} else if (status == PSTAT_OPENED && root != NULL) {
-		root->network_integrity = 0;
-	}
-
-	/* West cube */
-	n = board_get_cube(board, cube->x - 1, cube->y);
-	status = cube_get_plug_status(cube, PLUG_WEST, n, PLUG_EAST);
-	if (status == PSTAT_CONNECTED) {
-		board_spread_water(board, n, cube);
-	} else if (status == PSTAT_OPENED && root != NULL) {
-		root->network_integrity = 0;
-	}
+	/* North, East, South, West */
+	board_spread_attempt(board, cube, root,  0, -1, PLUG_NORTH, PLUG_SOUTH);
+	board_spread_attempt(board, cube, root,  1,  0, PLUG_EAST,  PLUG_WEST);
+	board_spread_attempt(board, cube, root,  0,  1, PLUG_SOUTH, PLUG_NORTH);
+	board_spread_attempt(board, cube, root, -1, -1, PLUG_WEST,  PLUG_EAST);
 
 	if (root == cube) {
 		printf("INTEGRITY:%d\n", cube->network_integrity);

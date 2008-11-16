@@ -7,6 +7,8 @@ FEATURES:
  - Music
  - Create a block_allocate when creating new blocks to avoid always pushing
    blocks at the end of the array.
+ - You can harden blocks so they can last a couple generations of water, this
+   will help exploding center areas.
 
 BUGS:
  - If a block is stuck between two columns of block or the side of the board,
