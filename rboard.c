@@ -106,28 +106,22 @@ board_kill(Board *b)
 }
 
 
-SDL_Surface *
-loadimage(char *filename)
-{
-	SDL_Surface *img;
-
-	img = IMG_Load(filename);
-
-	if (img == NULL) {
-		fprintf(stderr, "Unable to load image \"%s\".\n", filename);
-		exit(-1);
-	}
-
-	return img;
-}
-
-
 void
 board_loadbg(Board *b, char *bgfilename)
 {
 	b->bg = loadimage(bgfilename);
 }
 
+
+void
+board_refresh_score(Board *board)
+{
+	char score[10];
+
+	snprintf(score, 10, "%d", board->score);
+	osd_print("rezerwar alpha - press f12 to start", 10, 10);
+	osd_print(score, 247, 172);
+}
 
 
 void
@@ -147,6 +141,9 @@ board_refresh(Board *board)
 
 	/* Redraw the drops. */
 	board_refresh_drops(board);
+
+	/* Draw score */
+	board_refresh_score(board);
 
 	/* Update double-buffering. */
 	SDL_Flip(screen);

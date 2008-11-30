@@ -86,12 +86,15 @@ int
 surface_fadein(SDL_Surface *surf, int speed)
 {
 	Uint8 i;
+	int r = 0;
 	SDL_Event event;
 	int max = 255 / speed;
 
 	for (i = 0; i < max; i++) {
-		if (SDL_PollEvent(&event) && event.type == SDL_KEYDOWN)
-			return 1;
+		if (SDL_PollEvent(&event) && event.type == SDL_KEYDOWN) {
+			r = 1;
+			i = max;
+		}
 
 		memset(screen->pixels, 0, screen->w * screen->h *
 				screen->format->BytesPerPixel);
@@ -101,7 +104,7 @@ surface_fadein(SDL_Surface *surf, int speed)
 		SDL_Delay(10);
 	}
 
-	return 0;
+	return r;
 }
 
 
@@ -128,5 +131,21 @@ surface_fadeout(SDL_Surface *surf)
 	}
 
 	return 0;
+}
+
+
+SDL_Surface *
+loadimage(char *filename)
+{
+	SDL_Surface *img;
+
+	img = IMG_Load(filename);
+
+	if (img == NULL) {
+		fprintf(stderr, "Unable to load image \"%s\".\n", filename);
+		exit(-1);
+	}
+
+	return img;
 }
 

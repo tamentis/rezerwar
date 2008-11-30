@@ -9,6 +9,7 @@
 
 Board *board;
 SDL_Surface *screen;
+SDL_Surface *sprites;
 
 
 void
@@ -52,6 +53,11 @@ game_menu(void)
 	intro = loadimage("gfx/gamemenu.png");
 
 	x = surface_fadein(intro, 8);
+	osd_print("start new game", 220, 280);
+	osd_print("options", 265, 310);
+	osd_print("quit", 290, 340);
+	SDL_Flip(screen);
+
 	wait_for_keymouse();
 
 	SDL_FreeSurface(intro);
@@ -87,9 +93,8 @@ main(int ac, char **av)
 	/* Slap the original bg. */
 	SDL_BlitSurface(board->bg, NULL, screen, NULL);
 
-	/* Load the block textures. */
-	block_init_btex();
-	cube_init_texture();
+	/* Load the sprites. */
+	sprites = loadimage("gfx/sprites.png");
 
 	/* Get the first block ready. */
 	board_load_next_block(board);

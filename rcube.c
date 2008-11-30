@@ -8,7 +8,7 @@
 
 
 extern SDL_Surface *screen;
-SDL_Surface *ctex = NULL;
+extern SDL_Surface *sprites;
 
 
 /* The following defines the plugs (opened pipe) on the specific cube styles
@@ -28,12 +28,6 @@ Uint8 cube_plugs[] = {
 	0, 12, 13,  5,  4, 15 
 };
 
-
-void
-cube_init_texture()
-{
-	ctex = loadimage("gfx/block.png");
-}
 
 
 /**
@@ -142,12 +136,12 @@ cube_get_surface(Cube *cube)
 	s = SDL_CreateRGBSurface(0, BSIZE, BSIZE, screen->format->BitsPerPixel,
 			0, 0, 0, 0);
 
-	SDL_BlitSurface(ctex, &src, s, NULL);
+	SDL_BlitSurface(sprites, &src, s, NULL);
 
 	/* If this cube has water, find the water mask 64 px lower. */
 	if (cube->water) {
 		src.y += 64;
-		SDL_BlitSurface(ctex, &src, s, NULL);
+		SDL_BlitSurface(sprites, &src, s, NULL);
 	}
 
 	SDL_SetColorKey(s, SDL_SRCCOLORKEY, 0);

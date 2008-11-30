@@ -200,6 +200,7 @@ board_destroy_network(Board *board, Cube *cube)
 	}
 
 	cube->trashed = 1;
+	board->score += (cube->network_size + 1) * 8;
 }
 
 

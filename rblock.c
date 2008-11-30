@@ -8,14 +8,7 @@
 
 
 extern SDL_Surface *screen;
-SDL_Surface *btex = NULL;
-
-
-void
-block_init_btex()
-{
-	btex = loadimage("gfx/block.png");
-}
+extern SDL_Surface *sprites;
 
 
 Block *

@@ -131,7 +131,6 @@ typedef struct _block_data {
 	Uint8 type;
 } Block;
 
-void		 block_init_btex();
 Block		*block_new(Uint8, Uint8);
 void		 block_kill(Block *);
 SDL_Surface	*block_get_surface(Block *);
@@ -177,11 +176,12 @@ typedef struct _board_data {
 	/* water outputs */
 	WaterOutput **outputs;
 	Uint8 output_count;
+	/* player stuff */
+	int score;
 } Board;
 
 Board		*board_new(Uint8, Uint8);
 void		 board_kill(Board *);
-SDL_Surface	*loadimage(char *);
 void		 board_loadbg(Board *, char *);
 void		 board_refresh(Board *);
 void		 board_update(Board *, Uint32);
@@ -233,4 +233,8 @@ int		 cancellable_delay(int);
 int		 surface_fadein(SDL_Surface *, int);
 int		 surface_fadeout(SDL_Surface *);
 void		 r_setpixel(Uint16, Uint16, Uint8, Uint8, Uint8);
+SDL_Surface	*loadimage(char *);
+
+/* osd.c */
+void		 osd_print(char *, int, int);
 
