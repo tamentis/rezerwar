@@ -32,9 +32,11 @@ board_load_next_block(Board *board)
 }
 
 
-/* board_launch_next_block() - Take whatever block is currently loaded as
- * next_block, add it to the list of blocks for this board, place it at 
- * the right place and pick a new next_block. */
+/**
+ * Take whatever block is currently loaded as next_block, add it to the
+ * list of blocks for this board, place it at the right place and pick a
+ * new next_block.
+ */
 void
 board_launch_next_block(Board *board)
 {
@@ -49,6 +51,16 @@ board_launch_next_block(Board *board)
 
 	board_load_next_block(board);
 }
+
+
+
+void
+board_change_next_block(Board *board)
+{
+	block_kill(board->next_block);
+	board_load_next_block(board);
+}
+
 
 
 void

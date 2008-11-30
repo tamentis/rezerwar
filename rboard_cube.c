@@ -12,9 +12,27 @@ extern SDL_Surface *screen;
 
 
 void
+board_update_cubes(Board *board, Uint32 now)
+{
+	int i;
+	int size = board->width * board->height;
+	Cube *cube;
+
+	for (i = 0; i < size; i++) {
+		cube = board->cubes[i];
+		
+		if (cube != NULL && cube->trashed == 1) {
+			cube_kill(cube);
+			board->cubes[i] = NULL;
+		}
+	}
+}
+
+
+void
 board_refresh_cubes(Board *board)
 {
-	Uint8 i;
+	int i;
 	SDL_Rect r;
 	Cube *cube;
 	SDL_Surface *s;
@@ -73,6 +91,7 @@ board_remove_water(Board *board)
 
 		board->cubes[i]->water = 0;
 		board->cubes[i]->network_integrity = 1;
+		cube_network_flush(board->cubes[i]);
 	}
 }
 
@@ -160,11 +179,27 @@ board_spread_attempt(Board *board, Cube *cube, Cube *root, Sint8 ox, Sint8 oy,
 			status = cube_get_plug_status(cube, src_plug, n, 
 					dest_plug);
 			if (status == PSTAT_CONNECTED)
-				board_spread_water(board, n, cube);
+				board_spread_water(board, n, root);
 			break;
 		default:
 			break;
 	}
+}
+
+
+void
+board_destroy_network(Board *board, Cube *cube)
+{
+	int i;
+
+	printf("board_destroy_network(cube@%dx%d, size=%d)\n", cube->x, cube->y,
+			cube->network_size);
+
+	for (i = 0; i < cube->network_size; i++) {
+		cube->network[i]->trashed = 1;
+	}
+
+	cube->trashed = 1;
 }
 
 
@@ -189,13 +224,19 @@ board_spread_water(Board *board, Cube *cube, Cube *root)
 	cube->water = 1;
 
 	/* North, East, South, West */
+//	printf("cube@%dx%d: spread_attempt NORTH\n", cube->x, cube->y);
 	board_spread_attempt(board, cube, root,  0, -1, PLUG_NORTH, PLUG_SOUTH);
+//	printf("cube@%dx%d: spread_attempt EAST\n", cube->x, cube->y);
 	board_spread_attempt(board, cube, root,  1,  0, PLUG_EAST,  PLUG_WEST);
+//	printf("cube@%dx%d: spread_attempt SOUTH\n", cube->x, cube->y);
 	board_spread_attempt(board, cube, root,  0,  1, PLUG_SOUTH, PLUG_NORTH);
-	board_spread_attempt(board, cube, root, -1, -1, PLUG_WEST,  PLUG_EAST);
+//	printf("cube@%dx%d: spread_attempt WEST\n", cube->x, cube->y);
+	board_spread_attempt(board, cube, root, -1,  0, PLUG_WEST,  PLUG_EAST);
 
 	if (root == cube) {
-		printf("INTEGRITY:%d\n", cube->network_integrity);
+		if (cube->network_integrity == 1) {
+			board_destroy_network(board, cube);
+		}
 	}
 }
 

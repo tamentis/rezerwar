@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "SDL.h"
 #include "SDL_image.h"
@@ -74,6 +75,28 @@ block_generate_cubes(Block *block, int n)
 	for (i = 0; i < n; i++) {
 		block->cubes[i] = cube_new_random();
 	}
+}
+
+
+Block *
+block_new_one()
+{
+	Block *block;
+	Uint8 pos0[] = {  0, 0, 0,
+			  0, 1, 0,
+			  0, 0, 0 };
+
+	block = block_new(3, 4);
+	block_set_position(block, 0, pos0);
+	block_set_position(block, 1, pos0);
+	block_set_position(block, 2, pos0);
+	block_set_position(block, 3, pos0);
+
+	block_generate_cubes(block, 4);
+
+	block->type = BLOCK_TYPE_ONE;
+
+	return block;
 }
 
 
@@ -305,7 +328,7 @@ block_new_jay()
 Block *
 block_new_random()
 {
-	long int r = random();
+	long int r = rand();
 	Block *block;
 
 	switch (r % 7) {
@@ -326,6 +349,9 @@ block_new_random()
 			break;
 		case BLOCK_TYPE_SQUARE:
 			block = block_new_square();
+			break;
+		case BLOCK_TYPE_ONE:
+			block = block_new_one();
 			break;
 		default:
 			block = block_new_bar();

@@ -3,6 +3,8 @@ CONTINUATION:
    then decide what to do.
 
 FEATURES:
+ - Create other collections of pieces (3 blocks, 5 blocks)
+ - Move all the SDL related stuff in wrappers within sdl_engine.c
  - Menu
  - Music
  - Create a block_allocate when creating new blocks to avoid always pushing

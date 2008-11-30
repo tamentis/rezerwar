@@ -157,6 +157,7 @@ void
 board_update(Board *board, Uint32 now)
 {
 	board_update_blocks(board, now);
+	board_update_cubes(board, now);
 	board_update_outputs(board, now);
 	board_update_drops(board, now);
 	board_update_water(board, now);

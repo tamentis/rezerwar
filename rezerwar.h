@@ -15,6 +15,7 @@
 #define BLOCK_TYPE_ESS		4
 #define BLOCK_TYPE_SQUARE	5
 #define BLOCK_TYPE_BAR		6
+#define BLOCK_TYPE_ONE		7
 
 /* There is no reason why you would want the speed to be less than the
  * normal tickin of the game. */
@@ -67,16 +68,17 @@ void		 r_setline(Uint16, Uint16, Uint16, Uint8, Uint8, Uint8);
 
 typedef struct _cube {
 	Sint8 current_position;
-	Sint8 position_count;
 	Sint16 x;
 	Sint16 y;
 	int type;
 	int water;
 	int network_integrity;
 	int network_size;
+	int trashed;
 	struct _cube **network;
 } Cube;
 Cube		*cube_new(Uint8);
+void		 cube_kill(Cube *);
 Cube		*cube_new_random();
 void		 cube_init_texture();
 SDL_Surface	*cube_get_surface(Cube *);
@@ -86,6 +88,7 @@ Uint8		 cube_get_plugs(Cube *);
 int		 cube_plug_match(Cube *, Uint8);
 int		 cube_get_plug_status(Cube *, Uint8, Cube *, Uint8);
 void		 cube_network_add(Cube *, Cube *);
+void		 cube_network_flush(Cube *);
 
 
 /* rdrop.c */
@@ -188,6 +191,7 @@ void		 board_refresh_cubes(Board *);
 void		 board_dump_cube_map(Board *);
 void		 board_spread_water(Board *, Cube *, Cube *);
 void		 board_update_water(Board *, Uint32);
+void		 board_update_cubes(Board *, Uint32);
 /* rboard_blocks.c */
 void		 board_refresh_blocks(Board *);
 void		 board_refresh_next(Board *);
@@ -219,4 +223,14 @@ void		 board_update_outputs(Board *, Uint32);
 WaterOutput	*wateroutput_new(Uint8, Sint16, Sint16);
 void		 wateroutput_kill(WaterOutput *);
 void		 wateroutput_update(WaterOutput *, Board *, Uint32);
+
+/* events.c */
+Uint8		 handle_events(SDL_Event *);
+void		 wait_for_keymouse(void);
+int		 cancellable_delay(int);
+
+/* engine_sdl.c */
+int		 surface_fadein(SDL_Surface *, int);
+int		 surface_fadeout(SDL_Surface *);
+void		 r_setpixel(Uint16, Uint16, Uint8, Uint8, Uint8);
 

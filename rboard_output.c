@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "SDL.h"
 #include "SDL_image.h"
@@ -13,8 +14,8 @@ void
 board_random_output(Board *board)
 {
 	WaterOutput *wo;
-	int x = random() % 160;
-	int y = random() % 160;
+	int x = rand() % 160;
+	int y = rand() % 160;
 
 	printf("board_random_output\n");
 

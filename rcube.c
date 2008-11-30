@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "SDL.h"
 #include "SDL_image.h"
@@ -46,15 +47,14 @@ cube_get_plugs(Cube *cube)
 
 
 Cube *
-cube_new(Uint8 poscount)
+cube_new(Uint8 start_pos)
 {
 	Cube *cube;
 
 	cube = r_malloc(sizeof(Cube));
 
 	/* Prepare positions space. */
-	cube->current_position = 0;
-	cube->position_count = poscount;
+	cube->current_position = start_pos;
 	cube->type = CTYPE_ANGLE;
 
 	cube->x = 0;
@@ -66,6 +66,8 @@ cube_new(Uint8 poscount)
 	cube->network_size = 0;
 	cube->network = NULL;
 
+	cube->trashed = 0;
+
 	return cube;
 }
 
@@ -75,9 +77,26 @@ cube_network_add(Cube *root, Cube *cube)
 {
 	int i = root->network_size++;
 
+	/*
+	printf("cube_network_add(cube@%dx%d to root@%dx%d)\n", cube->x, cube->y,
+			root->x, root->y);
+	*/
+
 	root->network = realloc(root->network, root->network_size * 
 			sizeof(Cube *));
 	root->network[i] = cube;
+}
+
+
+/**
+ * Remove all the connections in this cube's network.
+ */
+void
+cube_network_flush(Cube *cube)
+{
+	cube->network_size = 0;
+	free(cube->network);
+	cube->network = NULL;
 }
 
 
@@ -88,12 +107,12 @@ cube_new_random()
 	int r;
 	
 	/* Start at a random position. */
-	r = random();
-	cube = cube_new(r % 3);
+	r = rand();
+	cube = cube_new(r % 4);
 
-	/* Random type. */
-	r = random();
-	cube->type = r % 5;
+	/* Random type. (skipping the first blank) */
+	r = rand();
+	cube->type = 1 + r % 5;
 
 	return cube;
 }
@@ -104,12 +123,6 @@ cube_kill(Cube *cube)
 {
 //	Uint8 i;
 
-	/*
-	for (i = 0; i < cube->position_count; i++) {
-		r_free(cube->positions[i]);
-	}
-	r_free(cube->positions);
-	*/
 	r_free(cube);
 }
 
