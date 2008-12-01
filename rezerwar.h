@@ -16,6 +16,9 @@
 #define BLOCK_TYPE_SQUARE	5
 #define BLOCK_TYPE_BAR		6
 #define BLOCK_TYPE_ONE		7
+#define BLOCK_TYPE_TWO		8
+#define BLOCK_TYPE_THREE	9
+#define BLOCK_TYPE_CORNER	10
 
 /* There is no reason why you would want the speed to be less than the
  * normal tickin of the game. */
@@ -49,6 +52,13 @@
 /* Plug statuses */
 #define PSTAT_CONNECTED		7
 #define PSTAT_OPENED		1
+
+/* Difficulties */
+#define DIFF_SUPER_EASY		0
+#define DIFF_EASY		1
+#define	DIFF_MEDIUM		2
+#define DIFF_HARD		3
+#define DIFF_ULTRA		4
 
 /**
  * @file rezerwar.h
@@ -123,7 +133,6 @@ typedef struct _block_data {
 	Cube **cubes;
 	int cube_count;
 	Uint8 current_position;
-	Uint8 position_count;
 	Sint8 x;
 	Sint8 y;
 	Uint8 prev_y;
@@ -131,7 +140,7 @@ typedef struct _block_data {
 	Uint8 type;
 } Block;
 
-Block		*block_new(Uint8, Uint8);
+Block		*block_new(Uint8);
 void		 block_kill(Block *);
 SDL_Surface	*block_get_surface(Block *);
 void		 block_get_rectangle(Block *, SDL_Rect *);
@@ -178,6 +187,7 @@ typedef struct _board_data {
 	Uint8 output_count;
 	/* player stuff */
 	int score;
+	int paused;
 } Board;
 
 Board		*board_new(Uint8, Uint8);
@@ -185,6 +195,7 @@ void		 board_kill(Board *);
 void		 board_loadbg(Board *, char *);
 void		 board_refresh(Board *);
 void		 board_update(Board *, Uint32);
+void		 board_toggle_pause(Board *);
 /* rboard_cubes.c */
 void		 board_add_cube(Board *);
 void		 board_refresh_cubes(Board *);
@@ -200,6 +211,7 @@ void		 board_update_single_block(Board *, Uint32, Uint16);
 void		 board_add_block(Board *, Block *);
 void		 board_launch_next_block(Board *);
 void		 board_load_next_block(Board *);
+void		 board_change_next_block(Board *);
 void		 board_move_current_block_left(Board *);
 void		 board_move_current_block_right(Board *);
 void		 board_set_block_speed(Board *, Uint32);
@@ -237,4 +249,5 @@ SDL_Surface	*loadimage(char *);
 
 /* osd.c */
 void		 osd_print(char *, int, int);
+void		 osd_print_moving(char *, int, int, int);
 

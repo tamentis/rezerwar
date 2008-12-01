@@ -88,6 +88,9 @@ handle_events_keydown(SDL_Event *event)
 		case SDLK_a:
 			board_rotate_cw(board);
 			break;
+		case SDLK_p:
+			board_toggle_pause(board);
+			break;
 		case SDLK_f:
 			if (SDL_WM_ToggleFullScreen(screen) == 0) {
 				fprintf(stderr, "Unable to toggle fullscreen/windowed mode.\n");

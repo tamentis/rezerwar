@@ -87,7 +87,6 @@ osd_print_letter(char c, int x, int y)
 }
 
 
-
 /**
  * This function will simply print the 'text' at the given coordinate.
  */
@@ -99,6 +98,25 @@ osd_print(char *text, int x, int y)
 
 	while (*c != '\0') {
 		cursor += osd_print_letter(*c, x + cursor, y);
+		c++;
+	}
+}
+
+/**
+ * This function will simply print the 'text' at the given coordinate with an
+ * extra pixel here or there for moving effect.
+ */
+void
+osd_print_moving(char *text, int x, int y, int force)
+{
+	char *c = text;
+	int cursor = 0;
+	int rx, ry;
+
+	while (*c != '\0') {
+		rx = (rand() % 50 > 25 ? (rand() % (force + 1)) : 0);
+		ry = (rand() % 50 > 25 ? (rand() % (force + 1)) : 0);
+		cursor += osd_print_letter(*c, x + cursor + rx, y + ry);
 		c++;
 	}
 }

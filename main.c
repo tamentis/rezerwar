@@ -64,48 +64,14 @@ game_menu(void)
 }
 
 
-int
-main(int ac, char **av)
+void
+game_loop()
 {
 	Uint32 start, now, framecount = 0, fps_lastframe = 0;
 	Uint8 playing = 1;
 	Uint32 fps_lastframedisplay = 0;
 	Sint32 elapsed;
 	SDL_Event event;
-
-	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-		fprintf(stderr, "Unable to initialize SDL: %s\n", SDL_GetError());
-		exit(-1);
-	}
-	atexit(SDL_Quit);
-
-	srand(time(NULL));
-
-	/* Prepare board */
-	board = board_new(10, 20);
-	board_loadbg(board, "gfx/gameback.png");
-
-	/* Create main window */
-	screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE|SDL_DOUBLEBUF);
-//	screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE|SDL_DOUBLEBUF|SDL_FULLSCREEN);
-	SDL_WM_SetCaption("rezerwar", NULL);
-
-	/* Slap the original bg. */
-	SDL_BlitSurface(board->bg, NULL, screen, NULL);
-
-	/* Load the sprites. */
-	sprites = loadimage("gfx/sprites.png");
-
-	/* Get the first block ready. */
-	board_load_next_block(board);
-	SDL_Flip(screen);
-
-	/* Presentation screens. */
-	intro_studio();
-	intro_title();
-
-	/* Game menu */
-	game_menu();
 
 	/* Main loop, every loop is separated by a TICK (~10ms). 
 	 * The board is refreshed every 1/MAXFPS seconds. */
@@ -137,9 +103,41 @@ main(int ac, char **av)
 			SDL_Delay(TICK - elapsed);
 		}
 	}
+}
 
+
+int
+main(int ac, char **av)
+{
+	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+		fprintf(stderr, "Unable to initialize SDL: %s\n", SDL_GetError());
+		exit(-1);
+	}
+	atexit(SDL_Quit);
+
+	/* Create main window and seed the random generator. */
+	srand(time(NULL));
+	screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE|SDL_DOUBLEBUF);
+	SDL_WM_SetCaption("rezerwar", NULL);
+
+	/* Prepare board and load the first block. */
+	board = board_new(10, 20);
+	board_load_next_block(board);
+
+	/* Original graphic load, background, sprites and first Flip. */
+	board_loadbg(board, "gfx/gameback.png");
+	SDL_BlitSurface(board->bg, NULL, screen, NULL);
+	sprites = loadimage("gfx/sprites.png");
+	SDL_Flip(screen);
+
+	/* Normal flow... */
+	intro_studio();
+	intro_title();
+	game_menu();
+	game_loop();
+
+	/* Death */
 	board_kill(board);
-
 	r_checkmem();
 
 	return 0;

@@ -12,7 +12,7 @@ extern SDL_Surface *sprites;
 
 
 Block *
-block_new(Uint8 size, Uint8 poscount)
+block_new(Uint8 size)
 {
 	Block *block;
 	Uint8 i;
@@ -26,9 +26,8 @@ block_new(Uint8 size, Uint8 poscount)
 
 	/* Prepare positions space. */
 	block->current_position = 0;
-	block->position_count = poscount;
-	block->positions = r_malloc(poscount * sizeof(Uint8 *));
-	for (i = 0; i < poscount; i++) {
+	block->positions = r_malloc(4 * sizeof(Uint8 *));
+	for (i = 0; i < 4; i++) {
 		block->positions[i] = r_malloc(size * size);
 	}
 
@@ -75,19 +74,101 @@ Block *
 block_new_one()
 {
 	Block *block;
-	Uint8 pos0[] = {  0, 0, 0,
-			  0, 1, 0,
-			  0, 0, 0 };
+	Uint8 pos0[] = { 1 };
 
-	block = block_new(3, 4);
+	block = block_new(1);
 	block_set_position(block, 0, pos0);
 	block_set_position(block, 1, pos0);
 	block_set_position(block, 2, pos0);
 	block_set_position(block, 3, pos0);
 
-	block_generate_cubes(block, 4);
+	block_generate_cubes(block, 1);
 
 	block->type = BLOCK_TYPE_ONE;
+
+	return block;
+}
+
+Block *
+block_new_two()
+{
+	Block *block;
+	Uint8 pos0[] = {  0, 0,
+			  1, 2 };
+	Uint8 pos1[] = {  1, 0,
+			  2, 0 };
+	Uint8 pos2[] = {  2, 1,
+			  0, 0 };
+	Uint8 pos3[] = {  0, 2,
+			  0, 1 };
+
+	block = block_new(2);
+	block_set_position(block, 0, pos0);
+	block_set_position(block, 1, pos1);
+	block_set_position(block, 2, pos2);
+	block_set_position(block, 3, pos3);
+
+	block_generate_cubes(block, 2);
+
+	block->type = BLOCK_TYPE_TWO;
+
+	return block;
+}
+
+
+Block *
+block_new_corner()
+{
+	Block *block;
+	Uint8 pos0[] = {  1, 0,
+			  2, 3 };
+	Uint8 pos1[] = {  2, 1,
+			  3, 0 };
+	Uint8 pos2[] = {  3, 2,
+			  0, 1 };
+	Uint8 pos3[] = {  0, 3,
+			  1, 2 };
+
+	block = block_new(2);
+	block_set_position(block, 0, pos0);
+	block_set_position(block, 1, pos1);
+	block_set_position(block, 2, pos2);
+	block_set_position(block, 3, pos3);
+
+	block_generate_cubes(block, 3);
+
+	block->type = BLOCK_TYPE_CORNER;
+
+	return block;
+}
+
+
+Block *
+block_new_three()
+{
+	Block *block;
+	Uint8 pos0[] = {  0, 0, 0,
+			  1, 2, 3,
+			  0, 0, 0 };
+	Uint8 pos1[] = {  0, 1, 0,
+			  0, 2, 0,
+			  0, 3, 0 };
+	Uint8 pos2[] = {  0, 0, 0,
+			  3, 2, 1,
+			  0, 0, 0 };
+	Uint8 pos3[] = {  0, 3, 0,
+			  0, 2, 0,
+			  0, 1, 0 };
+
+	block = block_new(3);
+	block_set_position(block, 0, pos0);
+	block_set_position(block, 1, pos1);
+	block_set_position(block, 2, pos2);
+	block_set_position(block, 3, pos3);
+
+	block_generate_cubes(block, 3);
+
+	block->type = BLOCK_TYPE_THREE;
 
 	return block;
 }
@@ -110,7 +191,7 @@ block_new_tee()
 			  0, 2, 4,
 			  0, 1, 0 };
 
-	block = block_new(3, 4);
+	block = block_new(3);
 	block_set_position(block, 0, pos0);
 	block_set_position(block, 1, pos1);
 	block_set_position(block, 2, pos2);
@@ -145,7 +226,7 @@ block_new_square()
 			 0, 1, 4, 0,
 			 0, 0, 0, 0 };
 
-	block = block_new(4, 4);
+	block = block_new(4);
 	block_set_position(block, 0, pos0);
 	block_set_position(block, 1, pos1);
 	block_set_position(block, 2, pos2);
@@ -176,7 +257,7 @@ block_new_zee()
 			 0, 2, 3,
 			 0, 1, 0 };
 
-	block = block_new(3, 4);
+	block = block_new(3);
 	block_set_position(block, 0, pos0);
 	block_set_position(block, 1, pos1);
 	block_set_position(block, 2, pos2);
@@ -207,7 +288,7 @@ block_new_ess()
 			 0, 3, 2,
 			 0, 0, 1 };
 
-	block = block_new(3, 4);
+	block = block_new(3);
 	block_set_position(block, 0, pos0);
 	block_set_position(block, 1, pos1);
 	block_set_position(block, 2, pos2);
@@ -242,7 +323,7 @@ block_new_bar()
 			 0, 2, 0, 0,
 			 0, 1, 0, 0 };
 
-	block = block_new(4, 4);
+	block = block_new(4);
 	block_set_position(block, 0, pos0);
 	block_set_position(block, 1, pos1);
 	block_set_position(block, 2, pos2);
@@ -273,7 +354,7 @@ block_new_ell()
 			 0, 3, 0,
 			 0, 2, 1 };
  
-	block = block_new(3, 4);
+	block = block_new(3);
 	block_set_position(block, 0, pos0);
 	block_set_position(block, 1, pos1);
 	block_set_position(block, 2, pos2);
@@ -304,7 +385,7 @@ block_new_jay()
 			 0, 2, 0,
 			 0, 1, 0 };
 
-	block = block_new(3, 4);
+	block = block_new(3);
 	block_set_position(block, 0, pos0);
 	block_set_position(block, 1, pos1);
 	block_set_position(block, 2, pos2);
@@ -319,12 +400,11 @@ block_new_jay()
 
 
 Block *
-block_new_random()
+block_new_of_type(int type)
 {
-	long int r = rand();
 	Block *block;
 
-	switch (r % 7) {
+	switch (type) {
 		case BLOCK_TYPE_TEE:
 			block = block_new_tee();
 			break;
@@ -346,10 +426,31 @@ block_new_random()
 		case BLOCK_TYPE_ONE:
 			block = block_new_one();
 			break;
-		default:
+		case BLOCK_TYPE_TWO:
+			block = block_new_two();
+			break;
+		case BLOCK_TYPE_THREE:
+			block = block_new_three();
+			break;
+		case BLOCK_TYPE_CORNER:
+			block = block_new_corner();
+			break;
+		default: /* 0 */
 			block = block_new_bar();
 			break;
 	}
+
+	return block;
+}
+
+
+Block *
+block_new_random()
+{
+	long int r = rand();
+	Block *block;
+
+	block = block_new_of_type(r % 11);
 
 	return block;
 }
@@ -360,7 +461,7 @@ block_kill(Block *block)
 {
 	Uint8 i;
 
-	for (i = 0; i < block->position_count; i++) {
+	for (i = 0; i < 4; i++) {
 		r_free(block->positions[i]);
 	}
 	r_free(block->positions);
@@ -425,7 +526,7 @@ block_rotate_cw(Block *block)
 
 	block->current_position++;
 
-	if (block->current_position >= block->position_count) {
+	if (block->current_position >= 4) {
 		block->current_position = 0;
 	}
 

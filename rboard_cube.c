@@ -96,6 +96,10 @@ board_remove_water(Board *board)
 }
 
 
+/**
+ * Check the left and right side for cubes. If any, check if they have opened
+ * pipes on the same side.
+ */
 void
 board_update_water(Board *board, Uint32 now)
 {
@@ -104,8 +108,6 @@ board_update_water(Board *board, Uint32 now)
 
 	board_remove_water(board);
 
-	/* Check the whole left side for cubes. If any, run the routine for 
-	 * path finder. */
 	for (i = 0; i < board->height; i++) {
 		cube = board->cubes[i * board->width];
 		if (cube == NULL)
@@ -114,7 +116,16 @@ board_update_water(Board *board, Uint32 now)
 		if (cube_plug_match(cube, PLUG_WEST)) {
 			board_spread_water(board, cube, NULL);
 		}
+	}
 
+	for (i = 0; i < board->height; i++) {
+		cube = board->cubes[(i + 1) * board->width - 1];
+		if (cube == NULL)
+			continue;
+
+		if (cube_plug_match(cube, PLUG_EAST)) {
+			board_spread_water(board, cube, NULL);
+		}
 	}
 }
 
@@ -147,7 +158,7 @@ board_get_area_type(Board *board, Sint16 x, Sint16 y)
 	if (x < 0)
 		return ATYPE_BOARD_LEFT;
 
-	if (x > board->width)
+	if (x >= board->width)
 		return ATYPE_BOARD_RIGHT;
 
 	if (y >= board->height)

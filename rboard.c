@@ -59,6 +59,9 @@ board_new(Uint8 width, Uint8 height)
 	b->lateral_speed = 100;
 	b->lateral_tick = 0;
 
+	/* Player related */
+	b->score = 0;
+	b->paused = 0;
 
 	return b;
 }
@@ -114,13 +117,23 @@ board_loadbg(Board *b, char *bgfilename)
 
 
 void
-board_refresh_score(Board *board)
+board_refresh_osd(Board *board)
 {
 	char score[10];
 
 	snprintf(score, 10, "%d", board->score);
-	osd_print("rezerwar alpha - press f12 to start", 10, 10);
-	osd_print(score, 247, 172);
+	osd_print("rezerwar alpha - press f12 to start", 10, 450);
+	osd_print(score, 260, 172);
+
+	if (board->paused == 1)
+		osd_print_moving("paused!", 400, 250, 2);
+}
+
+
+void
+board_toggle_pause(Board *board)
+{
+	board->paused = board->paused == 1 ? 0 : 1;
 }
 
 
@@ -143,7 +156,7 @@ board_refresh(Board *board)
 	board_refresh_drops(board);
 
 	/* Draw score */
-	board_refresh_score(board);
+	board_refresh_osd(board);
 
 	/* Update double-buffering. */
 	SDL_Flip(screen);
@@ -153,6 +166,9 @@ board_refresh(Board *board)
 void
 board_update(Board *board, Uint32 now)
 {
+	if (board->paused == 1)
+		return;
+
 	board_update_blocks(board, now);
 	board_update_cubes(board, now);
 	board_update_outputs(board, now);
