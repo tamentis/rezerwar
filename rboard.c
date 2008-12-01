@@ -62,57 +62,81 @@ board_new(Uint8 width, Uint8 height)
 	/* Player related */
 	b->score = 0;
 	b->paused = 0;
+	b->gameover = 0;
+
+	/* Load background. */
+	b->bg = loadimage("gfx/gameback.png");
 
 	return b;
 }
 
 
 void
-board_kill(Board *b)
+board_kill(Board *board)
 {
-	Uint16 i;
+	int i, size;
 
-	/* Block clean up */
-	if (b->next_block != NULL)
-		block_kill(b->next_block);
-
-	for (i = 0; i < b->block_count; i++) {
-		if (b->blocks[i] == NULL)
-			continue;
-		block_kill(b->blocks[i]);
-	}
-	free(b->blocks);
+	printf("BOARD KILL!!!\n");
 
 	/* Drop clean up */
-	for (i = 0; i < b->drop_count; i++) {
-		if (b->drops[i] == NULL)
+	for (i = 0; i < board->drop_count; i++) {
+		if (board->drops[i] == NULL)
 			continue;
 
-		drop_kill(b->drops[i]);
+		drop_kill(board->drops[i]);
 	}
-	free(b->drops);
-	r_free(b->drop_map);
+	free(board->drops);
+	board->drops = NULL;
+	r_free(board->drop_map);
+	board->drop_map = NULL;
+	board->drop_count = 0;
 
 
 	/* Output clean up */
-	for (i = 0; i < b->output_count; i++) {
-		if (b->outputs[i] == NULL)
+	for (i = 0; i < board->output_count; i++) {
+		if (board->outputs[i] == NULL)
 			continue;
 
-		wateroutput_kill(b->outputs[i]);
+		wateroutput_kill(board->outputs[i]);
 	}
-	free(b->outputs);
+	free(board->outputs);
+	board->outputs = NULL;
+	board->output_count = 0;
+
+
+	/* Cube cleanup (only if cubes we have) */
+	if (board->cubes != NULL) {
+		size = board->width * board->height;
+		for (i = 0; i < size; i++) {
+			if (board->cubes[i] == NULL)
+				continue;
+
+			cube_kill(board->cubes[i]);
+		}
+		r_free(board->cubes);
+		board->cubes = NULL;
+	}
+
+
+	/* Block clean up */
+	if (board->next_block != NULL) {
+		block_kill(board->next_block);
+		board->next_block = NULL;
+	}
+
+	for (i = 0; i < board->block_count; i++) {
+		if (board->blocks[i] == NULL)
+			continue;
+		block_kill(board->blocks[i]);
+	}
+	free(board->blocks);
+	board->block_count = 0;
+	board->blocks = NULL;
+
 
 	/* General board clean up */
-	SDL_FreeSurface(b->bg);
-	r_free(b);
-}
-
-
-void
-board_loadbg(Board *b, char *bgfilename)
-{
-	b->bg = loadimage(bgfilename);
+	SDL_FreeSurface(board->bg);
+	r_free(board);
 }
 
 
@@ -122,11 +146,14 @@ board_refresh_osd(Board *board)
 	char score[10];
 
 	snprintf(score, 10, "%d", board->score);
-	osd_print("rezerwar alpha - press f12 to start", 10, 450);
+	osd_print("rezerwar alpha 2008-11-30 / press f12 to start", 10, 450);
 	osd_print(score, 260, 172);
 
 	if (board->paused == 1)
 		osd_print_moving("paused!", 400, 250, 2);
+
+	if (board->gameover == 1)
+		osd_print_moving("game over!", 250, 240, 2);
 }
 
 
@@ -166,7 +193,7 @@ board_refresh(Board *board)
 void
 board_update(Board *board, Uint32 now)
 {
-	if (board->paused == 1)
+	if (board->paused == 1 || board->gameover == 1)
 		return;
 
 	board_update_blocks(board, now);

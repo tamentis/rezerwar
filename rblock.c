@@ -465,6 +465,14 @@ block_kill(Block *block)
 		r_free(block->positions[i]);
 	}
 	r_free(block->positions);
+	block->positions = NULL;
+
+	for (i = 0; i < block->cube_count; i++) {
+		cube_kill(block->cubes[i]);
+	}
+	free(block->cubes);
+	block->cubes = NULL;
+
 	r_free(block);
 }
 

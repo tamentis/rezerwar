@@ -24,11 +24,7 @@ board_add_block(Board *board, Block *block)
 void
 board_load_next_block(Board *board)
 {
-	Block *block;
-
-	block = block_new_random();
-
-	board->next_block = block;
+	board->next_block = block_new_random();
 }
 
 
@@ -121,7 +117,7 @@ board_refresh_next(Board *board)
 
 /**
  * Transfer all the cubes from a block to the board. This is anticipating the
- * death of a block.
+ * death of a block. Set the cube_count to 0 to avoid duplicate killing.
  */
 void
 board_transfer_cubes(Board *board, Block *block)
@@ -150,6 +146,8 @@ board_transfer_cubes(Board *board, Block *block)
 			block->cubes[pos[j] - 1] = NULL;
 		}
 	}
+
+	block->cube_count = 0;
 }
 
 
@@ -195,7 +193,8 @@ board_update_single_block(Board *board, Uint32 now, Uint16 i) {
 				printf("launch_next_block()\n");
 				board_launch_next_block(board);
 			} else {
-				printf("STOPPING (too high)\n");
+				printf("GAME OVER!\n");
+				board->gameover = 1;
 			}
 			board_transfer_cubes(board, block);
 			block_kill(block);

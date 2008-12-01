@@ -76,6 +76,7 @@ void		 r_setpixel(Uint16, Uint16, Uint8, Uint8, Uint8);
 void		 r_setline(Uint16, Uint16, Uint16, Uint8, Uint8, Uint8);
 
 
+/* rcube.c */
 typedef struct _cube {
 	Sint8 current_position;
 	Sint16 x;
@@ -188,6 +189,7 @@ typedef struct _board_data {
 	/* player stuff */
 	int score;
 	int paused;
+	int gameover;
 } Board;
 
 Board		*board_new(Uint8, Uint8);
@@ -251,3 +253,9 @@ SDL_Surface	*loadimage(char *);
 void		 osd_print(char *, int, int);
 void		 osd_print_moving(char *, int, int, int);
 
+/* strlcpy.c */
+size_t		 strlcpy(char *dst, const char *src, size_t siz);
+
+
+/* menus.c */
+int		 main_menu(void);

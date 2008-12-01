@@ -45,26 +45,6 @@ intro_title(void)
 
 
 void
-game_menu(void)
-{
-	SDL_Surface *intro;
-	int x;
-
-	intro = loadimage("gfx/gamemenu.png");
-
-	x = surface_fadein(intro, 8);
-	osd_print("start new game", 220, 280);
-	osd_print("options", 265, 310);
-	osd_print("quit", 290, 340);
-	SDL_Flip(screen);
-
-	wait_for_keymouse();
-
-	SDL_FreeSurface(intro);
-}
-
-
-void
 game_loop()
 {
 	Uint32 start, now, framecount = 0, fps_lastframe = 0;
@@ -73,6 +53,10 @@ game_loop()
 	Sint32 elapsed;
 	SDL_Event event;
 
+	/* Prepare board and load the first block. */
+	board = board_new(10, 20);
+	board_load_next_block(board);
+
 	/* Main loop, every loop is separated by a TICK (~10ms). 
 	 * The board is refreshed every 1/MAXFPS seconds. */
 	start = SDL_GetTicks();
@@ -80,6 +64,10 @@ game_loop()
 		while (SDL_PollEvent(&event)) {
 			playing = handle_events(&event);
 		}
+
+		/* Exit the loop prematurely if we need to leave */
+		if (playing != 1)
+			break;
 
 		now = SDL_GetTicks();
 		board_update(board, now);
@@ -103,41 +91,41 @@ game_loop()
 			SDL_Delay(TICK - elapsed);
 		}
 	}
+
+	board_kill(board);
 }
 
 
 int
 main(int ac, char **av)
 {
+	int status = 0;
+
 	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 		fprintf(stderr, "Unable to initialize SDL: %s\n", SDL_GetError());
 		exit(-1);
 	}
 	atexit(SDL_Quit);
 
-	/* Create main window and seed the random generator. */
+	/* Create main window, seed random, and load the sprites. */
 	srand(time(NULL));
 	screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE|SDL_DOUBLEBUF);
 	SDL_WM_SetCaption("rezerwar", NULL);
-
-	/* Prepare board and load the first block. */
-	board = board_new(10, 20);
-	board_load_next_block(board);
-
-	/* Original graphic load, background, sprites and first Flip. */
-	board_loadbg(board, "gfx/gameback.png");
-	SDL_BlitSurface(board->bg, NULL, screen, NULL);
 	sprites = loadimage("gfx/sprites.png");
-	SDL_Flip(screen);
 
 	/* Normal flow... */
 	intro_studio();
 	intro_title();
-	game_menu();
-	game_loop();
+
+	/* Loop between game and menu as long as no "quit" was selected. */
+	do {
+		status = main_menu();
+		if (status == 1)
+			break;
+		game_loop();
+	} while (1);
 
 	/* Death */
-	board_kill(board);
 	r_checkmem();
 
 	return 0;
