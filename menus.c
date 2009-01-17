@@ -8,6 +8,7 @@
 #include "rezerwar.h"
 
 
+extern Configuration *conf;
 extern SDL_Surface *screen;
 extern SDL_Surface *sprites;
 
@@ -78,19 +79,44 @@ menu_kill(Menu *menu)
 	r_free(menu);
 }
 
+
+void
+menu_item_set_text(MenuItem *item, char *text)
+{
+	size_t i = strlen(text);
+
+	r_free(item->text);
+	item->text = r_malloc(i + 1);
+	strlcpy(item->text, text, i + 1);
+}
+
+
+void
+menu_item_set_difficulty(MenuItem *item)
+{
+	char *diff_t[] = {
+		"Difficulty: Easiest",
+		"Difficulty: Easy",
+		"Difficulty: Medium",
+		"Difficulty: Hard",
+		"Difficulty: Ultra" };
+
+	menu_item_set_text(item, diff_t[conf->difficulty]);
+}
+
+
 /**
  * This function creates a new entry in the menu, it assumes you know
  * what you are doing and all the values are valid.
  */
-void
+MenuItem *
 menu_add_entry(Menu *menu, char *text, int type, int subtype, int x_offset)
 {
 	MenuItem *item;
-	size_t i = strlen(text);
 
 	item = r_malloc(sizeof(MenuItem));
-	item->text = r_malloc(i + 1);
-	strlcpy(item->text, text, i + 1);
+	item->text = NULL;
+	menu_item_set_text(item, text);
 	item->type = type;
 	item->subtype = subtype;
 	item->x_offset = x_offset;
@@ -98,6 +124,8 @@ menu_add_entry(Menu *menu, char *text, int type, int subtype, int x_offset)
 	menu->length++;
 	menu->items = realloc(menu->items, sizeof(MenuItem*) * menu->length);
 	menu->items[menu->length - 1] = item;
+
+	return item;
 }
 
 
@@ -105,19 +133,27 @@ void
 menu_load_main(Menu *menu)
 {
 	menu_flush(menu);
-	menu_add_entry(menu, "start new game", 2, 0, 0);
-	menu_add_entry(menu, "options", 3, 2, 45);
-	menu_add_entry(menu, "quit", 1, 0, 65);
+	menu_add_entry(menu, "start new game", MTYPE_START, 0, 0);
+	menu_add_entry(menu, "options", MTYPE_SUBMENU, 2, 45);
+	menu_add_entry(menu, "quit", MTYPE_QUIT, 0, 65);
 }
 
 
+/**
+ * For this menu we keep a reference to the difficulty menu item so we can load its
+ * value/name properly after.
+ */
 void
 menu_load_options(Menu *menu)
 {
+	MenuItem *diff_item;
+
 	menu_flush(menu);
-	menu_add_entry(menu, "stuff", 0, 0, 0);
-	menu_add_entry(menu, "things", 0, 0, 0);
-	menu_add_entry(menu, "back to main", 3, 0, 0);
+	diff_item = menu_add_entry(menu, "difficulty", MTYPE_TOGGLE, 0, 0);
+	menu_add_entry(menu, "things", MTYPE_NOP, 0, 0);
+	menu_add_entry(menu, "back to main", MTYPE_SUBMENU, 0, 0);
+
+	menu_item_set_difficulty(diff_item);
 }
 
 
@@ -137,6 +173,23 @@ menu_load_submenu(Menu *menu, int subtype)
 }
 
 
+void
+menu_toggle_item(Menu *menu, MenuItem *item)
+{
+	switch (item->subtype) {
+		/* Difficulty */
+		case 0:
+			conf->difficulty++;
+			if (conf->difficulty >= DIFF_LENGTH)
+				conf->difficulty = 0;
+			menu_item_set_difficulty(item);
+			break;
+		default:
+			break;
+	}
+}
+
+
 /**
  * Execute whatever is corresponding to the type of the current entry.
  */
@@ -146,8 +199,11 @@ menu_select(Menu *menu)
 	MenuItem *item = menu->items[menu->current];
 
 	switch (item->type) {
-		case 3:
+		case MTYPE_SUBMENU:
 			menu_load_submenu(menu, item->subtype);
+			return 0;
+		case MTYPE_TOGGLE:
+			menu_toggle_item(menu, item);
 			return 0;
 		default:
 			break;
@@ -186,12 +242,14 @@ handle_menu_events(SDL_Event *event, Menu *menu)
 		return 0;
 
 	switch ((int)event->key.keysym.sym) {
+		case SDLK_j:
 		case SDLK_DOWN:
 			menu->current++;
 			if (menu->current >= menu->length)
 				menu->current = 0;
 			break;
 		case SDLK_UP:
+		case SDLK_k:
 			menu->current--;
 			if (menu->current < 0) {
 				menu->current = menu->length - 1;

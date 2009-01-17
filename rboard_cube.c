@@ -138,11 +138,11 @@ Cube *
 board_get_cube(Board *board, Sint16 x, Sint16 y)
 {
 	/* Bad x value */
-	if (x < 0 || x > board->width)
+	if (x < 0 || x >= board->width)
 		return NULL;
 
 	/* Bad y value */
-	if (y < 0 || y > board->height)
+	if (y < 0 || y >= board->height)
 		return NULL;
 
 	return (board->cubes[x + board->width * y]);
@@ -198,6 +198,62 @@ board_spread_attempt(Board *board, Cube *cube, Cube *root, Sint8 ox, Sint8 oy,
 }
 
 
+/**
+ * This function will rotate around the cube and mark as trashed all the neighbors
+ * of a cube.
+ */
+void
+board_cube_deflagration(Board *board, Cube *cube)
+{
+	int i;
+	Cube *nc;
+	struct _coords {
+		int x;
+		int y;
+	} coords[] = {
+		{ -1, -1 }, { 0, -1 }, { 1, -1 },
+		{ -1,  0 }, /* cube */ { 1,  0 },
+		{ -1,  1 }, { 0,  1 }, { 1,  1 }
+	};
+
+	for (i = 0; i < 8; i++) {
+		nc = board_get_cube(board, cube->x + coords[i].x, cube->y + coords[i].y);
+		if (nc != NULL) {
+			nc->trashed = 1;
+		}
+	}
+}
+
+
+/**
+ * This function will pick how big a network has to be before we start
+ * deflagrating the neighboring cubes.
+ */
+void
+board_network_deflagrate(Board *board, Cube *cube)
+{
+	int i, max;
+
+	switch (board->difficulty) {
+		case DIFF_EASIEST:	max = 5; break;
+		case DIFF_EASY:		max = 8; break;
+		case DIFF_MEDIUM:	max = 12; break;
+		case DIFF_HARD:		max = 16; break;
+		case DIFF_ULTRA:	max = 20; break;
+	}
+
+	if (cube->network_size > max) {
+		for (i = 0; i < cube->network_size; i++) {
+			board_cube_deflagration(board, cube->network[i]);
+		}
+		board_cube_deflagration(board, cube);
+	}
+}
+
+/**
+ * A network is going to be destroyed, after a certain size, network explosion is causing
+ * deflagration on neighboring blocks.
+ */
 void
 board_destroy_network(Board *board, Cube *cube)
 {
@@ -209,6 +265,8 @@ board_destroy_network(Board *board, Cube *cube)
 	for (i = 0; i < cube->network_size; i++) {
 		cube->network[i]->trashed = 1;
 	}
+
+	board_network_deflagrate(board, cube);
 
 	cube->trashed = 1;
 	board->score += (cube->network_size + 1) * 8;

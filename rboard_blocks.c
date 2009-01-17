@@ -21,10 +21,41 @@ board_add_block(Board *board, Block *block)
 }
 
 
+/**
+ * This function will load a different type of block depending on the difficulty of the
+ * current board.
+ */
 void
 board_load_next_block(Board *board)
 {
-	board->next_block = block_new_random();
+	long int r;
+
+	switch (board->difficulty) {
+		/* Only one cube blocks */
+		case DIFF_EASIEST:
+			board->next_block = block_new_one();
+			break;
+		/* One and two cubes blocks */
+		case DIFF_EASY:
+			r = rand() % 2 + 7;
+			board->next_block = block_new_of_type(r);
+			break;
+		/* One, two and three cubes blocks */
+		case DIFF_MEDIUM:
+			r = rand() % 4 + 7;
+			board->next_block = block_new_of_type(r);
+			break;
+		/* All the block types */
+		case DIFF_HARD:
+		default:
+			board->next_block = block_new_random();
+			break;
+		/* Only the tetrominoes */
+		case DIFF_ULTRA:
+			r = rand() % 7;
+			board->next_block = block_new_of_type(r);
+			break;
+	}
 }
 
 

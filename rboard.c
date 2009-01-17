@@ -10,7 +10,7 @@ extern SDL_Surface *screen;
 
 
 Board *
-board_new(Uint8 width, Uint8 height)
+board_new(Uint8 width, Uint8 height, int difficulty)
 {
 	Board *b;
 	size_t size = width * height;
@@ -20,6 +20,8 @@ board_new(Uint8 width, Uint8 height)
 
 	b->width = width;
 	b->height = height;
+
+	b->difficulty = difficulty;
 
 	b->offset_x = BOARD_LEFT;
 	b->offset_y = BOARD_TOP;
@@ -146,7 +148,7 @@ board_refresh_osd(Board *board)
 	char score[10];
 
 	snprintf(score, 10, "%d", board->score);
-	osd_print("rezerwar alpha 2008-11-30 / press f12 to start", 10, 450);
+	osd_print("rezerwar alpha 2008-12-28 / press f12 to start", 10, 450);
 	osd_print(score, 260, 172);
 
 	if (board->paused == 1)

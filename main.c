@@ -8,6 +8,7 @@
 
 
 Board *board;
+Configuration *conf;
 SDL_Surface *screen;
 SDL_Surface *sprites;
 
@@ -45,6 +46,14 @@ intro_title(void)
 
 
 void
+conf_init()
+{
+	conf = r_malloc(sizeof(Configuration));
+	conf->difficulty = 0;
+}
+
+
+void
 game_loop()
 {
 	Uint32 start, now, framecount = 0, fps_lastframe = 0;
@@ -54,7 +63,7 @@ game_loop()
 	SDL_Event event;
 
 	/* Prepare board and load the first block. */
-	board = board_new(10, 20);
+	board = board_new(10, 20, conf->difficulty);
 	board_load_next_block(board);
 
 	/* Main loop, every loop is separated by a TICK (~10ms). 
@@ -117,6 +126,8 @@ main(int ac, char **av)
 	intro_studio();
 	intro_title();
 
+	conf_init();
+
 	/* Loop between game and menu as long as no "quit" was selected. */
 	do {
 		status = main_menu();
@@ -126,6 +137,7 @@ main(int ac, char **av)
 	} while (1);
 
 	/* Death */
+	r_free(conf);
 	r_checkmem();
 
 	return 0;

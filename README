@@ -1,9 +1,40 @@
-CONTINUATION:
- - Instead of getting the neighbor cube by default... use get the type first,
-   then decide what to do.
+Rezerwar - a big mess of networked blocks and pipes
+Copyright (C) Bertrand Janin (tamentis@neopulsar.org)
 
-FEATURES:
- - Create other collections of pieces (3 blocks, 5 blocks)
+Rezerwar is a puzzle game that could be quickly described as the unlegitimate
+child of a known tetromino game and a pipe game.
+
+HOW TO PLAY:
+  You have to position falling blocks to align their pipes align and let the
+  water flow to create "networks". You get points by closing networks, the
+  bigger the network, the more points you get.
+
+NETWORK:
+  A network is the name of a set of pipe-connected cubes. When a network is
+  closed, it gets destroyed and might cause deflagration.
+
+DEFLAGRATION:
+  When a closed network of cubes is completed, depending on the number of cubes
+  in the network and the difficulty level, you might trigger a cube
+  deflagration. This means all the neighoring cubes around the network will be
+  destroyed along with the cubes of the network itself. Here are the number
+  of cubes required per difficulty level:
+
+      Easiest: 5
+      Easy:    8
+      Medium:  12
+      Hard:    16
+      Ultra:   20
+
+TODO:
+ - When two networks connect from different starts, everything underneath
+   disappears.
+ - Give the menu a 'mask' frame, make the option menu bigger and work on a
+   way to page through the lines.
+ - Create a 'Text' type with parameters...
+ - Add color option to 'Text', replacing white pixels or black pixels.
+ - Add an option to show/hide FPS.
+ - Add High Score (create a simple file format).
  - Move all the SDL related stuff in wrappers within sdl_engine.c
  - Menu
  - Music
@@ -14,6 +45,8 @@ FEATURES:
 
 BUGS:
  - If a block is stuck between two columns of block or the side of the board,
-   don't let the block rotate or it will get stuck.
+   don't let the block rotate or it will get stuck. Ideas to fix this:
+    * calculate the next position before actually changing and check if there are other
+      blocks in the way.
 
-
+vim:expandtab ts=2 sw=2:

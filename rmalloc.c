@@ -53,6 +53,9 @@ r_free(void *p)
 {
 	size_t i;
 
+	if (p == NULL)
+		return;
+
 	for (i = 0; i < list_size; i++) {
 		if (list[i] == p) {
 			free(p);

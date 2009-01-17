@@ -1,3 +1,12 @@
+
+/**
+ * @file rezerwar.h
+ * @brief Main header
+ *
+ * This header provides all the structures and prototypes for the whole
+ * game.
+ */
+
 #define MAXFPS			30
 #define TICK			10
 
@@ -8,17 +17,20 @@
 #define SPEED_NORMAL		500
 #define SPEED_FAST		50
 
-#define BLOCK_TYPE_TEE		0
-#define BLOCK_TYPE_ELL		1
-#define BLOCK_TYPE_JAY		2
-#define BLOCK_TYPE_ZEE		3
-#define BLOCK_TYPE_ESS		4
-#define BLOCK_TYPE_SQUARE	5
-#define BLOCK_TYPE_BAR		6
-#define BLOCK_TYPE_ONE		7
-#define BLOCK_TYPE_TWO		8
-#define BLOCK_TYPE_THREE	9
-#define BLOCK_TYPE_CORNER	10
+
+enum {
+	BLOCK_TYPE_TEE,
+	BLOCK_TYPE_ELL,
+	BLOCK_TYPE_JAY,
+	BLOCK_TYPE_ZEE,
+	BLOCK_TYPE_ESS,
+	BLOCK_TYPE_SQUARE,
+	BLOCK_TYPE_BAR,
+	BLOCK_TYPE_ONE,
+	BLOCK_TYPE_TWO,
+	BLOCK_TYPE_THREE,
+	BLOCK_TYPE_CORNER
+};
 
 /* There is no reason why you would want the speed to be less than the
  * normal tickin of the game. */
@@ -28,12 +40,14 @@
 #define DROP_COLOR_B		190
 
 /* Area types. */
-#define ATYPE_FREE		0
-#define ATYPE_BOARD_BOTTOM	1
-#define ATYPE_DROP		2
-#define ATYPE_BOARD_LEFT	3
-#define ATYPE_BOARD_RIGHT	4
-#define ATYPE_BLOCK		5
+enum {
+	ATYPE_FREE,
+	ATYPE_BOARD_BOTTOM,
+	ATYPE_DROP,
+	ATYPE_BOARD_LEFT,
+	ATYPE_BOARD_RIGHT,
+	ATYPE_BLOCK
+};
 
 /* Cube types */
 #define CTYPE_EMPTY		0
@@ -54,19 +68,23 @@
 #define PSTAT_OPENED		1
 
 /* Difficulties */
-#define DIFF_SUPER_EASY		0
-#define DIFF_EASY		1
-#define	DIFF_MEDIUM		2
-#define DIFF_HARD		3
-#define DIFF_ULTRA		4
+enum {
+	DIFF_EASIEST,
+	DIFF_EASY,
+	DIFF_MEDIUM,
+	DIFF_HARD,
+	DIFF_ULTRA,
+	DIFF_LENGTH
+};
 
-/**
- * @file rezerwar.h
- * @brief Main header
- *
- * This header provides all the structures and prototypes for the whole
- * game.
- */
+/* Menu types */
+enum {
+	MTYPE_NOP,
+	MTYPE_QUIT,
+	MTYPE_START,
+	MTYPE_SUBMENU,
+	MTYPE_TOGGLE
+};
 
 
 void		*r_malloc(size_t);
@@ -75,6 +93,10 @@ void		 r_checkmem();
 void		 r_setpixel(Uint16, Uint16, Uint8, Uint8, Uint8);
 void		 r_setline(Uint16, Uint16, Uint16, Uint8, Uint8, Uint8);
 
+
+typedef struct _configuration {
+	int difficulty;
+} Configuration;
 
 /* rcube.c */
 typedef struct _cube {
@@ -145,6 +167,8 @@ Block		*block_new(Uint8);
 void		 block_kill(Block *);
 SDL_Surface	*block_get_surface(Block *);
 void		 block_get_rectangle(Block *, SDL_Rect *);
+Block		*block_new_one();
+Block		*block_new_two();
 Block		*block_new_tee();
 Block		*block_new_ell();
 Block		*block_new_jay();
@@ -153,6 +177,7 @@ Block		*block_new_ess();
 Block		*block_new_square();
 Block		*block_new_bar();
 Block		*block_new_random();
+Block		*block_new_of_type(int);
 void		 block_rotate_cw(Block *);
 
 /* board.c */
@@ -162,6 +187,7 @@ typedef struct _board_data {
 	Uint8 height;
 	Uint8 offset_x;
 	Uint8 offset_y;
+	int difficulty;
 	char bgfilename[256];
 	SDL_Surface *bg;
 	/* cubes */
@@ -192,7 +218,7 @@ typedef struct _board_data {
 	int gameover;
 } Board;
 
-Board		*board_new(Uint8, Uint8);
+Board		*board_new(Uint8, Uint8, int);
 void		 board_kill(Board *);
 void		 board_loadbg(Board *, char *);
 void		 board_refresh(Board *);
