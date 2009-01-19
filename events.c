@@ -50,6 +50,7 @@ handle_events_keydown(SDL_Event *event)
 {
 	switch ((int)event->key.keysym.sym) {
 		case SDLK_ESCAPE:
+		case SDLK_q:
 			return 0;
 		case SDLK_F12:
 			board_launch_next_block(board);

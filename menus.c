@@ -258,6 +258,7 @@ handle_menu_events(SDL_Event *event, Menu *menu)
 		case SDLK_RETURN:
 			return menu_select(menu);
 		case SDLK_ESCAPE:
+		case SDLK_q:
 			return 1;
 		default:
 			break;

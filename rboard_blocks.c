@@ -225,7 +225,7 @@ board_update_single_block(Board *board, Uint32 now, Uint16 i) {
 				board_launch_next_block(board);
 			} else {
 				printf("GAME OVER!\n");
-				board->gameover = 1;
+				board_gameover(board);
 			}
 			board_transfer_cubes(board, block);
 			block_kill(block);

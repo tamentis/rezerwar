@@ -55,6 +55,10 @@ board_new(Uint8 width, Uint8 height, int difficulty)
 	b->outputs = NULL;
 	b->output_count = 0;
 
+	/* text_ts (future OSD) related members */
+	b->texts = NULL;
+	b->text_count = 0;
+
 	/* Movement related (& controls) */
 	b->moving_left = 0;
 	b->moving_right = 0;
@@ -65,6 +69,12 @@ board_new(Uint8 width, Uint8 height, int difficulty)
 	b->score = 0;
 	b->paused = 0;
 	b->gameover = 0;
+
+	/* Score text is always the first text, then status (pause/gameover). */
+	b->score_t = board_add_text(b, (unsigned char *)"0", 260, 172);
+	b->status_t = board_add_text(b, (unsigned char *)"", 400, 250);
+	b->status_t->effect = EFFECT_SHAKE;
+	text_set_color(b->status_t, 100, 20, 30);
 
 	/* Load background. */
 	b->bg = loadimage("gfx/gameback.png");
@@ -135,6 +145,12 @@ board_kill(Board *board)
 	board->block_count = 0;
 	board->blocks = NULL;
 
+	/* text_t cleanup */
+	for (i = 0; i < board->text_count; i++) {
+		if (board->texts[i] == NULL)
+			continue;
+		text_kill(board->texts[i]);
+	}
 
 	/* General board clean up */
 	SDL_FreeSurface(board->bg);
@@ -142,27 +158,62 @@ board_kill(Board *board)
 }
 
 
-void
-board_refresh_osd(Board *board)
+text_t *
+board_add_text(Board *board, unsigned char *value, int x, int y)
 {
-	char score[10];
+	text_t *t;
 
-	snprintf(score, 10, "%d", board->score);
-	osd_print("rezerwar alpha 2008-12-28 / press f12 to start", 10, 450);
-	osd_print(score, 260, 172);
+	t = text_new(value);
+	
+	board->texts = realloc(board->texts, (board->text_count + 1) * sizeof(text_t*));
+	board->texts[board->text_count] = t;
+	board->text_count++;
 
-	if (board->paused == 1)
-		osd_print_moving("paused!", 400, 250, 2);
+	t->x = x;
+	t->y = y;
 
-	if (board->gameover == 1)
-		osd_print_moving("game over!", 250, 240, 2);
+	return t;
+}
+
+
+void
+board_refresh_texts(Board *board)
+{
+	int i;
+	text_t *t;
+	SDL_Rect r;
+	SDL_Surface *s;
+
+	/* Update the score text_t */
+	unsigned char score[10];
+	snprintf((char *)score, 10, "%d", board->score);
+	text_set_value(board->score_t, score);
+
+	/* Draw all the text_ts. */
+	for (i = 0; i < board->text_count; i++) {
+		t = board->texts[i];
+		if (t == NULL)
+			continue;
+
+		s = text_get_surface(t);
+		text_get_rectangle(t, &r);
+
+		SDL_BlitSurface(s, NULL, screen, &r);
+		SDL_FreeSurface(s);
+	}
 }
 
 
 void
 board_toggle_pause(Board *board)
 {
-	board->paused = board->paused == 1 ? 0 : 1;
+	if (board->paused == 1) {
+		board->paused = 0;
+		text_set_value(board->status_t, (unsigned char *)"");
+	} else {
+		board->paused = 1;
+		text_set_value(board->status_t, (unsigned char *)"paused!");
+	}
 }
 
 
@@ -184,12 +235,21 @@ board_refresh(Board *board)
 	/* Redraw the drops. */
 	board_refresh_drops(board);
 
-	/* Draw score */
-	board_refresh_osd(board);
+	/* Draw texts elements (meant to replace OSD) */
+	board_refresh_texts(board);
 
-	/* Update double-buffering. */
+	/* Dig up the back buffer. */
 	SDL_Flip(screen);
 }
+
+
+void
+board_gameover(Board *board)
+{
+	board->gameover = 1;
+	text_set_value(board->texts[1], (unsigned char *)"game over!");
+}
+
 
 /* board_update() - this function handles all the elements at ticking point */
 void

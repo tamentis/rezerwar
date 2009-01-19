@@ -7,6 +7,9 @@
 #include "rezerwar.h"
 
 
+#define BOT_VER "rezerwar alpha 2009-01-18 / press f12 to start"
+
+
 Board *board;
 Configuration *conf;
 SDL_Surface *screen;
@@ -61,9 +64,11 @@ game_loop()
 	Uint32 fps_lastframedisplay = 0;
 	Sint32 elapsed;
 	SDL_Event event;
+	text_t *t;
 
 	/* Prepare board and load the first block. */
 	board = board_new(10, 20, conf->difficulty);
+	t = board_add_text(board, (unsigned char *)BOT_VER, 10, 450);
 	board_load_next_block(board);
 
 	/* Main loop, every loop is separated by a TICK (~10ms). 

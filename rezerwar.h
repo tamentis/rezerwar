@@ -86,6 +86,13 @@ enum {
 	MTYPE_TOGGLE
 };
 
+/* Text Effect types */
+enum {
+	EFFECT_NONE,
+	EFFECT_SHAKE
+};
+
+typedef unsigned char byte;
 
 void		*r_malloc(size_t);
 void		 r_free(void *);
@@ -147,6 +154,29 @@ typedef struct _wateroutput {
 	Uint16 flow;
 	Uint32 last_drop;
 } WaterOutput;
+
+/* text.c */
+typedef struct text_s {
+	int x;
+	int y;
+	int width;
+	int height;
+	byte color1_r;
+	byte color1_g;
+	byte color1_b;
+	int font;
+	int effect;
+	int *fx_data;
+	unsigned char *value;
+	int length;
+} text_t;
+
+text_t		*text_new(unsigned char *);
+void		 text_kill(text_t *);
+SDL_Surface	*text_get_surface(text_t *);
+void		 text_get_rectangle(text_t *, SDL_Rect *);
+void		 text_set_value(text_t *, unsigned char *);
+void		 text_set_color(text_t *, byte, byte, byte);
 
 /* block.c */
 typedef struct _block_data {
@@ -212,6 +242,11 @@ typedef struct _board_data {
 	/* water outputs */
 	WaterOutput **outputs;
 	Uint8 output_count;
+	/* texts */
+	text_t **texts;
+	int text_count;
+	text_t *status_t;
+	text_t *score_t;
 	/* player stuff */
 	int score;
 	int paused;
@@ -224,6 +259,7 @@ void		 board_loadbg(Board *, char *);
 void		 board_refresh(Board *);
 void		 board_update(Board *, Uint32);
 void		 board_toggle_pause(Board *);
+void		 board_gameover(Board *);
 /* rboard_cubes.c */
 void		 board_add_cube(Board *);
 void		 board_refresh_cubes(Board *);
@@ -258,6 +294,9 @@ void		 board_dump_drop_map_bmp(Board *);
 void		 board_random_output(Board *);
 void		 board_register_output(Board *, WaterOutput *);
 void		 board_update_outputs(Board *, Uint32);
+
+/* text related */
+text_t		*board_add_text(Board *, unsigned char *, int, int);
 
 /* WaterOutput functions */
 WaterOutput	*wateroutput_new(Uint8, Sint16, Sint16);
