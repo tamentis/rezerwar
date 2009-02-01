@@ -39,6 +39,7 @@ board_new(Uint8 width, Uint8 height, int difficulty)
 	b->current_block = NULL;
 	b->next_block = NULL;
 	b->block_speed = SPEED_NORMAL;
+	b->block_speed_factor = 1;
 
 	/* Drop related members. */
 	b->drop_map_size = size * BSIZE * BSIZE;
@@ -190,12 +191,17 @@ board_refresh_texts(Board *board)
 	snprintf((char *)score, 10, "%d", board->score);
 	text_set_value(board->score_t, score);
 
-	/* Draw all the Texts. */
+	/* Draw all the Texts, cleaning up trashed ones. */
 	for (i = 0; i < board->text_count; i++) {
 		t = board->texts[i];
-		if (t == NULL)
-			continue;
+		if (t == NULL) continue;
 
+		if (t->trashed == true) {
+			text_kill(t);
+			board->texts[i] = NULL;
+			continue;
+		}
+		
 		s = text_get_surface(t);
 		text_get_rectangle(t, &r);
 

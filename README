@@ -26,18 +26,21 @@ DEFLAGRATION:
       Hard:    16
       Ultra:   20
 
+AVALANCHE:
+  When a network is connected from one end of the screen to the next... the
+  water turns red. As soon as the network is completely closed, the network
+  is destroyed and with it all the cube below it. This is at the time the
+  most score rewarding trick in Rezerwar.
+
 TODO:
- - Only destroy a network after going through the right side. Basically you might
- need to "mark" a network for destruction and only start the destruction at the end
- of the run.
  - find out why only certain letters are moving (odd shit).
- - the higher the red network is, the more point you make.
- - When two networks connect from different starts, everything underneath
-   disappears.
+ - add blue and red blocks which will freeze and thaw the water.
  - Sound -> add a didjeridou sound at the beginning or accordeon, something cacophinic.
  - Add an option to show/hide FPS.
  - Add High Score (create a simple file format).
  - Move all the SDL related stuff in wrappers within sdl_engine.c
+ - think about hitting space to move the block directly at the bottom, maybe
+   call _update() multiple time until a different return?
  - Music
  - Create a block_allocate when creating new blocks to avoid always pushing
    blocks at the end of the array.

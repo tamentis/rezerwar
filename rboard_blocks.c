@@ -89,7 +89,9 @@ board_change_next_block(Board *board)
 }
 
 
-
+/**
+ * Handle the graphic update of the blocks.
+ */
 void
 board_refresh_blocks(Board *board)
 {
@@ -117,6 +119,9 @@ board_refresh_blocks(Board *board)
 }
 
 
+/**
+ * Handle the graphic update the of the top right "next" block.
+ */
 void
 board_refresh_next(Board *board)
 {
@@ -184,12 +189,30 @@ board_transfer_cubes(Board *board, Block *block)
 
 /**
  * Loop through all the blocks and call the individual block update, skipping
- * NULL blocks (previously killed).
+ * NULL blocks (previously killed). It also handle the speeding up of the game
+ * with increasing score.
  */
 void
 board_update_blocks(Board *board, Uint32 now)
 {
 	Uint16 i;
+
+	if (board->score < 1000)
+		board->block_speed = SPEED_NORMAL;
+	else if (board->score < 5000)
+		board->block_speed = SPEED_LESS5K;
+	else if (board->score < 10000)
+		board->block_speed = SPEED_LESS10K;
+	else if (board->score < 25000)
+		board->block_speed = SPEED_LESS25K;
+	else if (board->score < 50000)
+		board->block_speed = SPEED_LESS50K;
+	else
+		board->block_speed = SPEED_MAX;
+
+	if (board->block_speed_factor > 1) {
+		board->block_speed /= board->block_speed_factor;
+	}
 
 	for (i = 0; i < board->block_count; i++) {
 		if (board->blocks[i] == NULL)

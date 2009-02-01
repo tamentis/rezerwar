@@ -29,12 +29,15 @@ handle_events_keyup(SDL_Event *event)
 {
 	switch ((int)event->key.keysym.sym) {
 		case SDLK_DOWN:
-			board_set_block_speed(board, SPEED_NORMAL);
+		case SDLK_j:
+			board->block_speed_factor = 1;
 			break;
 		case SDLK_RIGHT:
+		case SDLK_l:
 			board->moving_right = 0;
 			break;
 		case SDLK_LEFT:
+		case SDLK_h:
 			board->moving_left = 0;
 			break;
 		default:
@@ -72,19 +75,22 @@ handle_events_keydown(SDL_Event *event)
 			board_dump_cube_map(board);
 			break;
 		case SDLK_LEFT:
+		case SDLK_h:
 			board_move_current_block_left(board);
 			board_refresh(board);
 			board->lateral_tick = 0;
 			board->moving_left = 4;
 			break;
 		case SDLK_RIGHT:
+		case SDLK_l:
 			board_move_current_block_right(board);
 			board_refresh(board);
 			board->lateral_tick = 0;
 			board->moving_right = 4;
 			break;
 		case SDLK_DOWN:
-			board_set_block_speed(board, SPEED_FAST);
+		case SDLK_j:
+			board->block_speed_factor = 10;
 			break;
 		case SDLK_a:
 			board_rotate_cw(board);

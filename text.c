@@ -96,13 +96,13 @@ text_effect_shake(Text *text, int *rx, int *ry)
 	int force = 2;
 	int speed = 4;
 
-	if (text->fx_data == NULL) {
-		text->fx_data = r_malloc(sizeof(int));
-		text->fx_data[0] = speed;
+	if (text->fx_shake_data == NULL) {
+		text->fx_shake_data = r_malloc(sizeof(int));
+		text->fx_shake_data[0] = speed;
 	}
 
-	if (text->fx_data[0] < 1) {
-		text->fx_data[0] = speed;
+	if (text->fx_shake_data[0] < 1) {
+		text->fx_shake_data[0] = speed;
 		*rx = (rand() % 50 > 25 ? (rand() % (force + 1)) : 0);
 		*ry = (rand() % 50 > 25 ? (rand() % (force + 1)) : 0);
 	} else {
@@ -110,7 +110,36 @@ text_effect_shake(Text *text, int *rx, int *ry)
 		*ry = 0;
 	}
 
-	text->fx_data[0]--;
+	text->fx_shake_data[0]--;
+}
+
+
+/**
+ * This effect updates the alpha level of a surface and trash it when it reach
+ * the bottom.
+ */
+void
+text_effect_fadeout(Text *text, SDL_Surface *s)
+{
+	int alpha;
+
+	/* -255 is the uninitialized state. */
+	if (text->fx_fade_data == -255)
+		text->fx_fade_data = 400;	
+
+	text->fx_fade_data -= 8;
+
+	/* Manage a min/max */
+	if (text->fx_fade_data > 255) {
+		alpha = 255;
+	} else if (text->fx_fade_data < 0) {
+		alpha = 0;
+		text->trashed = true;
+	} else {
+		alpha = text->fx_fade_data;
+	}
+
+	SDL_SetAlpha(s, SDL_SRCALPHA|SDL_RLEACCEL, alpha);
 }
 
 
@@ -218,10 +247,12 @@ text_new(unsigned char *value)
 	text->width = 0;
 	text->height = 19;
 	text->effect = 0;
-	text->fx_data = NULL;
+	text->fx_shake_data = NULL;
+	text->fx_fade_data = -255;
 	text->value = NULL;
 	text->length = -1;
 
+	text->trashed = false;
 	text->colorized = false;
 
 	text->color1_r = 0xFF;
@@ -256,7 +287,7 @@ text_set_value(Text *text, unsigned char *value)
 void
 text_kill(Text *text)
 {
-	r_free(text->fx_data);
+	r_free(text->fx_shake_data);
 	r_free(text->value);
 	r_free(text);
 }
@@ -275,6 +306,10 @@ text_get_surface(Text *text)
 	SDL_FillRect(s, NULL, key);
 	SDL_SetColorKey(s, SDL_SRCCOLORKEY|SDL_RLEACCEL, key);
 	text_render(text, s);
+
+	if (text->effect & EFFECT_FADEOUT) {
+		text_effect_fadeout(text, s);
+	}
 
 	return s;
 }

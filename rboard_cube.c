@@ -11,6 +11,10 @@
 extern SDL_Surface *screen;
 
 
+/**
+ * Update all the cubes logic (non-graphic stuff). At the moment we
+ * only care about killing the trashed ones.
+ */
 void
 board_update_cubes(Board *board, Uint32 now)
 {
@@ -29,6 +33,10 @@ board_update_cubes(Board *board, Uint32 now)
 }
 
 
+/**
+ * Refreshing the cubes is actually handling the graphic part, i.e. blitting
+ * the textures at the right place.
+ */
 void
 board_refresh_cubes(Board *board)
 {
@@ -40,23 +48,23 @@ board_refresh_cubes(Board *board)
 
 	for (i = 0; i < size; i++) {
 		cube = board->cubes[i];
-		if (cube == NULL)
-			continue;
+		if (cube == NULL) continue;
 
 		s = cube_get_surface(cube);
-//		fprintf(stderr, "refreshing cube %d %p\n", i, s);
 		cube_get_rectangle(cube, &r);
 
 		r.x += board->offset_x;
 		r.y += board->offset_y;
 
 		SDL_BlitSurface(s, NULL, screen, &r);
-
 		SDL_FreeSurface(s);
 	}
 }
 
 
+/**
+ * Dump on stdout the map of the cube as it stands right now.
+ */
 void
 board_dump_cube_map(Board *board)
 {
@@ -78,6 +86,10 @@ board_dump_cube_map(Board *board)
 }
 
 
+/**
+ * Go through all the cubes and remove the water, untie all the current
+ * networks.
+ */
 void
 board_remove_water(Board *board)
 {
@@ -109,29 +121,84 @@ board_update_water(Board *board, Uint32 now)
 
 	board_remove_water(board);
 
+	/* Scan the left side... */
 	for (i = 0; i < board->height; i++) {
 		cube = board->cubes[i * board->width];
-		if (cube == NULL)
-			continue;
+		if (cube == NULL) continue;
 
-		if (cube_plug_match(cube, PLUG_WEST)) {
+		if (cube_plug_match(cube, PLUG_WEST))
 			board_spread_water(board, cube, NULL, 1);
+	}
+
+	/* Now while scanning the right side, also check if water made it all
+	 * the way through, in this case, taint the network. */
+	for (i = 0; i < board->height; i++) {
+		cube = board->cubes[(i + 1) * board->width - 1];
+		if (cube == NULL) continue;
+
+		if (cube_plug_match(cube, PLUG_EAST)) {
+			if (cube->water == 1)
+				cube_network_taint(cube->root);
+			else
+				board_spread_water(board, cube, NULL, 2);
 		}
 	}
 
+	/* Now we know what networks are tainted, go through the left side
+	 * again and look for a root cube (net length > 1), with red water (3),
+	 * and a network_integrity preserved. Toggle an avalanche if found. */
 	for (i = 0; i < board->height; i++) {
-		cube = board->cubes[(i + 1) * board->width - 1];
-		if (cube == NULL)
-			continue;
+		cube = board->cubes[i * board->width];
+		if (cube == NULL) continue;
 
-		if (cube_plug_match(cube, PLUG_EAST)) {
-			/* If a cube has water already, we have a connected
-			 * network! */
-			if (cube->water == 1) {
-				cube_network_taint(cube->root);
-			} else {
-				board_spread_water(board, cube, NULL, 2);
-			}
+		if (cube->network_size > 1 && cube->water == 3 &&
+				cube->network_integrity == 1) {
+			board_run_avalanche(board, cube);
+		}
+	}
+}
+
+
+/**
+ * Run avalanche on the specific cube. This means the cube was already
+ * identified as the root of a tainted network.
+ */
+void
+board_run_avalanche(Board *board, Cube *cube)
+{
+	int i;
+	Text *avtxt;
+
+	/* Start a fading text... */
+	avtxt = board_add_text(board, (byte *)"AVALANCHE!!!", 240, 240);
+	text_set_color1(avtxt, 255, 0, 0);
+	text_set_color2(avtxt, 80, 0, 0);
+	avtxt->effect |= EFFECT_SHAKE|EFFECT_FADEOUT;
+
+	board->score += 200;
+
+	/* Run each columns individually */
+	board_run_avalanche_column(board, cube);
+	for (i = 0; i < cube->network_size; i++) {
+		board_run_avalanche_column(board, cube->network[i]);
+	}
+}
+
+
+/**
+ * Run an avalanche on only one column, starting from the cube
+ */
+void
+board_run_avalanche_column(Board *board, Cube *cube)
+{
+	Sint16 y;
+	Cube *target;
+
+	for (y = cube->y; y < board->height; y++) {
+		target = board_get_cube(board, cube->x, y);
+		if (target != NULL && target->trashed == false) {
+			target->trashed = true;
+			board->score += 20;
 		}
 	}
 }
@@ -178,6 +245,9 @@ board_get_area_type(Board *board, Sint16 x, Sint16 y)
 }
 
 
+/**
+ * Given specific x/y offsets, try to spread the water to a neighboring cube
+ */
 void
 board_spread_attempt(Board *board, Cube *cube, Cube *root, Sint8 ox, Sint8 oy,
 		Uint8 src_plug, Uint8 dest_plug)
@@ -240,7 +310,6 @@ void
 board_network_deflagrate(Board *board, Cube *cube)
 {
 	int i, max;
-	int j;
 
 	switch (board->difficulty) {
 		case DIFF_EASIEST:	max = 5; break;
@@ -256,14 +325,6 @@ board_network_deflagrate(Board *board, Cube *cube)
 			board_cube_deflagration(board, cube->network[i]);
 		}
 		board_cube_deflagration(board, cube);
-	}
-
-	/* Falling deflagration due to the connected networks */
-	if (cube->water == 3) {
-		printf("NETWORK WAS CONNECTED, DEFLAGRATE DOWNWARD!\n");
-		for (i = 0; i < cube->network_size; i++) {
-			j = 1;
-		}
 	}
 }
 
@@ -320,6 +381,26 @@ board_spread_water(Board *board, Cube *cube, Cube *root, int water_type)
 	if (root == cube) {
 		if (cube->network_integrity == 1) {
 			board_destroy_network(board, cube);
+		}
+	}
+}
+
+
+/**
+ * Prepopulate a number of lines at the bottom of the board.
+ */
+void
+board_prepopulate(Board *board, int lines)
+{
+	int x, y;
+	Cube *cube;
+
+	for (x = 0; x < board->width; x++) {
+		for (y = board->height - lines; y < board->height; y++) {
+			cube = cube_new_random();
+			cube->x = x;
+			cube->y = y;
+			board->cubes[y * board->width + x] = cube;
 		}
 	}
 }

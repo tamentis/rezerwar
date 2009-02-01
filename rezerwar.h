@@ -11,11 +11,14 @@
 #define TICK			10
 
 #define BOARD_LEFT		72
-#define BOARD_TOP		64
-
+#define BOARD_TOP		96	
 #define BSIZE			16
 #define SPEED_NORMAL		500
-#define SPEED_FAST		50
+#define SPEED_LESS5K		400
+#define SPEED_LESS10K		300
+#define SPEED_LESS25K		200
+#define SPEED_LESS50K		100
+#define SPEED_MAX		50
 
 
 enum {
@@ -89,7 +92,8 @@ enum {
 /* Text Effect types */
 enum {
 	EFFECT_NONE,
-	EFFECT_SHAKE
+	EFFECT_SHAKE,
+	EFFECT_FADEOUT
 };
 
 typedef unsigned char byte;
@@ -135,6 +139,7 @@ int		 cube_plug_match(Cube *, Uint8);
 int		 cube_get_plug_status(Cube *, Uint8, Cube *, Uint8);
 void		 cube_network_add(Cube *, Cube *);
 void		 cube_network_flush(Cube *);
+void		 cube_network_taint(Cube *);
 
 
 /* rdrop.c */
@@ -176,9 +181,11 @@ typedef struct text_s {
 	byte color2_b;
 	int font;
 	int effect;
-	int *fx_data;
+	int *fx_shake_data;
+	int fx_fade_data;
 	unsigned char *value;
 	int length;
+	bool trashed;
 } Text;
 
 Text		*text_new(unsigned char *);
@@ -236,6 +243,7 @@ typedef struct _board_data {
 	Cube **cubes;
 	/* blocks */
 	Uint16 block_speed;
+	int block_speed_factor;
 	Block **blocks;
 	Uint16 block_count;
 	Block *current_block;
@@ -272,6 +280,7 @@ void		 board_refresh(Board *);
 void		 board_update(Board *, Uint32);
 void		 board_toggle_pause(Board *);
 void		 board_gameover(Board *);
+void		 board_prepopulate(Board *, int);
 /* rboard_cubes.c */
 void		 board_add_cube(Board *);
 void		 board_refresh_cubes(Board *);
@@ -279,6 +288,9 @@ void		 board_dump_cube_map(Board *);
 void		 board_spread_water(Board *, Cube *, Cube *, int);
 void		 board_update_water(Board *, Uint32);
 void		 board_update_cubes(Board *, Uint32);
+Cube		*board_get_cube(Board *, Sint16, Sint16);
+void		 board_run_avalanche(Board *, Cube *);
+void		 board_run_avalanche_column(Board *, Cube *);
 /* rboard_blocks.c */
 void		 board_refresh_blocks(Board *);
 void		 board_refresh_next(Board *);

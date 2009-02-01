@@ -53,7 +53,7 @@ void
 conf_init()
 {
 	conf = r_malloc(sizeof(Configuration));
-	conf->difficulty = DIFF_EASY;
+	conf->difficulty = DIFF_EASIEST;
 }
 
 
@@ -68,9 +68,10 @@ game_loop()
 	Text *t;
 
 	/* Prepare board and load the first block. */
-	board = board_new(10, 20, conf->difficulty);
+	board = board_new(10, 18, conf->difficulty);
 	t = board_add_text(board, (unsigned char *)BOT_VER, 320, 458);
 	board_load_next_block(board);
+	board_prepopulate(board, 5);
 	board_launch_next_block(board);
 
 	/* Main loop, every loop is separated by a TICK (~10ms). 
@@ -125,7 +126,7 @@ main(int ac, char **av)
 
 	/* Create main window, seed random, load the sprites and set the alpha. */
 	srand(time(NULL));
-	screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE|SDL_DOUBLEBUF);
+	screen = SDL_SetVideoMode(640, 400, 32, SDL_SWSURFACE|SDL_DOUBLEBUF);
 	key = SDL_MapRGB(screen->format, 0, 255, 255);
 	SDL_WM_SetCaption("rezerwar", NULL);
 	sprites = SDL_LoadBMP("gfx/sprites.bmp");
