@@ -9,6 +9,7 @@
 
 extern SDL_Surface *screen;
 extern SDL_Surface *sprites;
+extern Uint32 key;
 
 
 /* The following defines the plugs (opened pipe) on the specific cube styles
@@ -59,6 +60,7 @@ cube_new(Uint8 start_pos)
 	cube->network_integrity = 1;
 	cube->network_size = 0;
 	cube->network = NULL;
+	cube->root = NULL;
 
 	cube->trashed = 0;
 
@@ -71,14 +73,10 @@ cube_network_add(Cube *root, Cube *cube)
 {
 	int i = root->network_size++;
 
-	/*
-	printf("cube_network_add(cube@%dx%d to root@%dx%d)\n", cube->x, cube->y,
-			root->x, root->y);
-	*/
-
 	root->network = realloc(root->network, root->network_size * 
 			sizeof(Cube *));
 	root->network[i] = cube;
+	cube->root = root;
 }
 
 
@@ -91,6 +89,21 @@ cube_network_flush(Cube *cube)
 	cube->network_size = 0;
 	free(cube->network);
 	cube->network = NULL;
+}
+
+
+/**
+ * Taint the network linked to this cube.
+ */
+void
+cube_network_taint(Cube *cube)
+{
+	int i;
+
+	cube->water = 3;
+	for (i = 0; i < cube->network_size; i++) {
+		cube->network[i]->water = 3;
+	}
 }
 
 
@@ -130,21 +143,21 @@ cube_get_surface(Cube *cube)
 	/* All blocks are fixed size. Set DestRect and SourceRect. */
 	src.w = BSIZE;
 	src.h = BSIZE;
-	src.y = 24 + cube->current_position * 16;
+	src.y = cube->current_position * 16;
 	src.x = cube->type * 16;
 
 	s = SDL_CreateRGBSurface(0, BSIZE, BSIZE, screen->format->BitsPerPixel,
 			0, 0, 0, 0);
+	SDL_SetColorKey(s, SDL_SRCCOLORKEY|SDL_RLEACCEL, key);
 
 	SDL_BlitSurface(sprites, &src, s, NULL);
 
-	/* If this cube has water, find the water mask 64 px lower. */
+	/* If this cube has water, find the water mask 64px lower or 128px
+	 * if this is type 2 water (from the right side). */
 	if (cube->water) {
-		src.y += 64;
+		src.y += 64 * cube->water;
 		SDL_BlitSurface(sprites, &src, s, NULL);
 	}
-
-	SDL_SetColorKey(s, SDL_SRCCOLORKEY, 0);
 
 	return s;
 }
@@ -167,6 +180,17 @@ cube_rotate_cw(Cube *cube)
 
 	if (cube->current_position >= 4) {
 		cube->current_position = 0;
+	}
+}
+
+
+void
+cube_rotate_ccw(Cube *cube)
+{
+	cube->current_position--;
+
+	if (cube->current_position < 0) {
+		cube->current_position = 3;
 	}
 }
 
@@ -200,7 +224,7 @@ cube_get_plug_status(Cube *cube1, Uint8 plug1, Cube *cube2, Uint8 plug2) {
 
 	status += 2;
 
-	/* Cube2 has an output in the receptive direciton */
+	/* Cube2 has an output in the receptive direction */
 	if (cube_plug_match(cube2, plug2))
 		status += 4;
 

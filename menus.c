@@ -1,9 +1,7 @@
 #include <stdio.h>
 #include <time.h>
-#include <string.h>
 
 #include "SDL.h"
-#include "SDL_image.h"
 
 #include "rezerwar.h"
 
@@ -14,7 +12,7 @@ extern SDL_Surface *sprites;
 
 
 typedef struct _menu_item {
-	char *text;
+	Text *text;
 	int type;
 	int subtype;
 	int x_offset;
@@ -29,9 +27,15 @@ typedef struct _menu {
 } Menu;
 
 
+void kill_menu_item(MenuItem *);
 
+
+/**
+ * Menus are keeping track of the current selected item and a list of all
+ * their items.
+ */
 Menu *
-menu_new(void)
+new_menu(void)
 {
 	Menu *menu;
 
@@ -44,17 +48,11 @@ menu_new(void)
 }
 
 
+/**
+ * Clean up all the items and reset everything.
+ */
 void
-menuitem_kill(MenuItem *item)
-{
-	r_free(item->text);
-	r_free(item);
-}
-
-
-
-void
-menu_flush(Menu *menu)
+flush_menu_items(Menu *menu)
 {
 	int i;
 
@@ -62,7 +60,7 @@ menu_flush(Menu *menu)
 		return;
 
 	for (i = 0; i < menu->length; i++) {
-		menuitem_kill(menu->items[i]);
+		kill_menu_item(menu->items[i]);
 	}
 	free(menu->items);
 	menu->items = NULL;
@@ -72,23 +70,26 @@ menu_flush(Menu *menu)
 
 
 
+/**
+ * Destructor for the menu.
+ */
 void
-menu_kill(Menu *menu)
+kill_menu(Menu *menu)
 {
-	menu_flush(menu);
+	flush_menu_items(menu);
 	r_free(menu);
 }
 
 
 void
-menu_item_set_text(MenuItem *item, char *text)
+kill_menu_item(MenuItem *item)
 {
-	size_t i = strlen(text);
-
-	r_free(item->text);
-	item->text = r_malloc(i + 1);
-	strlcpy(item->text, text, i + 1);
+	text_kill(item->text);
+	r_free(item);
 }
+
+
+
 
 
 void
@@ -101,7 +102,7 @@ menu_item_set_difficulty(MenuItem *item)
 		"Difficulty: Hard",
 		"Difficulty: Ultra" };
 
-	menu_item_set_text(item, diff_t[conf->difficulty]);
+	text_set_value(item->text, (unsigned char*)diff_t[conf->difficulty]);
 }
 
 
@@ -110,16 +111,18 @@ menu_item_set_difficulty(MenuItem *item)
  * what you are doing and all the values are valid.
  */
 MenuItem *
-menu_add_entry(Menu *menu, char *text, int type, int subtype, int x_offset)
+add_item_to_menu(Menu *menu, char *text, int type, int subtype, int x_offset)
 {
 	MenuItem *item;
 
 	item = r_malloc(sizeof(MenuItem));
-	item->text = NULL;
-	menu_item_set_text(item, text);
 	item->type = type;
 	item->subtype = subtype;
 	item->x_offset = x_offset;
+
+	item->text = text_new((unsigned char *)text);
+	text_set_color2(item->text, 0x00, 0x0e, 0x26);
+	text_set_color1(item->text, 0x58, 0x89, 0xc6);
 
 	menu->length++;
 	menu->items = realloc(menu->items, sizeof(MenuItem*) * menu->length);
@@ -132,10 +135,10 @@ menu_add_entry(Menu *menu, char *text, int type, int subtype, int x_offset)
 void
 menu_load_main(Menu *menu)
 {
-	menu_flush(menu);
-	menu_add_entry(menu, "start new game", MTYPE_START, 0, 0);
-	menu_add_entry(menu, "options", MTYPE_SUBMENU, 2, 45);
-	menu_add_entry(menu, "quit", MTYPE_QUIT, 0, 65);
+	flush_menu_items(menu);
+	add_item_to_menu(menu, "start new game", MTYPE_START, 0, 0);
+	add_item_to_menu(menu, "options", MTYPE_SUBMENU, 2, 45);
+	add_item_to_menu(menu, "quit", MTYPE_QUIT, 0, 65);
 }
 
 
@@ -148,10 +151,10 @@ menu_load_options(Menu *menu)
 {
 	MenuItem *diff_item;
 
-	menu_flush(menu);
-	diff_item = menu_add_entry(menu, "difficulty", MTYPE_TOGGLE, 0, 0);
-	menu_add_entry(menu, "things", MTYPE_NOP, 0, 0);
-	menu_add_entry(menu, "back to main", MTYPE_SUBMENU, 0, 0);
+	flush_menu_items(menu);
+	diff_item = add_item_to_menu(menu, "difficulty", MTYPE_TOGGLE, 0, 0);
+	add_item_to_menu(menu, "things", MTYPE_NOP, 0, 0);
+	add_item_to_menu(menu, "back to main", MTYPE_SUBMENU, 0, 0);
 
 	menu_item_set_difficulty(diff_item);
 }
@@ -220,17 +223,25 @@ menu_refresh(Menu *menu)
 {
 	int i;
 	MenuItem *item;
+	SDL_Surface *s;
+	SDL_Rect r;
 
 	for (i = 0; i < menu->length; i++) {
 		item = menu->items[i];
 
+		item->text->x = menu->x + item->x_offset;
+		item->text->y = menu->y + i * 30;
 		if (i == menu->current) {
-			osd_print_moving(item->text, menu->x + item->x_offset,
-					menu->y + i * 30, 2);
+			item->text->colorized = true;
+			item->text->effect |= EFFECT_SHAKE;
 		} else {
-			osd_print(item->text, menu->x + item->x_offset, 
-					menu->y + i * 30);
+			item->text->colorized = false;
+			item->text->effect &= ~EFFECT_SHAKE;
 		}
+		s = text_get_surface(item->text);
+		text_get_rectangle(item->text, &r);
+		SDL_BlitSurface(s, NULL, screen, &r);
+		SDL_FreeSurface(s);
 	}
 }
 
@@ -279,7 +290,7 @@ menu_runner(Menu *menu)
 	SDL_Event event;
 
 	/* Load the initial image and fade into it. */
-	intro = loadimage("gfx/gamemenu.png");
+	intro = SDL_LoadBMP("gfx/gamemenu.bmp");
 	surface_fadein(intro, 8);
 
 	while (running == 0) {
@@ -317,7 +328,7 @@ main_menu()
 	Menu *menu;
 	int status;
 
-	menu = menu_new();
+	menu = new_menu();
 	menu->x = 220;
 	menu->y = 285;
 
@@ -325,7 +336,7 @@ main_menu()
 
 	status = menu_runner(menu);
 
-	menu_kill(menu);
+	kill_menu(menu);
 
 	return status;
 }

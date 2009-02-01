@@ -3,14 +3,13 @@
 #include <string.h>
 
 #include "SDL.h"
-#include "SDL_image.h"
 
 #include "rezerwar.h"
 
 
 extern SDL_Surface *screen;
 extern SDL_Surface *sprites;
-
+extern Uint32 key;
 
 void
 font_get_glyph_rect(char c, SDL_Rect *l)
@@ -92,7 +91,7 @@ text_render_glyph(SDL_Surface *s, char c, int x, int y)
  * This effect will return a different offset for x and y for each letters.
  */
 void
-text_effect_shake(text_t *text, int *rx, int *ry)
+text_effect_shake(Text *text, int *rx, int *ry)
 {
 	int force = 2;
 	int speed = 4;
@@ -119,18 +118,23 @@ text_effect_shake(text_t *text, int *rx, int *ry)
  * Try to colorize. TODO, make this not 32-bit only.
  */
 void
-text_effect_colorize(text_t *text, SDL_Surface *s)
+text_effect_colorize(Text *text, SDL_Surface *s)
 {
 	int i, max = s->w * s->h;
-	byte *r, *g, *b;
+	byte r, g, b;
+	Uint32 *c;
 
-	fprintf(stderr, "max:%d\n", max);
 	for (i = 0; i < max; i++) {
-		fprintf(stderr, "XXXX\n");
-		r = s->pixels + i * 3;
-		g = s->pixels + i * 3 + 1;
-		b = s->pixels + i * 3 + 2;
-		fprintf(stderr, "value : %u %u %u\n", *r, *g, *b);
+		c = s->pixels + i * s->format->BytesPerPixel;
+		SDL_GetRGB(*c, s->format, &r, &g, &b);
+
+		if ((r & g & b) == 255) 
+			*c = SDL_MapRGB(s->format, text->color1_r, 
+					text->color1_g, text->color1_b);
+
+		if ((r | g | b) == 0)
+			*c = SDL_MapRGB(s->format, text->color2_r, 
+					text->color2_g, text->color2_b);
 	}
 }
 
@@ -139,7 +143,7 @@ text_effect_colorize(text_t *text, SDL_Surface *s)
  * This function will simply print the 'text' at the given coordinate.
  */
 void
-text_render(text_t *text, SDL_Surface *s)
+text_render(Text *text, SDL_Surface *s)
 {
 	unsigned char *c = text->value;
 	int cursor = 0;
@@ -153,11 +157,8 @@ text_render(text_t *text, SDL_Surface *s)
 		c++;
 	}
 
-	/*
-	if ((text->color1_r & text->color1_g & text->color1_b) != 0xFF) {
+	if (text->colorized == true)
 		text_effect_colorize(text, s);
-	}
-	*/
 }
 
 
@@ -165,8 +166,9 @@ text_render(text_t *text, SDL_Surface *s)
  * Easy function to set the color1.
  */
 void
-text_set_color(text_t *text, byte r, byte g, byte b)
+text_set_color1(Text *text, byte r, byte g, byte b)
 {
+	text->colorized = true;
 	text->color1_r = r;
 	text->color1_g = g;
 	text->color1_b = b;
@@ -174,10 +176,23 @@ text_set_color(text_t *text, byte r, byte g, byte b)
 
 
 /**
+ * Easy function to set the color2.
+ */
+void
+text_set_color2(Text *text, byte r, byte g, byte b)
+{
+	text->colorized = true;
+	text->color2_r = r;
+	text->color2_g = g;
+	text->color2_b = b;
+}
+
+
+/**
  * Refresh the dimensions of the block from the glyphs.
  */
 void
-text_calculate_size(text_t *text)
+text_calculate_size(Text *text)
 {
 	SDL_Rect r;
 	unsigned char *c = text->value;
@@ -191,12 +206,12 @@ text_calculate_size(text_t *text)
 }
 
 
-text_t *
+Text *
 text_new(unsigned char *value)
 {
-	text_t *text;
+	Text *text;
 
-	text = r_malloc(sizeof(text_t));
+	text = r_malloc(sizeof(Text));
 
 	text->x = 0;
 	text->y = 0;
@@ -206,6 +221,8 @@ text_new(unsigned char *value)
 	text->fx_data = NULL;
 	text->value = NULL;
 	text->length = -1;
+
+	text->colorized = false;
 
 	text->color1_r = 0xFF;
 	text->color1_g = 0xFF;
@@ -218,11 +235,11 @@ text_new(unsigned char *value)
 
 
 /**
- * Set the value (text) for this text_t entity. If the text is currently empty
+ * Set the value (text) for this Text entity. If the text is currently empty
  * and we are trying to set another empty value, just return.
  */
 void
-text_set_value(text_t *text, unsigned char *value)
+text_set_value(Text *text, unsigned char *value)
 {
 	if (value[0] == '\0' && text->length == 0)
 		return;
@@ -237,7 +254,7 @@ text_set_value(text_t *text, unsigned char *value)
 
 
 void
-text_kill(text_t *text)
+text_kill(Text *text)
 {
 	r_free(text->fx_data);
 	r_free(text->value);
@@ -249,13 +266,14 @@ text_kill(text_t *text)
  * Return an SDL Surface of the rendered text, at this point in time.
  */
 SDL_Surface *
-text_get_surface(text_t *text)
+text_get_surface(Text *text)
 {
 	SDL_Surface *s;
 
 	s = SDL_CreateRGBSurface(0, text->width, text->height, 
 			screen->format->BitsPerPixel, 0, 0, 0, 0);
-	SDL_SetColorKey(s, SDL_SRCCOLORKEY, 0);
+	SDL_FillRect(s, NULL, key);
+	SDL_SetColorKey(s, SDL_SRCCOLORKEY|SDL_RLEACCEL, key);
 	text_render(text, s);
 
 	return s;
@@ -266,7 +284,7 @@ text_get_surface(text_t *text)
  * Return an SDL Rectangle of the position and size of the text block.
  */
 void
-text_get_rectangle(text_t *text, SDL_Rect *r)
+text_get_rectangle(Text *text, SDL_Rect *r)
 {
 	r->w = 200;
 	r->h = 19;

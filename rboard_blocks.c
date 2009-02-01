@@ -347,6 +347,10 @@ board_set_block_speed(Board *board, Uint32 speed)
 }
 
 
+/**
+ * In charge of rotating a block on a board. If there is no space for a
+ * rotation, ignore, if against a block, move a bit.
+ */
 void
 board_rotate_cw(Board *board)
 {
@@ -358,9 +362,21 @@ board_rotate_cw(Board *board)
 	/* Check if the new position is conflicting, if the conflict is on the
 	 * left (1), x+1, if the conflict is on the right, x-1. */
 	x = board_move_check(board, block, 0, 0);
-	if (x == 1)
+
+	if (x == 1 && board_move_check(board, block, 1, 0) == 0) {
 		block->x++;
-	else if (x == 2)
+		return;
+	} else if (x == 2 && board_move_check(board, block, -1, 0) == 0) {
 		block->x--;
+		return;
+	}
+	
+	/* If we had no issue rotating, just leave, we're good =) */
+	if (x == 0) return;
+
+	/* If we get that far, it's because we didn't manage to rotate the 
+	 * block properly... back up. */
+	block_rotate_ccw(block);
 }
+
 

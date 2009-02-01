@@ -7,13 +7,14 @@
 #include "rezerwar.h"
 
 
-#define BOT_VER "rezerwar alpha 2009-01-18 / press f12 to start"
+#define BOT_VER "rezerwar alpha 2009-01-31"
 
 
 Board *board;
 Configuration *conf;
 SDL_Surface *screen;
 SDL_Surface *sprites;
+Uint32 key;
 
 
 void
@@ -22,7 +23,7 @@ intro_studio(void)
 	SDL_Surface *intro;
 	int x;
 
-	intro = loadimage("gfx/zoolu.png");
+	intro = SDL_LoadBMP("gfx/studio.bmp");
 
 	x = surface_fadein(intro, 2);
 	if (x == 0) x = cancellable_delay(1);
@@ -38,7 +39,7 @@ intro_title(void)
 	SDL_Surface *intro;
 	int x;
 
-	intro = loadimage("gfx/rezerwar.png");
+	intro = SDL_LoadBMP("gfx/title.bmp");
 
 	x = surface_fadein(intro, 2);
 	if (x == 0) x = cancellable_delay(1);
@@ -52,7 +53,7 @@ void
 conf_init()
 {
 	conf = r_malloc(sizeof(Configuration));
-	conf->difficulty = 0;
+	conf->difficulty = DIFF_EASY;
 }
 
 
@@ -64,12 +65,13 @@ game_loop()
 	Uint32 fps_lastframedisplay = 0;
 	Sint32 elapsed;
 	SDL_Event event;
-	text_t *t;
+	Text *t;
 
 	/* Prepare board and load the first block. */
 	board = board_new(10, 20, conf->difficulty);
-	t = board_add_text(board, (unsigned char *)BOT_VER, 10, 450);
+	t = board_add_text(board, (unsigned char *)BOT_VER, 320, 458);
 	board_load_next_block(board);
+	board_launch_next_block(board);
 
 	/* Main loop, every loop is separated by a TICK (~10ms). 
 	 * The board is refreshed every 1/MAXFPS seconds. */
@@ -121,11 +123,13 @@ main(int ac, char **av)
 	}
 	atexit(SDL_Quit);
 
-	/* Create main window, seed random, and load the sprites. */
+	/* Create main window, seed random, load the sprites and set the alpha. */
 	srand(time(NULL));
 	screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE|SDL_DOUBLEBUF);
+	key = SDL_MapRGB(screen->format, 0, 255, 255);
 	SDL_WM_SetCaption("rezerwar", NULL);
-	sprites = loadimage("gfx/sprites.png");
+	sprites = SDL_LoadBMP("gfx/sprites.bmp");
+	SDL_SetColorKey(sprites, SDL_SRCCOLORKEY|SDL_RLEACCEL, key);
 
 	/* Normal flow... */
 	intro_studio();

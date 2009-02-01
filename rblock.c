@@ -9,6 +9,7 @@
 
 extern SDL_Surface *screen;
 extern SDL_Surface *sprites;
+extern Uint32 key;
 
 
 Block *
@@ -495,6 +496,9 @@ block_get_surface(Block *block)
 
 	s = SDL_CreateRGBSurface(0, block->size * BSIZE, block->size * BSIZE,
 		screen->format->BitsPerPixel, 0, 0, 0, 0);
+	SDL_FillRect(s, NULL, key);
+	SDL_SetColorKey(s, SDL_SRCCOLORKEY|SDL_RLEACCEL, key);
+
 
 	for (y = 0; y < block->size; y++) {
 		for (x = 0; x < block->size; x++) {
@@ -510,8 +514,6 @@ block_get_surface(Block *block)
 			}
 		}
 	}
-
-	SDL_SetColorKey(s, SDL_SRCCOLORKEY, 0);
 
 	return s;
 }
@@ -534,12 +536,28 @@ block_rotate_cw(Block *block)
 
 	block->current_position++;
 
-	if (block->current_position >= 4) {
+	if (block->current_position >= 4)
 		block->current_position = 0;
-	}
 
 	for (i = 0; i < block->cube_count; i++) {
 		cube_rotate_cw(block->cubes[i]);
+	}
+
+}
+
+
+void
+block_rotate_ccw(Block *block)
+{
+	int i;
+
+	block->current_position--;
+
+	if (block->current_position < 0)
+		block->current_position = 3;
+
+	for (i = 0; i < block->cube_count; i++) {
+		cube_rotate_ccw(block->cubes[i]);
 	}
 
 }

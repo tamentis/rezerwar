@@ -93,6 +93,10 @@ enum {
 };
 
 typedef unsigned char byte;
+typedef enum {
+	false,
+	true
+} bool;
 
 void		*r_malloc(size_t);
 void		 r_free(void *);
@@ -116,6 +120,7 @@ typedef struct _cube {
 	int network_size;
 	int trashed;
 	struct _cube **network;
+	struct _cube *root;
 } Cube;
 Cube		*cube_new(Uint8);
 void		 cube_kill(Cube *);
@@ -124,6 +129,7 @@ void		 cube_init_texture();
 SDL_Surface	*cube_get_surface(Cube *);
 void		 cube_get_rectangle(Cube *, SDL_Rect *);
 void		 cube_rotate_cw(Cube *);
+void		 cube_rotate_ccw(Cube *);
 Uint8		 cube_get_plugs(Cube *);
 int		 cube_plug_match(Cube *, Uint8);
 int		 cube_get_plug_status(Cube *, Uint8, Cube *, Uint8);
@@ -161,22 +167,27 @@ typedef struct text_s {
 	int y;
 	int width;
 	int height;
+	bool colorized;
 	byte color1_r;
 	byte color1_g;
 	byte color1_b;
+	byte color2_r;
+	byte color2_g;
+	byte color2_b;
 	int font;
 	int effect;
 	int *fx_data;
 	unsigned char *value;
 	int length;
-} text_t;
+} Text;
 
-text_t		*text_new(unsigned char *);
-void		 text_kill(text_t *);
-SDL_Surface	*text_get_surface(text_t *);
-void		 text_get_rectangle(text_t *, SDL_Rect *);
-void		 text_set_value(text_t *, unsigned char *);
-void		 text_set_color(text_t *, byte, byte, byte);
+Text		*text_new(unsigned char *);
+void		 text_kill(Text *);
+SDL_Surface	*text_get_surface(Text *);
+void		 text_get_rectangle(Text *, SDL_Rect *);
+void		 text_set_value(Text *, unsigned char *);
+void		 text_set_color1(Text *, byte, byte, byte);
+void		 text_set_color2(Text *, byte, byte, byte);
 
 /* block.c */
 typedef struct _block_data {
@@ -209,6 +220,7 @@ Block		*block_new_bar();
 Block		*block_new_random();
 Block		*block_new_of_type(int);
 void		 block_rotate_cw(Block *);
+void		 block_rotate_ccw(Block *);
 
 /* board.c */
 typedef struct _board_data {
@@ -243,10 +255,10 @@ typedef struct _board_data {
 	WaterOutput **outputs;
 	Uint8 output_count;
 	/* texts */
-	text_t **texts;
+	Text **texts;
 	int text_count;
-	text_t *status_t;
-	text_t *score_t;
+	Text *status_t;
+	Text *score_t;
 	/* player stuff */
 	int score;
 	int paused;
@@ -264,7 +276,7 @@ void		 board_gameover(Board *);
 void		 board_add_cube(Board *);
 void		 board_refresh_cubes(Board *);
 void		 board_dump_cube_map(Board *);
-void		 board_spread_water(Board *, Cube *, Cube *);
+void		 board_spread_water(Board *, Cube *, Cube *, int);
 void		 board_update_water(Board *, Uint32);
 void		 board_update_cubes(Board *, Uint32);
 /* rboard_blocks.c */
@@ -296,7 +308,7 @@ void		 board_register_output(Board *, WaterOutput *);
 void		 board_update_outputs(Board *, Uint32);
 
 /* text related */
-text_t		*board_add_text(Board *, unsigned char *, int, int);
+Text		*board_add_text(Board *, unsigned char *, int, int);
 
 /* WaterOutput functions */
 WaterOutput	*wateroutput_new(Uint8, Sint16, Sint16);
@@ -313,10 +325,6 @@ int		 surface_fadein(SDL_Surface *, int);
 int		 surface_fadeout(SDL_Surface *);
 void		 r_setpixel(Uint16, Uint16, Uint8, Uint8, Uint8);
 SDL_Surface	*loadimage(char *);
-
-/* osd.c */
-void		 osd_print(char *, int, int);
-void		 osd_print_moving(char *, int, int, int);
 
 /* strlcpy.c */
 size_t		 strlcpy(char *dst, const char *src, size_t siz);

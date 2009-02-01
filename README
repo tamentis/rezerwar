@@ -27,26 +27,24 @@ DEFLAGRATION:
       Ultra:   20
 
 TODO:
- - Add color option to 'Text', replacing white pixels or black pixels.
+ - Only destroy a network after going through the right side. Basically you might
+ need to "mark" a network for destruction and only start the destruction at the end
+ of the run.
+ - find out why only certain letters are moving (odd shit).
+ - the higher the red network is, the more point you make.
  - When two networks connect from different starts, everything underneath
    disappears.
- - Give the menu a 'mask' frame, make the option menu bigger and work on a
-   way to page through the lines.
+ - Sound -> add a didjeridou sound at the beginning or accordeon, something cacophinic.
  - Add an option to show/hide FPS.
  - Add High Score (create a simple file format).
  - Move all the SDL related stuff in wrappers within sdl_engine.c
- - Menu
  - Music
  - Create a block_allocate when creating new blocks to avoid always pushing
    blocks at the end of the array.
  - You can harden blocks so they can last a couple generations of water, this
    will help exploding center areas.
-
-BUGS:
- - If a block is stuck between two columns of block or the side of the board,
-   don't let the block rotate or it will get stuck. Ideas to fix this:
-    * calculate the next position before actually changing and check if there are other
-      blocks in the way.
+ - Give the menu a 'mask' frame, make the option menu bigger and work on a
+   way to page through the lines.
 
 NOTES FROM OTHER GAME SOURCES:
  - Would it be interesting to use a memoryPool like in q3a?

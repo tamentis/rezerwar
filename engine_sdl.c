@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #include "SDL.h"
-#include "SDL_image.h"
+// #include "SDL_image.h"
 
 #include "rezerwar.h"
 
@@ -134,6 +134,10 @@ surface_fadeout(SDL_Surface *surf)
 }
 
 
+/*
+ * Not using SDL_Image anymore.
+ */
+/*
 SDL_Surface *
 loadimage(char *filename)
 {
@@ -148,4 +152,4 @@ loadimage(char *filename)
 
 	return img;
 }
-
+*/

@@ -90,6 +90,7 @@ board_remove_water(Board *board)
 			continue;
 
 		board->cubes[i]->water = 0;
+		board->cubes[i]->root = NULL;
 		board->cubes[i]->network_integrity = 1;
 		cube_network_flush(board->cubes[i]);
 	}
@@ -114,7 +115,7 @@ board_update_water(Board *board, Uint32 now)
 			continue;
 
 		if (cube_plug_match(cube, PLUG_WEST)) {
-			board_spread_water(board, cube, NULL);
+			board_spread_water(board, cube, NULL, 1);
 		}
 	}
 
@@ -124,7 +125,13 @@ board_update_water(Board *board, Uint32 now)
 			continue;
 
 		if (cube_plug_match(cube, PLUG_EAST)) {
-			board_spread_water(board, cube, NULL);
+			/* If a cube has water already, we have a connected
+			 * network! */
+			if (cube->water == 1) {
+				cube_network_taint(cube->root);
+			} else {
+				board_spread_water(board, cube, NULL, 2);
+			}
 		}
 	}
 }
@@ -190,7 +197,7 @@ board_spread_attempt(Board *board, Cube *cube, Cube *root, Sint8 ox, Sint8 oy,
 			status = cube_get_plug_status(cube, src_plug, n, 
 					dest_plug);
 			if (status == PSTAT_CONNECTED)
-				board_spread_water(board, n, root);
+				board_spread_water(board, n, root, root->water);
 			break;
 		default:
 			break;
@@ -233,6 +240,7 @@ void
 board_network_deflagrate(Board *board, Cube *cube)
 {
 	int i, max;
+	int j;
 
 	switch (board->difficulty) {
 		case DIFF_EASIEST:	max = 5; break;
@@ -242,13 +250,23 @@ board_network_deflagrate(Board *board, Cube *cube)
 		case DIFF_ULTRA:	max = 20; break;
 	}
 
+	/* Standard circular deflagration */
 	if (cube->network_size > max) {
 		for (i = 0; i < cube->network_size; i++) {
 			board_cube_deflagration(board, cube->network[i]);
 		}
 		board_cube_deflagration(board, cube);
 	}
+
+	/* Falling deflagration due to the connected networks */
+	if (cube->water == 3) {
+		printf("NETWORK WAS CONNECTED, DEFLAGRATE DOWNWARD!\n");
+		for (i = 0; i < cube->network_size; i++) {
+			j = 1;
+		}
+	}
 }
+
 
 /**
  * A network is going to be destroyed, after a certain size, network explosion is causing
@@ -278,10 +296,10 @@ board_destroy_network(Board *board, Cube *cube)
  * neighbor cube.
  */
 void
-board_spread_water(Board *board, Cube *cube, Cube *root)
+board_spread_water(Board *board, Cube *cube, Cube *root, int water_type)
 {
 	/* Don't continue if this cube is already watered. */
-	if (cube->water == 1)
+	if (cube->water >= 1)
 		return;
 
 	/* Add 'cube' to the network, it doesn't seem to be a starting point. */
@@ -291,16 +309,12 @@ board_spread_water(Board *board, Cube *cube, Cube *root)
 		cube_network_add(root, cube);
 	}
 
-	cube->water = 1;
+	cube->water = water_type;
 
 	/* North, East, South, West */
-//	printf("cube@%dx%d: spread_attempt NORTH\n", cube->x, cube->y);
 	board_spread_attempt(board, cube, root,  0, -1, PLUG_NORTH, PLUG_SOUTH);
-//	printf("cube@%dx%d: spread_attempt EAST\n", cube->x, cube->y);
 	board_spread_attempt(board, cube, root,  1,  0, PLUG_EAST,  PLUG_WEST);
-//	printf("cube@%dx%d: spread_attempt SOUTH\n", cube->x, cube->y);
 	board_spread_attempt(board, cube, root,  0,  1, PLUG_SOUTH, PLUG_NORTH);
-//	printf("cube@%dx%d: spread_attempt WEST\n", cube->x, cube->y);
 	board_spread_attempt(board, cube, root, -1,  0, PLUG_WEST,  PLUG_EAST);
 
 	if (root == cube) {

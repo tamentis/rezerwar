@@ -55,7 +55,7 @@ board_new(Uint8 width, Uint8 height, int difficulty)
 	b->outputs = NULL;
 	b->output_count = 0;
 
-	/* text_ts (future OSD) related members */
+	/* Texts (future OSD) related members */
 	b->texts = NULL;
 	b->text_count = 0;
 
@@ -74,10 +74,11 @@ board_new(Uint8 width, Uint8 height, int difficulty)
 	b->score_t = board_add_text(b, (unsigned char *)"0", 260, 172);
 	b->status_t = board_add_text(b, (unsigned char *)"", 400, 250);
 	b->status_t->effect = EFFECT_SHAKE;
-	text_set_color(b->status_t, 100, 20, 30);
+	text_set_color1(b->status_t, 225, 186, 0);
+	text_set_color2(b->status_t, 127,  55, 0);
 
 	/* Load background. */
-	b->bg = loadimage("gfx/gameback.png");
+	b->bg = SDL_LoadBMP("gfx/gameback.bmp");
 
 	return b;
 }
@@ -145,7 +146,7 @@ board_kill(Board *board)
 	board->block_count = 0;
 	board->blocks = NULL;
 
-	/* text_t cleanup */
+	/* Text cleanup */
 	for (i = 0; i < board->text_count; i++) {
 		if (board->texts[i] == NULL)
 			continue;
@@ -158,14 +159,14 @@ board_kill(Board *board)
 }
 
 
-text_t *
+Text *
 board_add_text(Board *board, unsigned char *value, int x, int y)
 {
-	text_t *t;
+	Text *t;
 
 	t = text_new(value);
 	
-	board->texts = realloc(board->texts, (board->text_count + 1) * sizeof(text_t*));
+	board->texts = realloc(board->texts, (board->text_count + 1) * sizeof(Text*));
 	board->texts[board->text_count] = t;
 	board->text_count++;
 
@@ -180,16 +181,16 @@ void
 board_refresh_texts(Board *board)
 {
 	int i;
-	text_t *t;
+	Text *t;
 	SDL_Rect r;
 	SDL_Surface *s;
 
-	/* Update the score text_t */
+	/* Update the score Text */
 	unsigned char score[10];
 	snprintf((char *)score, 10, "%d", board->score);
 	text_set_value(board->score_t, score);
 
-	/* Draw all the text_ts. */
+	/* Draw all the Texts. */
 	for (i = 0; i < board->text_count; i++) {
 		t = board->texts[i];
 		if (t == NULL)
