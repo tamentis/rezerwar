@@ -7,7 +7,7 @@
 #include "rezerwar.h"
 
 
-#define BOT_VER "rezerwar alpha 2009-01-31"
+#define BOT_VER "rezerwar alpha 2009-02-01"
 
 
 Board *board;
@@ -68,8 +68,8 @@ game_loop()
 	Text *t;
 
 	/* Prepare board and load the first block. */
-	board = board_new(10, 18, conf->difficulty);
-	t = board_add_text(board, (unsigned char *)BOT_VER, 320, 458);
+	board = board_new(16, 18, conf->difficulty);
+	t = board_add_text(board, (unsigned char *)BOT_VER, 10, 450);
 	board_load_next_block(board);
 	board_prepopulate(board, 5);
 	board_launch_next_block(board);
@@ -126,7 +126,7 @@ main(int ac, char **av)
 
 	/* Create main window, seed random, load the sprites and set the alpha. */
 	srand(time(NULL));
-	screen = SDL_SetVideoMode(640, 400, 32, SDL_SWSURFACE|SDL_DOUBLEBUF);
+	screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE|SDL_DOUBLEBUF);
 	key = SDL_MapRGB(screen->format, 0, 255, 255);
 	SDL_WM_SetCaption("rezerwar", NULL);
 	sprites = SDL_LoadBMP("gfx/sprites.bmp");

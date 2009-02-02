@@ -133,8 +133,8 @@ board_refresh_next(Board *board)
 		block_get_rectangle(board->next_block, &r);
 
 		/* Increment of the position of the preview window. */
-		r.x += board->offset_x + board->width * BSIZE + BSIZE * 2;
-		r.y += board->offset_y + BSIZE;
+		r.x += board->offset_x;
+		r.y += board->offset_y - BSIZE * 6;
 
 		/* Increment of the alignement correction. */
 		r.x += (Uint8)((5 - board->next_block->size) * BSIZE / 2);

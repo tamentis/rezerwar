@@ -72,8 +72,8 @@ board_new(Uint8 width, Uint8 height, int difficulty)
 	b->gameover = 0;
 
 	/* Score text is always the first text, then status (pause/gameover). */
-	b->score_t = board_add_text(b, (unsigned char *)"0", 260, 172);
-	b->status_t = board_add_text(b, (unsigned char *)"", 400, 250);
+	b->score_t = board_add_text(b, (unsigned char *)"0", 10, 10);
+	b->status_t = board_add_text(b, (unsigned char *)"", 280, 240);
 	b->status_t->effect = EFFECT_SHAKE;
 	text_set_color1(b->status_t, 225, 186, 0);
 	text_set_color2(b->status_t, 127,  55, 0);
@@ -187,8 +187,8 @@ board_refresh_texts(Board *board)
 	SDL_Surface *s;
 
 	/* Update the score Text */
-	unsigned char score[10];
-	snprintf((char *)score, 10, "%d", board->score);
+	unsigned char score[20];
+	snprintf((char *)score, 20, "score: %d", board->score);
 	text_set_value(board->score_t, score);
 
 	/* Draw all the Texts, cleaning up trashed ones. */
