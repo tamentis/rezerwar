@@ -26,6 +26,10 @@ all: $(PROGRAM)
 $(OBJECTS): %.o: %.c rezerwar.h
 	$(CC) $(CFLAGS) -c $<
 
+win32: rezerwar
+	strip -s rezerwar
+	upx rezerwar
+
 clean:
 	rm -f $(OBJECTS) $(PROGRAM) tags TAGS LOG
 	rm -rf doc
