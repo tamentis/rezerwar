@@ -13,6 +13,7 @@ extern SDL_Surface *sprites;
 
 typedef struct _menu_item {
 	Text *text;
+	SDL_Rect rect;
 	int type;
 	int subtype;
 	int x_offset;
@@ -224,7 +225,6 @@ menu_refresh(Menu *menu)
 	int i;
 	MenuItem *item;
 	SDL_Surface *s;
-	SDL_Rect r;
 
 	for (i = 0; i < menu->length; i++) {
 		item = menu->items[i];
@@ -239,18 +239,56 @@ menu_refresh(Menu *menu)
 			item->text->effect &= ~EFFECT_SHAKE;
 		}
 		s = text_get_surface(item->text);
-		text_get_rectangle(item->text, &r);
-		SDL_BlitSurface(s, NULL, screen, &r);
+		text_get_rectangle(item->text, &(item->rect));
+		SDL_BlitSurface(s, NULL, screen, &(item->rect));
 		SDL_FreeSurface(s);
 	}
 }
 
+bool
+hover_menu_items(MenuItem *item, SDL_MouseButtonEvent *bev) 
+{
+	if (bev->x > item->rect.x &&
+			bev->x < (item->rect.x + item->rect.w) &&
+			bev->y > item->rect.y &&
+			bev->y < (item->rect.y + item->rect.h)) {
+		return true;
+	}
+	return false;
+}
 
 int
 handle_menu_events(SDL_Event *event, Menu *menu)
 {
+	SDL_MouseButtonEvent *bev;
+	int i;
+
+	if (event->type == SDL_QUIT)
+		exit(0);
+
+	if (event->type == SDL_MOUSEBUTTONDOWN) {
+		bev = &event->button;
+		for (i = 0; i < menu->length; i++) {
+			if (hover_menu_items(menu->items[i], bev) == true) {
+				return menu_select(menu);
+			}
+		}
+		return 0;
+	}
+
+	if (event->type == SDL_MOUSEMOTION) {
+		bev = &event->button;
+		for (i = 0; i < menu->length; i++) {
+			if (hover_menu_items(menu->items[i], bev) == true) {
+				menu->current = i;
+			}
+		}
+		return 0;
+	}
+
 	if (event->type != SDL_KEYDOWN)
 		return 0;
+
 
 	switch ((int)event->key.keysym.sym) {
 		case SDLK_j:
@@ -329,8 +367,8 @@ main_menu()
 	int status;
 
 	menu = new_menu();
-	menu->x = 220;
-	menu->y = 285;
+	menu->x = 224;
+	menu->y = 265;
 
 	menu_load_main(menu);
 

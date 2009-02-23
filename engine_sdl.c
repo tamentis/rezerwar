@@ -90,7 +90,8 @@ surface_fadein(SDL_Surface *surf, int speed)
 	int max = 255 / speed;
 
 	for (i = 0; i < max; i++) {
-		if (SDL_PollEvent(&event) && event.type == SDL_KEYDOWN) {
+		if (SDL_PollEvent(&event) && (event.type == SDL_KEYDOWN ||
+					event.type == SDL_MOUSEBUTTONDOWN)) {
 			r = 1;
 			i = max;
 		}
@@ -118,7 +119,8 @@ surface_fadeout(SDL_Surface *surf)
 	SDL_Event event;
 
 	for (i = 0; i < 64; i++) {
-		if (SDL_PollEvent(&event) && event.type == SDL_KEYDOWN)
+		if (SDL_PollEvent(&event) && (event.type == SDL_KEYDOWN ||
+					event.type == SDL_MOUSEBUTTONDOWN))
 			return 1;
 
 		memset(screen->pixels, 0, screen->w * screen->h *

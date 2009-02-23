@@ -6,7 +6,7 @@
 #include "rezerwar.h"
 
 
-#define BOT_VER "rezerwar alpha 2009-02-01"
+#define BOT_VER "rezerwar alpha 2009-02-22"
 
 
 Board *board;
@@ -22,23 +22,7 @@ intro_studio(void)
 	SDL_Surface *intro;
 	int x;
 
-	intro = SDL_LoadBMP("gfx/studio.bmp");
-
-	x = surface_fadein(intro, 2);
-	if (x == 0) x = cancellable_delay(1);
-	if (x == 0) surface_fadeout(intro);
-
-	SDL_FreeSurface(intro);
-}
-
-
-void
-intro_title(void)
-{
-	SDL_Surface *intro;
-	int x;
-
-	intro = SDL_LoadBMP("gfx/title.bmp");
+	intro = SDL_LoadBMP("gfx/newgaul/newgaul.bmp");
 
 	x = surface_fadein(intro, 2);
 	if (x == 0) x = cancellable_delay(1);
@@ -67,10 +51,10 @@ game_loop()
 	Text *t;
 
 	/* Prepare board and load the first block. */
-	board = board_new(16, 18, conf->difficulty);
+	board = board_new(9, 9, conf->difficulty);
 	t = board_add_text(board, (unsigned char *)BOT_VER, 10, 450);
 	board_load_next_block(board);
-	board_prepopulate(board, 5);
+	board_prepopulate(board, 2);
 	board_launch_next_block(board);
 
 	/* Main loop, every loop is separated by a TICK (~10ms). 
@@ -133,8 +117,6 @@ main(int ac, char **av)
 
 	/* Normal flow... */
 	intro_studio();
-	intro_title();
-
 	conf_init();
 
 	/* Loop between game and menu as long as no "quit" was selected. */

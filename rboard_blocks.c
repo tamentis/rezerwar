@@ -133,11 +133,11 @@ board_refresh_next(Board *board)
 
 		/* Increment of the position of the preview window. */
 		r.x += board->offset_x;
-		r.y += board->offset_y - BSIZE * 6;
+		r.y += board->offset_y - BSIZE * 4;
 
 		/* Increment of the alignement correction. */
-		r.x += (Uint8)((5 - board->next_block->size) * BSIZE / 2);
-		r.y += (Uint8)((5 - board->next_block->size) * BSIZE / 2);
+		r.x += (Uint8)((3 - board->next_block->size) * BSIZE / 2);
+		r.y += (Uint8)((4 - board->next_block->size) * BSIZE / 2);
 
 		/* Squares get a special favor. */
 		if (board->next_block->type == BLOCK_TYPE_SQUARE)

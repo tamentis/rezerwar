@@ -124,6 +124,9 @@ handle_events(SDL_Event *event)
 		case SDL_MOUSEBUTTONDOWN:
 			return handle_events_mouse(event);
 			break;
+		case SDL_QUIT:
+			exit(0);
+			break;
 		default:
 			break;
 	}

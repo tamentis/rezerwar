@@ -142,8 +142,8 @@ cube_get_surface(Cube *cube)
 	/* All blocks are fixed size. Set DestRect and SourceRect. */
 	src.w = BSIZE;
 	src.h = BSIZE;
-	src.y = cube->current_position * 16;
-	src.x = cube->type * 16;
+	src.y = cube->current_position * BSIZE;
+	src.x = (cube->type - 1) * BSIZE;
 
 	s = SDL_CreateRGBSurface(0, BSIZE, BSIZE, screen->format->BitsPerPixel,
 			0, 0, 0, 0);
@@ -154,7 +154,7 @@ cube_get_surface(Cube *cube)
 	/* If this cube has water, find the water mask 64px lower or 128px
 	 * if this is type 2 water (from the right side). */
 	if (cube->water) {
-		src.y += 64 * cube->water;
+		src.y += BSIZE * 4 * cube->water;
 		SDL_BlitSurface(sprites, &src, s, NULL);
 	}
 

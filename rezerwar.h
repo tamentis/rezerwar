@@ -10,9 +10,9 @@
 #define MAXFPS			30
 #define TICK			10
 
-#define BOARD_LEFT		192
-#define BOARD_TOP		90
-#define BSIZE			16
+#define BOARD_LEFT		176
+#define BOARD_TOP		122
+#define BSIZE			32
 #define SPEED_NORMAL		500
 #define SPEED_LESS5K		400
 #define SPEED_LESS10K		300

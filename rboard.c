@@ -6,6 +6,7 @@
 
 
 extern SDL_Surface *screen;
+extern Uint32 key;
 
 
 Board *
@@ -79,6 +80,8 @@ board_new(Uint8 width, Uint8 height, int difficulty)
 
 	/* Load background. */
 	b->bg = SDL_LoadBMP("gfx/gameback.bmp");
+	printf("Key: %u\n", key);
+	SDL_SetColorKey(b->bg, SDL_SRCCOLORKEY|SDL_RLEACCEL, key);
 
 	return b;
 }
@@ -226,6 +229,9 @@ board_toggle_pause(Board *board)
 void
 board_refresh(Board *board)
 {
+	/* Redraw the sky. */
+	a_sky_refresh(board);
+
 	/* Redraw the background. */
 	SDL_BlitSurface(board->bg, NULL, screen, NULL);
 
@@ -243,6 +249,9 @@ board_refresh(Board *board)
 
 	/* Draw texts elements (meant to replace OSD) */
 	board_refresh_texts(board);
+
+	/* Animations */
+	a_chimneys_refresh(board);
 
 	/* Dig up the back buffer. */
 	SDL_Flip(screen);
@@ -269,5 +278,9 @@ board_update(Board *board, Uint32 now)
 	board_update_outputs(board, now);
 	board_update_drops(board, now);
 	board_update_water(board, now);
+
+	/* Animations */
+	a_chimneys_update(board, now);
+	a_sky_update(board, now);
 }
 
