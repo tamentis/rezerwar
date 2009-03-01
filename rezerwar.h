@@ -11,7 +11,7 @@
 #define TICK			10
 
 #define BOARD_LEFT		176
-#define BOARD_TOP		122
+#define BOARD_TOP		90
 #define BSIZE			32
 #define SPEED_NORMAL		500
 #define SPEED_LESS5K		400
@@ -122,6 +122,7 @@ typedef struct _cube {
 	int water;
 	int network_integrity;
 	int network_size;
+	int fade_status;
 	int trashed;
 	struct _cube **network;
 	struct _cube *root;
@@ -291,6 +292,7 @@ void		 board_update_cubes(Board *, Uint32);
 Cube		*board_get_cube(Board *, Sint16, Sint16);
 void		 board_run_avalanche(Board *, Cube *);
 void		 board_run_avalanche_column(Board *, Cube *);
+int		 board_get_area_type(Board *, Sint16, Sint16);
 /* rboard_blocks.c */
 void		 board_refresh_blocks(Board *);
 void		 board_refresh_next(Board *);

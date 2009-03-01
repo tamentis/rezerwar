@@ -11,22 +11,44 @@ extern SDL_Surface *screen;
 
 
 /**
- * Update all the cubes logic (non-graphic stuff). At the moment we
- * only care about killing the trashed ones.
+ * Update all the cubes logic (non-graphic stuff).
  */
 void
 board_update_cubes(Board *board, Uint32 now)
 {
 	int i;
 	int size = board->width * board->height;
+	int type;
 	Cube *cube;
+	Block *block;
+	Uint8 pos0[] = { 1 };
 
 	for (i = 0; i < size; i++) {
 		cube = board->cubes[i];
+
+		if (cube == NULL)
+			continue;
 		
-		if (cube != NULL && cube->trashed == 1) {
-			cube_kill(cube);
+		/* Check if the cube is trashed (if yes fade it until death */
+		if (cube->trashed == 1) {
+			cube->fade_status++;
+			if (cube->fade_status > BSIZE / 2) {
+				cube_kill(cube);
+				board->cubes[i] = NULL;
+			}
+			continue;
+		}
+
+		/* Check if the cube has free space under itself, if yes 
+		 * disconnect it as a cube and create a new block. */
+		type = board_get_area_type(board, cube->x, cube->y + 1);
+		if (type == ATYPE_FREE) {
+			block = block_new_one_from_cube(cube);
+			board_add_block(board, block);
+			block->x = cube->x;
+			block->y = cube->y;
 			board->cubes[i] = NULL;
+			printf("FALL!\n");
 		}
 	}
 }
@@ -169,7 +191,7 @@ board_run_avalanche(Board *board, Cube *cube)
 	Text *avtxt;
 
 	/* Start a fading text... */
-	avtxt = board_add_text(board, (byte *)"AVALANCHE!!!", 240, 240);
+	avtxt = board_add_text(board, (byte *)"EXCELLENT!", 240, 240);
 	text_set_color1(avtxt, 255, 0, 0);
 	text_set_color2(avtxt, 80, 0, 0);
 	avtxt->effect |= EFFECT_SHAKE|EFFECT_FADEOUT;
@@ -337,6 +359,9 @@ board_destroy_network(Board *board, Cube *cube)
 {
 	int i;
 
+	if (cube->trashed == 1)
+		return;
+
 	printf("board_destroy_network(cube@%dx%d, size=%d)\n", cube->x, cube->y,
 			cube->network_size);
 
@@ -344,7 +369,7 @@ board_destroy_network(Board *board, Cube *cube)
 		cube->network[i]->trashed = 1;
 	}
 
-	board_network_deflagrate(board, cube);
+//	board_network_deflagrate(board, cube);
 
 	cube->trashed = 1;
 	board->score += (cube->network_size + 1) * 8;

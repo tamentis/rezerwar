@@ -61,6 +61,8 @@ cube_new(Uint8 start_pos)
 	cube->network = NULL;
 	cube->root = NULL;
 
+	cube->fade_status = 0;
+
 	cube->trashed = 0;
 
 	return cube;
@@ -138,6 +140,8 @@ cube_get_surface(Cube *cube)
 {
 	SDL_Surface *s;
 	SDL_Rect src;
+	SDL_Rect *dst = NULL;
+	int fs = cube->fade_status;
 	
 	/* All blocks are fixed size. Set DestRect and SourceRect. */
 	src.w = BSIZE;
@@ -148,14 +152,26 @@ cube_get_surface(Cube *cube)
 	s = SDL_CreateRGBSurface(0, BSIZE, BSIZE, screen->format->BitsPerPixel,
 			0, 0, 0, 0);
 	SDL_SetColorKey(s, SDL_SRCCOLORKEY|SDL_RLEACCEL, key);
+	SDL_FillRect(s, NULL, key);
 
-	SDL_BlitSurface(sprites, &src, s, NULL);
+	/* If we have a fade_status, we need to crop a smaller area. */
+	if (fs > 0) {
+		dst = malloc(sizeof(SDL_Rect));
+		dst->x = dst->y = fs;
+		dst->w = dst->h = fs * 2;
+		src.x += fs;
+		src.y += fs;
+		src.w -= fs * 2;
+		src.h -= fs * 2;
+	}
+
+	SDL_BlitSurface(sprites, &src, s, dst);
 
 	/* If this cube has water, find the water mask 64px lower or 128px
 	 * if this is type 2 water (from the right side). */
 	if (cube->water) {
 		src.y += BSIZE * 4 * cube->water;
-		SDL_BlitSurface(sprites, &src, s, NULL);
+		SDL_BlitSurface(sprites, &src, s, dst);
 	}
 
 	return s;

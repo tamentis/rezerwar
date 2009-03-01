@@ -240,14 +240,16 @@ board_update_single_block(Board *board, Uint32 now, Uint16 i) {
 
 		/* If the block didn't move, block it, and un-current */
 		if (block->prev_y == block->y) {
-			board->current_block = NULL;
 			block->falling = 0;
-			if (block->y > 0) {
-				printf("launch_next_block()\n");
-				board_launch_next_block(board);
-			} else {
-				printf("GAME OVER!\n");
-				board_gameover(board);
+			if (block == board->current_block) {
+				board->current_block = NULL;
+				if (block->y > 0) {
+					printf("launch_next_block()\n");
+					board_launch_next_block(board);
+				} else {
+					printf("GAME OVER!\n");
+					board_gameover(board);
+				}
 			}
 			board_transfer_cubes(board, block);
 			block_kill(block);

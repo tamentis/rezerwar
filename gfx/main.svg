@@ -14,7 +14,7 @@
    id="svg2"
    sodipodi:version="0.32"
    inkscape:version="0.46"
-   sodipodi:docname="background_02.svg"
+   sodipodi:docname="main.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    version="1.0"
    inkscape:export-filename="/home/tamentis/dev/trunk/rezerwar/gfx/backtitle.png"
@@ -32,14 +32,14 @@
      inkscape:pageshadow="2"
      inkscape:zoom="0.64"
      inkscape:cx="123.0783"
-     inkscape:cy="751.53916"
+     inkscape:cy="439.03916"
      inkscape:document-units="px"
-     inkscape:current-layer="layer2"
+     inkscape:current-layer="layer6"
      showgrid="false"
-     inkscape:window-width="1280"
-     inkscape:window-height="773"
-     inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:window-width="1559"
+     inkscape:window-height="902"
+     inkscape:window-x="1299"
+     inkscape:window-y="61"
      borderlayer="true"
      showguides="true"
      inkscape:guide-bbox="true">
@@ -8615,17 +8615,7 @@
      inkscape:groupmode="layer"
      id="layer6"
      inkscape:label="Logo"
-     style="display:inline">
-    <image
-       y="-155.26163"
-       x="-11.745641"
-       id="image4915"
-       height="502.37332"
-       width="669.83105"
-       sodipodi:absref="/tmp/rez.png"
-       xlink:href="/tmp/rez.png"
-       style="fill:none;fill-opacity:1" />
-  </g>
+     style="display:inline" />
   <g
      inkscape:groupmode="layer"
      id="layer7"

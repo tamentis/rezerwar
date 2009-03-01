@@ -19,10 +19,13 @@ OBJECTS=main.o rmalloc.o rboard.o rboard_blocks.o rboard_drops.o rblock.o \
 	engine_sdl.o strlcpy.o menus.o text.o \
 	a_chimneys.o a_sky.o
 
+all: gfx_build $(PROGRAM)
+
 $(PROGRAM): $(OBJECTS)
 	$(CC) $(OBJECTS) $(LIBS) -o $(PROGRAM)
 
-all: $(PROGRAM)
+gfx_build:
+	make -C gfx
 
 $(OBJECTS): %.o: %.c rezerwar.h
 	$(CC) $(CFLAGS) -c $<

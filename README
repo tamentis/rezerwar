@@ -13,7 +13,7 @@ NETWORK:
   A network is the name of a set of pipe-connected cubes. When a network is
   closed, it gets destroyed and might cause deflagration.
 
-DEFLAGRATION:
+DEFLAGRATION (obsolete)
   When a closed network of cubes is completed, depending on the number of cubes
   in the network and the difficulty level, you might trigger a cube
   deflagration. This means all the neighoring cubes around the network will be
@@ -33,6 +33,7 @@ AVALANCHE:
   most score rewarding trick in Rezerwar.
 
 TODO:
+ - make sure the sky scrolls infinitely.
  - find out why only certain letters are moving (odd shit).
  - add blue and red blocks which will freeze and thaw the water.
  - Sound -> add a didjeridou sound at the beginning or accordeon, something cacophinic.
@@ -42,6 +43,12 @@ TODO:
  - think about hitting space to move the block directly at the bottom, maybe
    call _update() multiple time until a different return?
  - Music
+ - Add an 'under pressure' block that can provide pressure for a couple
+   blocks. If you don't complete the network in 10 seconds, it depletes.
+ - Add a bomb block, when it falls, it destroys everything in a 1 block
+   radius.
+ - Add an acid block, it melts all the blocks  underneath, vertically.
+ - add an atomic block, it nukes all the blocks on the same level, horizontaly
  - Create a block_allocate when creating new blocks to avoid always pushing
    blocks at the end of the array.
  - You can harden blocks so they can last a couple generations of water, this

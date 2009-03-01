@@ -69,9 +69,8 @@ block_generate_cubes(Block *block, int n)
 	}
 }
 
-
 Block *
-block_new_one()
+block_new_one_template()
 {
 	Block *block;
 	Uint8 pos0[] = { 1 };
@@ -82,9 +81,31 @@ block_new_one()
 	block_set_position(block, 2, pos0);
 	block_set_position(block, 3, pos0);
 
-	block_generate_cubes(block, 1);
-
 	block->type = BLOCK_TYPE_ONE;
+
+	return block;
+}
+
+Block *
+block_new_one_from_cube(Cube *cube)
+{
+	Block *block;
+
+	block = block_new_one_template();
+	block->cube_count = 1;
+	block->cubes = malloc(sizeof(Cube*));
+	block->cubes[0] = cube;
+
+	return block;
+}
+
+Block *
+block_new_one()
+{
+	Block *block;
+
+	block = block_new_one_template();
+	block_generate_cubes(block, 1);
 
 	return block;
 }

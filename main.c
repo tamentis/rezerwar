@@ -51,7 +51,7 @@ game_loop()
 	Text *t;
 
 	/* Prepare board and load the first block. */
-	board = board_new(9, 9, conf->difficulty);
+	board = board_new(9, 10, conf->difficulty);
 	t = board_add_text(board, (unsigned char *)BOT_VER, 10, 450);
 	board_load_next_block(board);
 	board_prepopulate(board, 2);
