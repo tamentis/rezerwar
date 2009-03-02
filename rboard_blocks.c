@@ -248,6 +248,7 @@ board_update_single_block(Board *board, u_int32_t now, int i) {
 			if (block == board->current_block) {
 				board->current_block = NULL;
 				if (block->y > 0) {
+					sfx_play_tack1();
 					board_launch_next_block(board);
 				} else {
 					board_gameover(board);
@@ -397,8 +398,11 @@ board_rotate_cw(Board *board)
 		return;
 	}
 	
-	/* If we had no issue rotating, just leave, we're good =) */
-	if (x == 0) return;
+	/* If we had no issue rotating, we're good, play a sound ;) */
+	if (x == 0) {
+		sfx_play_tick1();
+		return;
+	}
 
 	/* If we get that far, it's because we didn't manage to rotate the 
 	 * block properly... back up. */

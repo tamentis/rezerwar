@@ -7,7 +7,7 @@ CC=gcc
 
 # Debug (no optimization)
 CFLAGS=`sdl-config --cflags` -Wall -ggdb
-LIBS=`sdl-config --libs`
+LIBS=`sdl-config --libs` -lSDL_mixer
 
 # Profiling
 #CFLAGS=`sdl-config --cflags` -pg -ggdb -Wall
@@ -15,7 +15,7 @@ LIBS=`sdl-config --libs`
 
 PROGRAM=rezerwar
 OBJECTS=main.o rmalloc.o rboard.o rboard_blocks.o rblock.o \
-	rcube.o rboard_cube.o events.o \
+	rcube.o rboard_cube.o events.o sfx.o \
 	engine_sdl.o strlcpy.o menus.o text.o hiscore.o \
 	a_chimneys.o a_sky.o
 
@@ -41,7 +41,7 @@ win32: icon_dot_o
 clean:
 	make -C gfx/ clean
 	rm -f $(OBJECTS) $(PROGRAM) tags TAGS LOG
-	rm -rf doc
+	rm -rf doc hiscore.dat
 
 tags:
 	etags *.c *.h

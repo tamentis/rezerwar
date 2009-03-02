@@ -324,3 +324,7 @@ void		 a_sky_refresh(Board *);
 void		 a_chimneys_refresh(Board *);
 void		 a_sky_update(Board *, u_int32_t);
 void		 a_chimneys_update(Board *, u_int32_t);
+
+/* sfx */
+void		 sfx_play_tick1();
+void		 sfx_load_library();

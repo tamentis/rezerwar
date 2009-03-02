@@ -2,6 +2,7 @@
 #include <time.h>
 
 #include "SDL.h"
+#include "SDL_mixer.h"
 
 #include "rezerwar.h"
 
@@ -107,7 +108,7 @@ main(int ac, char **av)
 {
 	int status = 0;
 
-	if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO) != 0) {
 		fprintf(stderr, "Unable to initialize SDL: %s\n", SDL_GetError());
 		exit(-1);
 	}
@@ -122,6 +123,18 @@ main(int ac, char **av)
 	SDL_WM_SetCaption("rezerwar", NULL);
 	sprites = SDL_LoadBMP("gfx/sprites.bmp");
 	SDL_SetColorKey(sprites, SDL_SRCCOLORKEY|SDL_RLEACCEL, key);
+
+	/* Open a mixer */
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 512) < 0) {
+		fprintf(stderr, "Unable to initialize SDL_mixer: %s\n", SDL_GetError());
+		exit(-1);
+	}
+	Mix_AllocateChannels(16);
+
+	sfx_load_library();
+	sfx_play_horn();
+
+//	sfx_play_music();
 
 	/* Normal flow... */
 	intro_studio();
@@ -139,6 +152,7 @@ main(int ac, char **av)
 	hiscore_free();
 	r_free(conf);
 	r_checkmem();
+	Mix_CloseAudio();
 
 	return 0;
 }
