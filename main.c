@@ -6,7 +6,7 @@
 #include "rezerwar.h"
 
 
-#define BOT_VER "rezerwar alpha 2009-02-22"
+#define BOT_VER "rezerwar alpha 2009-03-01"
 
 
 Board *board;
@@ -43,15 +43,16 @@ conf_init()
 void
 game_loop()
 {
-	Uint32 start, now, framecount = 0, fps_lastframe = 0;
-	Uint8 playing = 1;
-	Uint32 fps_lastframedisplay = 0;
-	Sint32 elapsed;
+	u_int32_t start, now, framecount = 0, fps_lastframe = 0,
+		  fps_lastframedisplay = 0;
+	int elapsed;
+	char fpsbuf[16];
+	byte playing = 1;
 	SDL_Event event;
 	Text *t;
 
 	/* Prepare board and load the first block. */
-	board = board_new(9, 10, conf->difficulty);
+	board = board_new(conf->difficulty);
 	t = board_add_text(board, (unsigned char *)BOT_VER, 10, 450);
 	board_load_next_block(board);
 	board_prepopulate(board, 2);
@@ -74,7 +75,12 @@ game_loop()
 
 		/* Print Frame Per Second. */
 		if (now - fps_lastframedisplay > 1000) {
-			fprintf(stderr, "FPS: %u\n", framecount);
+			if (board->show_fps) {
+				snprintf(fpsbuf, 16, "FPS: %u\n", framecount);
+				text_set_value(board->fps_t, (byte*)fpsbuf);
+			} else {
+				text_set_value(board->fps_t, (byte*)"");
+			}
 			fps_lastframedisplay = now;
 			framecount = 0;
 		}
@@ -107,6 +113,8 @@ main(int ac, char **av)
 	}
 	atexit(SDL_Quit);
 
+	SDL_EnableUNICODE(1);
+
 	/* Create main window, seed random, load the sprites and set the alpha. */
 	srand(time(NULL));
 	screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE|SDL_DOUBLEBUF);
@@ -128,6 +136,7 @@ main(int ac, char **av)
 	} while (1);
 
 	/* Death */
+	hiscore_free();
 	r_free(conf);
 	r_checkmem();
 

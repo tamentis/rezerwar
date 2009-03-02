@@ -5,21 +5,22 @@
 #include "rezerwar.h"
 
 
+extern Board *board;
 extern SDL_Surface *screen;
 extern Uint32 key;
 
 
 Board *
-board_new(Uint8 width, Uint8 height, int difficulty)
+board_new(int difficulty)
 {
 	Board *b;
-	size_t size = width * height;
-	Uint16 i;
+	size_t size = BOARD_WIDTH * BOARD_HEIGHT;
+	int i;
 
 	b = r_malloc(sizeof(Board));
 
-	b->width = width;
-	b->height = height;
+	b->width = BOARD_WIDTH;
+	b->height = BOARD_HEIGHT;
 
 	b->difficulty = difficulty;
 
@@ -41,21 +42,6 @@ board_new(Uint8 width, Uint8 height, int difficulty)
 	b->block_speed = SPEED_NORMAL;
 	b->block_speed_factor = 1;
 
-	/* Drop related members. */
-	b->drop_map_size = size * BSIZE * BSIZE;
-	b->drop_map = r_malloc(b->drop_map_size * sizeof(Drop*));
-	for (i = 0; i < size; i++) {
-		b->drop_map[i] = NULL;
-	}
-
-	b->drop_count = 0;
-	b->drops = NULL;
-	b->drop_speed = DROP_SPEED;
-
-	/* Water output related members. */
-	b->outputs = NULL;
-	b->output_count = 0;
-
 	/* Texts (future OSD) related members */
 	b->texts = NULL;
 	b->text_count = 0;
@@ -71,12 +57,26 @@ board_new(Uint8 width, Uint8 height, int difficulty)
 	b->paused = 0;
 	b->gameover = 0;
 
-	/* Score text is always the first text, then status (pause/gameover). */
+	/* Prompt init. */
+	b->prompt_text = NULL;
+	b->prompt_func = NULL;
+
+	/* Modal and score */
+	b->modal = false;
 	b->score_t = board_add_text(b, (unsigned char *)"0", 10, 10);
-	b->status_t = board_add_text(b, (unsigned char *)"", 280, 240);
+
+	/* Status message */
+	b->status_t = board_add_text(b, (unsigned char *)"", 260, 240);
 	b->status_t->effect = EFFECT_SHAKE;
+	b->status_t->centered = true;
 	text_set_color1(b->status_t, 225, 186, 0);
 	text_set_color2(b->status_t, 127,  55, 0);
+
+	/* (optional) FPS display */
+	b->show_fps = false;
+	b->fps_t = board_add_text(b, (byte *)"", 550, 10);
+	text_set_color1(b->status_t, 225, 40, 0);
+	text_set_color2(b->status_t, 56,  8, 8);
 
 	/* Load background. */
 	b->bg = SDL_LoadBMP("gfx/gameback.bmp");
@@ -91,34 +91,6 @@ void
 board_kill(Board *board)
 {
 	int i, size;
-
-	printf("BOARD KILL!!!\n");
-
-	/* Drop clean up */
-	for (i = 0; i < board->drop_count; i++) {
-		if (board->drops[i] == NULL)
-			continue;
-
-		drop_kill(board->drops[i]);
-	}
-	free(board->drops);
-	board->drops = NULL;
-	r_free(board->drop_map);
-	board->drop_map = NULL;
-	board->drop_count = 0;
-
-
-	/* Output clean up */
-	for (i = 0; i < board->output_count; i++) {
-		if (board->outputs[i] == NULL)
-			continue;
-
-		wateroutput_kill(board->outputs[i]);
-	}
-	free(board->outputs);
-	board->outputs = NULL;
-	board->output_count = 0;
-
 
 	/* Cube cleanup (only if cubes we have) */
 	if (board->cubes != NULL) {
@@ -155,6 +127,7 @@ board_kill(Board *board)
 			continue;
 		text_kill(board->texts[i]);
 	}
+	free(board->texts);
 
 	/* General board clean up */
 	SDL_FreeSurface(board->bg);
@@ -186,12 +159,22 @@ board_refresh_texts(Board *board)
 	int i;
 	Text *t;
 	SDL_Rect r;
-	SDL_Surface *s;
+	SDL_Surface *s, *m;
 
 	/* Update the score Text */
 	unsigned char score[20];
 	snprintf((char *)score, 20, "score: %d", board->score);
 	text_set_value(board->score_t, score);
+
+	/* Add a modal under all the text. */
+	if (board->modal == true) {
+		m = SDL_CreateRGBSurface(0, screen->w, screen->h, 
+				screen->format->BitsPerPixel, 0, 0, 0, 0);
+		SDL_FillRect(m, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
+		SDL_SetAlpha(m, SDL_SRCALPHA|SDL_RLEACCEL, 160);
+		SDL_BlitSurface(m, NULL, screen, NULL);
+		SDL_FreeSurface(m);
+	}
 
 	/* Draw all the Texts, cleaning up trashed ones. */
 	for (i = 0; i < board->text_count; i++) {
@@ -217,9 +200,11 @@ void
 board_toggle_pause(Board *board)
 {
 	if (board->paused == 1) {
+		board->modal = false;
 		board->paused = 0;
 		text_set_value(board->status_t, (unsigned char *)"");
 	} else {
+		board->modal = true;
 		board->paused = 1;
 		text_set_value(board->status_t, (unsigned char *)"paused!");
 	}
@@ -244,39 +229,71 @@ board_refresh(Board *board)
 	/* Redraw all the cubes. */
 	board_refresh_cubes(board);
 
-	/* Redraw the drops. */
-	board_refresh_drops(board);
-
-	/* Draw texts elements (meant to replace OSD) */
-	board_refresh_texts(board);
-
 	/* Animations */
 	a_chimneys_refresh(board);
+
+	/* Draw texts elements (meant to replace OSD), and modal */
+	board_refresh_texts(board);
 
 	/* Dig up the back buffer. */
 	SDL_Flip(screen);
 }
 
 
+int
+board_save_score(Text *text, Text *x)
+{
+	board->modal = true;
+	if (text->length > 0) {
+		hiscore_add((char *)text->value, board->score);
+	}
+	board->status_t->y = 80;
+	text_set_value(board->status_t, (byte*)"High Scores");
+	hiscore_dump(board);
+	text->trashed = true;
+	x->trashed = true;
+	board->prompt_text = NULL;
+
+	return 1;
+}
+
+
+/**
+ * Called when the game has ended, if the score is a high one, prompt
+ * for the name of the player.
+ */
 void
 board_gameover(Board *board)
 {
+	Text *txt, *prompt;
+
+	board->modal = true;
 	board->gameover = 1;
-	text_set_value(board->texts[1], (unsigned char *)"game over!");
+	text_set_value(board->status_t, (unsigned char *)"game over!");
+	if (hiscore_check(board->score) == false)
+		return;
+
+	txt = board_add_text(board, (byte *)"enter your name:", 0, 270);
+	txt->centered = true;
+	prompt = board_add_text(board, (byte *)"", 0, 310);
+	text_set_color1(prompt, 80, 100, 190);
+	text_set_color2(prompt, 30, 40, 130);
+	prompt->centered = true;
+	board->prompt_text = prompt;
+	board->prompt_func = board_save_score;
+	board->prompt_data = txt;
 }
 
 
 /* board_update() - this function handles all the elements at ticking point */
 void
-board_update(Board *board, Uint32 now)
+board_update(Board *board, u_int32_t now)
 {
 	if (board->paused == 1 || board->gameover == 1)
 		return;
 
 	board_update_blocks(board, now);
 	board_update_cubes(board, now);
-	board_update_outputs(board, now);
-	board_update_drops(board, now);
 	board_update_water(board, now);
 
 	/* Animations */

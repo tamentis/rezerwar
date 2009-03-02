@@ -12,10 +12,10 @@ extern Uint32 key;
 
 
 Block *
-block_new(Uint8 size)
+block_new(byte size)
 {
 	Block *block;
-	Uint8 i;
+	byte i;
 
 	block = r_malloc(sizeof(Block));
 
@@ -26,7 +26,7 @@ block_new(Uint8 size)
 
 	/* Prepare positions space. */
 	block->current_position = 0;
-	block->positions = r_malloc(4 * sizeof(Uint8 *));
+	block->positions = r_malloc(4 * sizeof(byte *));
 	for (i = 0; i < 4; i++) {
 		block->positions[i] = r_malloc(size * size);
 	}
@@ -45,9 +45,9 @@ block_new(Uint8 size)
 
 /* block_set_position() - Copy the position configuration to the block. */
 void
-block_set_position(Block *block, Uint8 pos, Uint8 *p)
+block_set_position(Block *block, byte pos, byte *p)
 {
-	Uint8 i;
+	byte i;
 
 	for (i = 0; i < block->size * block->size; i++) {
 		block->positions[pos][i] = p[i];
@@ -73,7 +73,7 @@ Block *
 block_new_one_template()
 {
 	Block *block;
-	Uint8 pos0[] = { 1 };
+	byte pos0[] = { 1 };
 
 	block = block_new(1);
 	block_set_position(block, 0, pos0);
@@ -114,13 +114,13 @@ Block *
 block_new_two()
 {
 	Block *block;
-	Uint8 pos0[] = {  0, 0,
+	byte pos0[] = {  0, 0,
 			  1, 2 };
-	Uint8 pos1[] = {  1, 0,
+	byte pos1[] = {  1, 0,
 			  2, 0 };
-	Uint8 pos2[] = {  2, 1,
+	byte pos2[] = {  2, 1,
 			  0, 0 };
-	Uint8 pos3[] = {  0, 2,
+	byte pos3[] = {  0, 2,
 			  0, 1 };
 
 	block = block_new(2);
@@ -141,13 +141,13 @@ Block *
 block_new_corner()
 {
 	Block *block;
-	Uint8 pos0[] = {  1, 0,
+	byte pos0[] = {  1, 0,
 			  2, 3 };
-	Uint8 pos1[] = {  2, 1,
+	byte pos1[] = {  2, 1,
 			  3, 0 };
-	Uint8 pos2[] = {  3, 2,
+	byte pos2[] = {  3, 2,
 			  0, 1 };
-	Uint8 pos3[] = {  0, 3,
+	byte pos3[] = {  0, 3,
 			  1, 2 };
 
 	block = block_new(2);
@@ -168,16 +168,16 @@ Block *
 block_new_three()
 {
 	Block *block;
-	Uint8 pos0[] = {  0, 0, 0,
+	byte pos0[] = {  0, 0, 0,
 			  1, 2, 3,
 			  0, 0, 0 };
-	Uint8 pos1[] = {  0, 1, 0,
+	byte pos1[] = {  0, 1, 0,
 			  0, 2, 0,
 			  0, 3, 0 };
-	Uint8 pos2[] = {  0, 0, 0,
+	byte pos2[] = {  0, 0, 0,
 			  3, 2, 1,
 			  0, 0, 0 };
-	Uint8 pos3[] = {  0, 3, 0,
+	byte pos3[] = {  0, 3, 0,
 			  0, 2, 0,
 			  0, 1, 0 };
 
@@ -199,16 +199,16 @@ Block *
 block_new_tee()
 {
 	Block *block;
-	Uint8 pos0[] = {  0, 0, 0,
+	byte pos0[] = {  0, 0, 0,
 			  1, 2, 3,
 			  0, 4, 0 };
-	Uint8 pos1[] = {  0, 1, 0,
+	byte pos1[] = {  0, 1, 0,
 			  4, 2, 0,
 			  0, 3, 0 };
-	Uint8 pos2[] = {  0, 4, 0,
+	byte pos2[] = {  0, 4, 0,
 			  3, 2, 1,
 			  0, 0, 0 };
-	Uint8 pos3[] = {  0, 3, 0,
+	byte pos3[] = {  0, 3, 0,
 			  0, 2, 4,
 			  0, 1, 0 };
 
@@ -230,19 +230,19 @@ Block *
 block_new_square()
 {
 	Block *block;
-	Uint8 pos0[] = { 0, 0, 0, 0, 
+	byte pos0[] = { 0, 0, 0, 0, 
 			 0, 1, 2, 0,
 			 0, 4, 3, 0,
 			 0, 0, 0, 0 };
-	Uint8 pos1[] = { 0, 0, 0, 0, 
+	byte pos1[] = { 0, 0, 0, 0, 
 			 0, 4, 1, 0,
 			 0, 3, 2, 0,
 			 0, 0, 0, 0 };
-	Uint8 pos2[] = { 0, 0, 0, 0, 
+	byte pos2[] = { 0, 0, 0, 0, 
 			 0, 3, 4, 0,
 			 0, 2, 1, 0,
 			 0, 0, 0, 0 };
-	Uint8 pos3[] = { 0, 0, 0, 0, 
+	byte pos3[] = { 0, 0, 0, 0, 
 			 0, 2, 3, 0,
 			 0, 1, 4, 0,
 			 0, 0, 0, 0 };
@@ -265,16 +265,16 @@ Block *
 block_new_zee()
 {
 	Block *block;
-	Uint8 pos0[] = { 0, 0, 0, 
+	byte pos0[] = { 0, 0, 0, 
 			 1, 2, 0,
 			 0, 3, 4 };
-	Uint8 pos1[] = { 0, 0, 1,
+	byte pos1[] = { 0, 0, 1,
 			 0, 3, 2,
 			 0, 4, 0 };
-	Uint8 pos2[] = { 0, 0, 0, 
+	byte pos2[] = { 0, 0, 0, 
 			 4, 3, 0,
 			 0, 2, 1 };
-	Uint8 pos3[] = { 0, 0, 4,
+	byte pos3[] = { 0, 0, 4,
 			 0, 2, 3,
 			 0, 1, 0 };
 
@@ -296,16 +296,16 @@ Block *
 block_new_ess()
 {
 	Block *block;
-	Uint8 pos0[] = { 0, 0, 0,
+	byte pos0[] = { 0, 0, 0,
 			 0, 3, 4,
 			 1, 2, 0 };
-	Uint8 pos1[] = { 0, 1, 0,
+	byte pos1[] = { 0, 1, 0,
 			 0, 2, 3,
 			 0, 0, 4 };
-	Uint8 pos2[] = { 0, 0, 0,
+	byte pos2[] = { 0, 0, 0,
 			 0, 2, 1,
 			 4, 3, 0 };
-	Uint8 pos3[] = { 0, 4, 0,
+	byte pos3[] = { 0, 4, 0,
 			 0, 3, 2,
 			 0, 0, 1 };
 
@@ -327,19 +327,19 @@ Block *
 block_new_bar()
 {
 	Block *block;
-	Uint8 pos0[] = { 0, 0, 0, 0,
+	byte pos0[] = { 0, 0, 0, 0,
 			 0, 0, 0, 0,
 			 1, 2, 3, 4,
 			 0, 0, 0, 0 };
-	Uint8 pos1[] = { 0, 1, 0, 0,
+	byte pos1[] = { 0, 1, 0, 0,
 			 0, 2, 0, 0,
 			 0, 3, 0, 0,
 			 0, 4, 0, 0 };
-	Uint8 pos2[] = { 0, 0, 0, 0,
+	byte pos2[] = { 0, 0, 0, 0,
 			 0, 0, 0, 0,
 			 4, 3, 2, 1,
 			 0, 0, 0, 0 };
-	Uint8 pos3[] = { 0, 4, 0, 0,
+	byte pos3[] = { 0, 4, 0, 0,
 			 0, 3, 0, 0,
 			 0, 2, 0, 0,
 			 0, 1, 0, 0 };
@@ -362,16 +362,16 @@ Block *
 block_new_ell()
 {
 	Block *block;
-	Uint8 pos0[] = { 0, 0, 0,
+	byte pos0[] = { 0, 0, 0,
 			 2, 3, 4,
 			 1, 0, 0 };
-	Uint8 pos1[] = { 1, 2, 0,
+	byte pos1[] = { 1, 2, 0,
 			 0, 3, 0,
 			 0, 4, 0 };
-	Uint8 pos2[] = { 0, 0, 1,
+	byte pos2[] = { 0, 0, 1,
 			 4, 3, 2,
 			 0, 0, 0 };
-	Uint8 pos3[] = { 0, 4, 0,
+	byte pos3[] = { 0, 4, 0,
 			 0, 3, 0,
 			 0, 2, 1 };
  
@@ -393,16 +393,16 @@ Block *
 block_new_jay()
 {
 	Block *block;
-	Uint8 pos0[] = { 0, 0, 0,
+	byte pos0[] = { 0, 0, 0,
 			 1, 2, 3,
 			 0, 0, 4 };
-	Uint8 pos1[] = { 0, 1, 0,
+	byte pos1[] = { 0, 1, 0,
 			 0, 2, 0,
 			 4, 3, 0 };
-	Uint8 pos2[] = { 4, 0, 0,
+	byte pos2[] = { 4, 0, 0,
 			 3, 2, 1,
 			 0, 0, 0 };
-	Uint8 pos3[] = { 0, 3, 4,
+	byte pos3[] = { 0, 3, 4,
 			 0, 2, 0,
 			 0, 1, 0 };
 
@@ -480,7 +480,7 @@ block_new_random()
 void
 block_kill(Block *block)
 {
-	Uint8 i;
+	byte i;
 
 	for (i = 0; i < 4; i++) {
 		r_free(block->positions[i]);
@@ -506,8 +506,8 @@ block_get_surface(Block *block)
 	Cube *cube;
 	SDL_Rect sr;
 	SDL_Rect dr;
-	Uint8 x, y, i;
-	Uint8 *pos = block->positions[block->current_position];
+	byte x, y, i;
+	byte *pos = block->positions[block->current_position];
 	
 	/* All blocks are fixed size. Set DestRect and SourceRect. */
 	dr.w = sr.w = BSIZE;
@@ -531,6 +531,7 @@ block_get_surface(Block *block)
 				dr.y = y * BSIZE;
 
 				SDL_BlitSurface(cube_surface, NULL, s, &dr);
+				SDL_FreeSurface(cube_surface);
 			}
 		}
 	}

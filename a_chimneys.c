@@ -8,18 +8,17 @@
 
 extern SDL_Surface *screen;
 extern SDL_Surface *sprites;
-extern Uint32 key;
 
 #define A_CHIMNEY_SIZE 36
 #define A_CHIMNEY_SPEED 250
 
 int a_chimneys_offsets[] = { 0, 1, 2, 1 };
 int a_chimneys_status = 0;
-Uint32 a_chimneys_last = 0;
+u_int32_t a_chimneys_last = 0;
 
 
 void
-a_chimneys_update(Board *board, Uint32 now)
+a_chimneys_update(Board *board, u_int32_t now)
 {
 	if (now < (a_chimneys_last + A_CHIMNEY_SPEED))
 		return;

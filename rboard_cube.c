@@ -14,14 +14,13 @@ extern SDL_Surface *screen;
  * Update all the cubes logic (non-graphic stuff).
  */
 void
-board_update_cubes(Board *board, Uint32 now)
+board_update_cubes(Board *board, u_int32_t now)
 {
 	int i;
 	int size = board->width * board->height;
 	int type;
 	Cube *cube;
 	Block *block;
-	Uint8 pos0[] = { 1 };
 
 	for (i = 0; i < size; i++) {
 		cube = board->cubes[i];
@@ -48,7 +47,6 @@ board_update_cubes(Board *board, Uint32 now)
 			block->x = cube->x;
 			block->y = cube->y;
 			board->cubes[i] = NULL;
-			printf("FALL!\n");
 		}
 	}
 }
@@ -89,8 +87,8 @@ board_refresh_cubes(Board *board)
 void
 board_dump_cube_map(Board *board)
 {
-	Uint8 x, y;
-	Uint16 i;
+	byte x, y;
+	int i;
 
 	for (y = 0; y < board->height; y++) {
 		for (x = 0; x < board->width; x++) {
@@ -135,7 +133,7 @@ board_remove_water(Board *board)
  * pipes on the same side.
  */
 void
-board_update_water(Board *board, Uint32 now)
+board_update_water(Board *board, u_int32_t now)
 {
 	int i;
 	Cube *cube;
@@ -212,7 +210,7 @@ board_run_avalanche(Board *board, Cube *cube)
 void
 board_run_avalanche_column(Board *board, Cube *cube)
 {
-	Sint16 y;
+	int y;
 	Cube *target;
 
 	for (y = cube->y; y < board->height; y++) {
@@ -230,7 +228,7 @@ board_run_avalanche_column(Board *board, Cube *cube)
  * border of the board.
  */
 Cube *
-board_get_cube(Board *board, Sint16 x, Sint16 y)
+board_get_cube(Board *board, int x, int y)
 {
 	/* Bad x value */
 	if (x < 0 || x >= board->width)
@@ -248,7 +246,7 @@ board_get_cube(Board *board, Sint16 x, Sint16 y)
  * Returns an integer representing the type of area at x,y
  */
 int
-board_get_area_type(Board *board, Sint16 x, Sint16 y)
+board_get_area_type(Board *board, int x, int y)
 {
 	if (x < 0)
 		return ATYPE_BOARD_LEFT;
@@ -271,7 +269,7 @@ board_get_area_type(Board *board, Sint16 x, Sint16 y)
  */
 void
 board_spread_attempt(Board *board, Cube *cube, Cube *root, Sint8 ox, Sint8 oy,
-		Uint8 src_plug, Uint8 dest_plug)
+		byte src_plug, byte dest_plug)
 {
 	Cube *n;
 	int status;

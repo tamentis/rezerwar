@@ -21,7 +21,7 @@ extern Uint32 key;
  *     4
  */
 
-Uint8 cube_plugs[] = {
+byte cube_plugs[] = {
 	0,  9, 11, 10,  8, 15,
 	0,  3,  7,  5,  1, 15,
 	0,  6, 14, 10,  2, 15,
@@ -33,7 +33,7 @@ Uint8 cube_plugs[] = {
 /**
  * Return the current 4 bits representing the current opened plugs for the
  * current cube. */
-Uint8
+byte
 cube_get_plugs(Cube *cube)
 {
 	return cube_plugs[cube->current_position * 6 + cube->type];
@@ -41,7 +41,7 @@ cube_get_plugs(Cube *cube)
 
 
 Cube *
-cube_new(Uint8 start_pos)
+cube_new(byte start_pos)
 {
 	Cube *cube;
 
@@ -129,8 +129,7 @@ cube_new_random()
 void
 cube_kill(Cube *cube)
 {
-//	Uint8 i;
-
+	cube_network_flush(cube);
 	r_free(cube);
 }
 
@@ -156,7 +155,7 @@ cube_get_surface(Cube *cube)
 
 	/* If we have a fade_status, we need to crop a smaller area. */
 	if (fs > 0) {
-		dst = malloc(sizeof(SDL_Rect));
+		dst = r_malloc(sizeof(SDL_Rect));
 		dst->x = dst->y = fs;
 		dst->w = dst->h = fs * 2;
 		src.x += fs;
@@ -173,6 +172,8 @@ cube_get_surface(Cube *cube)
 		src.y += BSIZE * 4 * cube->water;
 		SDL_BlitSurface(sprites, &src, s, dst);
 	}
+	
+	r_free(dst);
 
 	return s;
 }
@@ -214,9 +215,9 @@ cube_rotate_ccw(Cube *cube)
  * Return true if the cube has the 'mask' plugs opened.
  */
 int
-cube_plug_match(Cube *cube, Uint8 mask)
+cube_plug_match(Cube *cube, byte mask)
 {
-	Uint8 plugs = cube_get_plugs(cube);
+	byte plugs = cube_get_plugs(cube);
 
 	if ((plugs & mask) == mask)
 		return 1;
@@ -226,7 +227,7 @@ cube_plug_match(Cube *cube, Uint8 mask)
 
 
 int
-cube_get_plug_status(Cube *cube1, Uint8 plug1, Cube *cube2, Uint8 plug2) {
+cube_get_plug_status(Cube *cube1, byte plug1, Cube *cube2, byte plug2) {
 	int status = 0;
 
 	/* Cube1 has an output in this direction */

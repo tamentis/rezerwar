@@ -93,24 +93,10 @@ text_render_glyph(SDL_Surface *s, char c, int x, int y)
 void
 text_effect_shake(Text *text, int *rx, int *ry)
 {
-	int force = 2;
-	int speed = 4;
+	int force = 3;
 
-	if (text->fx_shake_data == NULL) {
-		text->fx_shake_data = r_malloc(sizeof(int));
-		text->fx_shake_data[0] = speed;
-	}
-
-	if (text->fx_shake_data[0] < 1) {
-		text->fx_shake_data[0] = speed;
-		*rx = (rand() % 50 > 25 ? (rand() % (force + 1)) : 0);
-		*ry = (rand() % 50 > 25 ? (rand() % (force + 1)) : 0);
-	} else {
-		*rx = 0;
-		*ry = 0;
-	}
-
-	text->fx_shake_data[0]--;
+	*rx = (rand() % 50 > 45 ? (rand() % (force + 1)) : 0);
+	*ry = (rand() % 50 > 40 ? (rand() % (force + 1)) : 0);
 }
 
 
@@ -247,7 +233,6 @@ text_new(unsigned char *value)
 	text->width = 0;
 	text->height = 19;
 	text->effect = 0;
-	text->fx_shake_data = NULL;
 	text->fx_fade_data = -255;
 	text->value = NULL;
 	text->length = -1;
@@ -258,12 +243,13 @@ text_new(unsigned char *value)
 	text->color1_r = 0xFF;
 	text->color1_g = 0xFF;
 	text->color1_b = 0xFF;
+
+	text->centered = false;
 	
 	text_set_value(text, value);
 
 	return text;
 }
-
 
 /**
  * Set the value (text) for this Text entity. If the text is currently empty
@@ -283,11 +269,37 @@ text_set_value(Text *text, unsigned char *value)
 	text_calculate_size(text);
 }
 
+void
+text_add_char(Text *text, char ch)
+{
+	char *new_prompt;
+	int nlen = text->length + 1;
+
+	new_prompt = r_malloc(nlen + 1);
+	strlcpy(new_prompt, (char*)text->value, nlen + 1);
+	new_prompt[nlen] = '\0';
+	new_prompt[nlen - 1] = ch;
+	r_free(text->value);
+	text->value = (byte*)new_prompt;
+	text->length = nlen;
+
+	text_calculate_size(text);
+}
+
+void
+text_del_last_char(Text *text)
+{
+	if (text->length) {
+		text->length--;
+		text->value[text->length] = '\0';
+		text_calculate_size(text);
+	}
+
+}
 
 void
 text_kill(Text *text)
 {
-	r_free(text->fx_shake_data);
 	r_free(text->value);
 	r_free(text);
 }
@@ -321,9 +333,12 @@ text_get_surface(Text *text)
 void
 text_get_rectangle(Text *text, SDL_Rect *r)
 {
-	r->w = 200;
+	r->w = text->width;
 	r->h = 19;
-	r->x = text->x;
 	r->y = text->y;
+	if (text->centered == true)
+		r->x = (screen->w - text->width) / 2;
+	else
+		r->x = text->x;
 }
 

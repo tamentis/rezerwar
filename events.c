@@ -9,13 +9,13 @@ extern Board *board;
 SDL_Surface *screen;
 
 
-Uint8
+byte
 handle_events_mouse(SDL_Event *event)
 {
 	switch ((int)event->button.button) {
 		case 5: // mousewheel down
 		default:
-			board_launch_new_drop(board, 50, 50);
+			printf("mousewheel down\n");
 			break;
 	}
 
@@ -23,7 +23,7 @@ handle_events_mouse(SDL_Event *event)
 }
 
 
-Uint8
+byte
 handle_events_keyup(SDL_Event *event)
 {
 	switch ((int)event->key.keysym.sym) {
@@ -46,28 +46,48 @@ handle_events_keyup(SDL_Event *event)
 	return 1;
 }
 
+int
+handle_events_prompt(SDL_keysym keysym, Text *text)
+{
+	char ch;
 
-Uint8
+	if ((keysym.unicode & 0xFF80) != 0)
+		return 1;
+
+	if (keysym.sym == SDLK_BACKSPACE) {
+		text_del_last_char(text);
+		return 1;
+	}
+
+	if (keysym.sym == SDLK_RETURN) {
+		return (*(board->prompt_func))(text, board->prompt_data);
+	}
+
+	ch = keysym.unicode & 0x7F;
+	if (isalnum(ch) != 0) {
+		text_add_char(text, ch);
+	}
+
+	return 1;
+}
+
+byte
 handle_events_keydown(SDL_Event *event)
 {
+	/* Hijack the event system when we need to take some input. */
+	if (board->prompt_text != NULL) {
+		return handle_events_prompt(event->key.keysym, board->prompt_text);
+	}
+
 	switch ((int)event->key.keysym.sym) {
 		case SDLK_ESCAPE:
 		case SDLK_q:
 			return 0;
 		case SDLK_F12:
-			board_launch_next_block(board);
-			break;
-		case SDLK_F11:
-			board_launch_new_drop(board, 120, 20);
+			board->show_fps = !board->show_fps;
 			break;
 		case SDLK_F10:
 			board_change_next_block(board);
-			break;
-		case SDLK_F9:
-			board_dump_drop_map_bmp(board);
-			break;
-		case SDLK_F8:
-			board_random_output(board);
 			break;
 		case SDLK_F7:
 //			board_add_cube(board);
@@ -92,6 +112,7 @@ handle_events_keydown(SDL_Event *event)
 			board->block_speed_factor = 10;
 			break;
 		case SDLK_a:
+		case SDLK_SPACE:
 			board_rotate_cw(board);
 			break;
 		case SDLK_p:
@@ -111,7 +132,7 @@ handle_events_keydown(SDL_Event *event)
 
 /* handle_events() - returning 1 will keep the game playing, returning 0
  * will quit. */
-Uint8
+byte
 handle_events(SDL_Event *event)
 {
 	switch (event->type) {

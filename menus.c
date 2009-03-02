@@ -322,9 +322,9 @@ int
 menu_runner(Menu *menu)
 {
 	SDL_Surface *intro;
-	Uint32 now, framecount = 0, fps_lastframe = 0;
-	Uint8 running = 0;
-	Sint32 elapsed;
+	u_int32_t now, framecount = 0, fps_lastframe = 0;
+	byte running = 0;
+	int elapsed;
 	SDL_Event event;
 
 	/* Load the initial image and fade into it. */

@@ -70,7 +70,7 @@ board_launch_next_block(Board *board)
 
 	board_add_block(board, nb);
 
-	nb->x = (Uint8)(board->width / 2) - (Uint8)(nb->size / 2);
+	nb->x = (byte)(board->width / 2) - (byte)(nb->size / 2);
 	nb->y = 0;
 
 	board->current_block = nb;
@@ -94,7 +94,7 @@ board_change_next_block(Board *board)
 void
 board_refresh_blocks(Board *board)
 {
-	Uint8 i;
+	byte i;
 	SDL_Rect r;
 	Block *block;
 	SDL_Surface *s;
@@ -132,19 +132,23 @@ board_refresh_next(Board *board)
 		block_get_rectangle(board->next_block, &r);
 
 		/* Increment of the position of the preview window. */
-		r.x += board->offset_x;
-		r.y += board->offset_y - BSIZE * 4;
+		r.x += board->offset_x + 10;
+		r.y += 20;
 
-		/* Increment of the alignement correction. */
-		r.x += (Uint8)((3 - board->next_block->size) * BSIZE / 2);
-		r.y += (Uint8)((4 - board->next_block->size) * BSIZE / 2);
-
-		/* Squares get a special favor. */
-		if (board->next_block->type == BLOCK_TYPE_SQUARE)
-			r.y += (Uint8)(BSIZE / 2);
+		switch (board->next_block->type) {
+			case BLOCK_TYPE_ONE:
+				r.x += BSIZE / 2;
+				r.y += BSIZE / 2;
+				break;
+			case BLOCK_TYPE_TWO:
+				r.y -= BSIZE / 2;
+				break;
+			case BLOCK_TYPE_THREE:
+				r.x -= BSIZE / 2;
+				r.y -= BSIZE / 2;
+		}
 
 		SDL_BlitSurface(s, NULL, screen, &r);
-
 		SDL_FreeSurface(s);
 	}
 }
@@ -158,7 +162,7 @@ void
 board_transfer_cubes(Board *board, Block *block)
 {
 	int x, y, i, j;
-	Uint8 *pos = block->positions[block->current_position];
+	byte *pos = block->positions[block->current_position];
 	Cube *cube;
 
 	for (y = 0; y < block->size; y++) {
@@ -192,9 +196,9 @@ board_transfer_cubes(Board *board, Block *block)
  * with increasing score.
  */
 void
-board_update_blocks(Board *board, Uint32 now)
+board_update_blocks(Board *board, u_int32_t now)
 {
-	Uint16 i;
+	int i;
 
 	if (board->score < 1000)
 		board->block_speed = SPEED_NORMAL;
@@ -227,7 +231,7 @@ board_update_blocks(Board *board, Uint32 now)
  * reprensented by 'now'.
  */
 void
-board_update_single_block(Board *board, Uint32 now, Uint16 i) {
+board_update_single_block(Board *board, u_int32_t now, int i) {
 	Block *block = board->blocks[i];
 
 	/* This block's tick has expired, we need to move it. */
@@ -244,10 +248,8 @@ board_update_single_block(Board *board, Uint32 now, Uint16 i) {
 			if (block == board->current_block) {
 				board->current_block = NULL;
 				if (block->y > 0) {
-					printf("launch_next_block()\n");
 					board_launch_next_block(board);
 				} else {
-					printf("GAME OVER!\n");
 					board_gameover(board);
 				}
 			}
@@ -289,13 +291,13 @@ board_update_single_block(Board *board, Uint32 now, Uint16 i) {
  * 	3 when touching the bottom
  * 	1 when a cube from the left side blocked
  * 	2 when a cube from the right side blocked */
-Uint8
+byte
 board_move_check(Board *board, Block *block, Sint8 x, Sint8 y)
 {
-	Uint8 mx, my;
-	Uint8 bside;
-	Uint16 i, j;
-	Uint8 *pos = block->positions[block->current_position];
+	byte mx, my;
+	byte bside;
+	int i, j;
+	byte *pos = block->positions[block->current_position];
 
 	/* Update the map. */
 //	board_update_map(board);
@@ -365,7 +367,7 @@ board_move_current_block_right(Board *board)
 
 
 void
-board_set_block_speed(Board *board, Uint32 speed)
+board_set_block_speed(Board *board, u_int32_t speed)
 {
 	board->block_speed = speed;
 }
@@ -379,7 +381,7 @@ void
 board_rotate_cw(Board *board)
 {
 	Block *block = board->current_block;
-	Uint8 x;
+	byte x;
 
 	block_rotate_cw(block);
 

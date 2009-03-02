@@ -33,15 +33,13 @@ AVALANCHE:
   most score rewarding trick in Rezerwar.
 
 TODO:
- - make sure the sky scrolls infinitely.
- - find out why only certain letters are moving (odd shit).
+ - add a 'tutorial' that shows how to play.
  - add blue and red blocks which will freeze and thaw the water.
  - Sound -> add a didjeridou sound at the beginning or accordeon, something cacophinic.
- - Add an option to show/hide FPS.
- - Add High Score (create a simple file format).
  - Move all the SDL related stuff in wrappers within sdl_engine.c
  - think about hitting space to move the block directly at the bottom, maybe
    call _update() multiple time until a different return?
+ - add mouse interfacing in-game to allow Maemo and iPhone to work.
  - Music
  - Add an 'under pressure' block that can provide pressure for a couple
    blocks. If you don't complete the network in 10 seconds, it depletes.
