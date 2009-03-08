@@ -65,7 +65,7 @@ block_generate_cubes(Block *block, int n)
 	block->cubes = malloc(sizeof(Cube*) * n);
 
 	for (i = 0; i < n; i++) {
-		block->cubes[i] = cube_new_random();
+		block->cubes[i] = cube_new_random_max(6);
 	}
 }
 

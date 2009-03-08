@@ -38,12 +38,15 @@ enum {
 };
 
 /* Cube types */
-#define CTYPE_EMPTY		0
-#define CTYPE_ANGLE		1
-#define CTYPE_TEE		2
-#define CTYPE_FLAT		3
-#define CTYPE_KNOB		4
-#define CTYPE_ALL		5
+enum {
+	CTYPE_EMPTY,
+	CTYPE_ANGLE,
+	CTYPE_TEE,
+	CTYPE_FLAT,
+	CTYPE_KNOB,
+	CTYPE_ALL,
+	CTYPE_BOMB
+};
 
 /* Plug types */
 #define PLUG_NORTH		1
@@ -118,7 +121,7 @@ typedef struct _cube {
 	int network_integrity;
 	int network_size;
 	int fade_status;
-	int trashed;
+	bool trashed;
 	struct _cube **network;
 	struct _cube *root;
 } Cube;

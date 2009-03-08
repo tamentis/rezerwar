@@ -19,13 +19,16 @@ OBJECTS=main.o rmalloc.o rboard.o rboard_blocks.o rblock.o \
 	engine_sdl.o strlcpy.o menus.o text.o hiscore.o \
 	a_chimneys.o a_sky.o
 
-all: gfx_build $(PROGRAM)
+all: gfx_build music_build $(PROGRAM)
 
 $(PROGRAM): $(OBJECTS)
 	$(CC) $(OBJECTS) $(LIBS) -o $(PROGRAM)
 
+music_build:
+	make -C music/
+
 gfx_build:
-	make -C gfx
+	make -C gfx/
 
 $(OBJECTS): %.o: %.c rezerwar.h
 	$(CC) $(CFLAGS) -c $<
@@ -40,6 +43,7 @@ win32: icon_dot_o
 
 clean:
 	make -C gfx/ clean
+	make -C music/ clean
 	rm -f $(OBJECTS) $(PROGRAM) tags TAGS LOG
 	rm -rf doc hiscore.dat
 

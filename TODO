@@ -1,0 +1,25 @@
+ - add a timed mode to clean the screen.
+ - add a 'tutorial' that shows how to play.
+ - add blue and red blocks which will freeze and thaw the water.
+ - Sound -> add a didjeridou sound at the beginning or accordeon, something cacophinic.
+ - Move all the SDL related stuff in wrappers within sdl_engine.c
+ - add mouse interfacing in-game to allow Maemo and iPhone to work.
+ - Music
+ - Add an 'under pressure' block that can provide pressure for a couple
+   blocks. If you don't complete the network in 10 seconds, it depletes.
+ - Add a bomb block, when it falls, it destroys everything in a 1 block
+   radius.
+ - Add an acid block, it melts all the blocks  underneath, vertically.
+ - add an atomic block, it nukes all the blocks on the same level, horizontaly
+ - Create a block_allocate when creating new blocks to avoid always pushing
+   blocks at the end of the array.
+ - You can harden blocks so they can last a couple generations of water, this
+   will help exploding center areas.
+ - Give the menu a 'mask' frame, make the option menu bigger and work on a
+   way to page through the lines.
+
+NOTES FROM OTHER GAME SOURCES:
+ - Would it be interesting to use a memoryPool like in q3a?
+    - you are doing it for the cubes on the board already.
+
+vim:expandtab ts=2 sw=2:

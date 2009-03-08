@@ -22,10 +22,10 @@ extern Uint32 key;
  */
 
 byte cube_plugs[] = {
-	0,  9, 11, 10,  8, 15,
-	0,  3,  7,  5,  1, 15,
-	0,  6, 14, 10,  2, 15,
-	0, 12, 13,  5,  4, 15 
+	0,  9, 11, 10,  8, 15, 0,
+	0,  3,  7,  5,  1, 15, 0,
+	0,  6, 14, 10,  2, 15, 0,
+	0, 12, 13,  5,  4, 15, 0
 };
 
 
@@ -36,7 +36,7 @@ byte cube_plugs[] = {
 byte
 cube_get_plugs(Cube *cube)
 {
-	return cube_plugs[cube->current_position * 6 + cube->type];
+	return cube_plugs[cube->current_position * 7 + cube->type];
 }
 
 
@@ -107,9 +107,12 @@ cube_network_taint(Cube *cube)
 	}
 }
 
-
+/**
+ * Core function for generating cubes. It takes an argument to know the
+ * maximum type to allow in the pick.
+ */
 Cube *
-cube_new_random()
+cube_new_random_max(int max)
 {
 	Cube *cube;
 	int r;
@@ -120,7 +123,21 @@ cube_new_random()
 
 	/* Random type. (skipping the first blank) */
 	r = rand();
-	cube->type = 1 + r % 5;
+	cube->type = 1 + r % max;
+
+	return cube;
+}
+
+/**
+ * Wrapper around the core generator which only returns the 5 first types,
+ * this is the default as it is used to generate the original flooring.
+ */
+Cube *
+cube_new_random()
+{
+	Cube *cube;
+
+	cube = cube_new_random_max(5);
 
 	return cube;
 }

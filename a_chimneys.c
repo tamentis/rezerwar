@@ -40,7 +40,7 @@ a_chimneys_refresh(Board *board)
 	dst.y = 36;
 
 	src.x = 160 + a_chimneys_offsets[a_chimneys_status] * A_CHIMNEY_SIZE;
-	src.y = 39;
+	src.y = 167;
 
 	SDL_BlitSurface(sprites, &src, screen, &dst);
 }

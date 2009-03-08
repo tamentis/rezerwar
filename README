@@ -4,6 +4,20 @@ Copyright (C) Bertrand Janin (tamentis@neopulsar.org)
 Rezerwar is a puzzle game that could be quickly described as the unlegitimate
 child of a known tetromino game and a pipe game.
 
+SOUNDS sampled from freesound.org with Audacity:
+  - Start Horn by Vann Westfold (freesound.org)
+  - Rotating sound "Clock Ticking" by jackstrebor (freesound.org)
+  - Falling block "deepkickclean" by johnnypanic (freesound.org)
+  - Bomb block "Boom" by DJ Chronos (freesound.org)
+  - Network boom "possiblelazer" aust_paul (freesound.org)
+  - Menu nav "Menu Nav 3" by DJ Chronos (freesound.org)
+  - Menu Select "f3-sfx-menu-select.wav" by broumbroum (freesound.org)
+
+GRAPHICS created with Inkscape and The Gimp
+
+MUSIC created with ChibiTracker
+
+
 HOW TO PLAY:
   You have to position falling blocks to align their pipes align and let the
   water flow to create "networks". You get points by closing networks, the
@@ -32,29 +46,3 @@ AVALANCHE:
   is destroyed and with it all the cube below it. This is at the time the
   most score rewarding trick in Rezerwar.
 
-TODO:
- - add a 'tutorial' that shows how to play.
- - add blue and red blocks which will freeze and thaw the water.
- - Sound -> add a didjeridou sound at the beginning or accordeon, something cacophinic.
- - Move all the SDL related stuff in wrappers within sdl_engine.c
- - think about hitting space to move the block directly at the bottom, maybe
-   call _update() multiple time until a different return?
- - add mouse interfacing in-game to allow Maemo and iPhone to work.
- - Music
- - Add an 'under pressure' block that can provide pressure for a couple
-   blocks. If you don't complete the network in 10 seconds, it depletes.
- - Add a bomb block, when it falls, it destroys everything in a 1 block
-   radius.
- - Add an acid block, it melts all the blocks  underneath, vertically.
- - add an atomic block, it nukes all the blocks on the same level, horizontaly
- - Create a block_allocate when creating new blocks to avoid always pushing
-   blocks at the end of the array.
- - You can harden blocks so they can last a couple generations of water, this
-   will help exploding center areas.
- - Give the menu a 'mask' frame, make the option menu bigger and work on a
-   way to page through the lines.
-
-NOTES FROM OTHER GAME SOURCES:
- - Would it be interesting to use a memoryPool like in q3a?
-
-vim:expandtab ts=2 sw=2:

@@ -315,7 +315,7 @@ board_cube_deflagration(Board *board, Cube *cube)
 	for (i = 0; i < 8; i++) {
 		nc = board_get_cube(board, cube->x + coords[i].x, cube->y + coords[i].y);
 		if (nc != NULL) {
-			nc->trashed = 1;
+			nc->trashed = true;
 		}
 	}
 }
@@ -364,13 +364,15 @@ board_destroy_network(Board *board, Cube *cube)
 			cube->network_size);
 
 	for (i = 0; i < cube->network_size; i++) {
-		cube->network[i]->trashed = 1;
+		cube->network[i]->trashed = true;
 	}
 
 //	board_network_deflagrate(board, cube);
 
-	cube->trashed = 1;
+	cube->trashed = true;
 	board->score += (cube->network_size + 1) * 8;
+
+	sfx_play_lazer();
 }
 
 
@@ -410,6 +412,7 @@ board_spread_water(Board *board, Cube *cube, Cube *root, int water_type)
 
 /**
  * Prepopulate a number of lines at the bottom of the board.
+ * (Keywords: generate, line, fill)
  */
 void
 board_prepopulate(Board *board, int lines)

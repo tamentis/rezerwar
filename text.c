@@ -64,6 +64,9 @@ font_get_glyph_rect(char c, SDL_Rect *l)
 		case ':': l->y = 19; l->x = 350; l->w = 5; break;
 		default:  l->y = 19; l->x = 356; l->w = 8; break;
 	}
+
+	// Offset
+	l->y += 128;
 }
 
 

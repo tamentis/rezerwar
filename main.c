@@ -145,6 +145,7 @@ main(int ac, char **av)
 		status = main_menu();
 		if (status == 1)
 			break;
+		sfx_play_music("level1");
 		game_loop();
 	} while (1);
 

@@ -156,7 +156,8 @@ board_refresh_next(Board *board)
 
 /**
  * Transfer all the cubes from a block to the board. This is anticipating the
- * death of a block. Set the cube_count to 0 to avoid duplicate killing.
+ * death of a block. Set the cube_count to 0 to avoid duplicate killing. Also
+ * checks for special cubes and execute them.
  */
 void
 board_transfer_cubes(Board *board, Block *block)
@@ -176,17 +177,60 @@ board_transfer_cubes(Board *board, Block *block)
 			cube = block->cubes[pos[j] - 1];
 
 			board->cubes[i] = cube;
-				
+
 			if (cube != NULL) {
 				cube->x = block->x + x;
 				cube->y = block->y + y;
 			}
 
 			block->cubes[pos[j] - 1] = NULL;
+
+			switch (cube->type) {
+				case CTYPE_BOMB:
+					board_cube_bomb(board, cube);
+					break;
+			}
 		}
 	}
 
 	block->cube_count = 0;
+}
+
+
+void
+board_kill_row(Board *board, int row)
+{
+	int i;
+
+	for (i = board->width * row; i < board->width * (row + 1); i++)
+		if (board->cubes[i] != NULL)
+			board->cubes[i]->trashed = true;
+}
+
+
+void
+board_kill_column(Board *board, int col)
+{
+	int i;
+
+	for (i = col; i < board->width * board->height; i += board->width)
+		if (board->cubes[i] != NULL)
+			board->cubes[i]->trashed = true;
+}
+
+
+/**
+ * A Cube Bomb just dropped! Execute its explosion and clear it up!
+ */
+void
+board_cube_bomb(Board *board, Cube *cube)
+{
+	if (cube->current_position % 2 == 0)
+		board_kill_row(board, cube->y);
+	else
+		board_kill_column(board, cube->x);
+
+	sfx_play_boom();
 }
 
 

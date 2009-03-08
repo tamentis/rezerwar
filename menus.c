@@ -122,6 +122,7 @@ add_item_to_menu(Menu *menu, char *text, int type, int subtype, int x_offset)
 	item->x_offset = x_offset;
 
 	item->text = text_new((unsigned char *)text);
+	item->text->centered = true;
 	text_set_color2(item->text, 0x00, 0x0e, 0x26);
 	text_set_color1(item->text, 0x58, 0x89, 0xc6);
 
@@ -202,6 +203,8 @@ menu_select(Menu *menu)
 {
 	MenuItem *item = menu->items[menu->current];
 
+	sfx_play_menuselect();
+
 	switch (item->type) {
 		case MTYPE_SUBMENU:
 			menu_load_submenu(menu, item->subtype);
@@ -212,7 +215,7 @@ menu_select(Menu *menu)
 		default:
 			break;
 	}
-	
+
 	return item->type;
 }
 
@@ -279,8 +282,11 @@ handle_menu_events(SDL_Event *event, Menu *menu)
 	if (event->type == SDL_MOUSEMOTION) {
 		bev = &event->button;
 		for (i = 0; i < menu->length; i++) {
+			if (menu->current == i)
+				continue;
 			if (hover_menu_items(menu->items[i], bev) == true) {
 				menu->current = i;
+				sfx_play_menunav();
 			}
 		}
 		return 0;
@@ -294,15 +300,16 @@ handle_menu_events(SDL_Event *event, Menu *menu)
 		case SDLK_j:
 		case SDLK_DOWN:
 			menu->current++;
+			sfx_play_menunav();
 			if (menu->current >= menu->length)
 				menu->current = 0;
 			break;
 		case SDLK_UP:
 		case SDLK_k:
 			menu->current--;
-			if (menu->current < 0) {
+			sfx_play_menunav();
+			if (menu->current < 0)
 				menu->current = menu->length - 1;
-			}
 			break;
 		case SDLK_RETURN:
 			return menu_select(menu);
@@ -372,6 +379,7 @@ main_menu()
 
 	menu_load_main(menu);
 
+	sfx_play_music("menu");
 	status = menu_runner(menu);
 
 	kill_menu(menu);
