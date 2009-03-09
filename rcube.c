@@ -68,6 +68,19 @@ cube_new(byte start_pos)
 	return cube;
 }
 
+/**
+ * Shortcut to assign the type directly.
+ */
+Cube *
+cube_new_type(byte start_pos, int type)
+{
+	Cube *cube;
+
+	cube = cube_new(start_pos);
+	cube->type = type;
+
+	return cube;
+}
 
 void
 cube_network_add(Cube *root, Cube *cube)

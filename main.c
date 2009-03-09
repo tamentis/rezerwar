@@ -44,19 +44,26 @@ conf_init()
 void
 game_loop()
 {
+	Level *level;
 	u_int32_t start, now, framecount = 0, fps_lastframe = 0,
 		  fps_lastframedisplay = 0;
 	int elapsed;
 	char fpsbuf[16];
 	byte playing = 1;
 	SDL_Event event;
-	Text *t;
+//	Text *t;
 
 	/* Prepare board and load the first block. */
+	level = lvl_load("tuto_01");
+	board = board_new_from_level(level);
+	lvl_dump(level);
+	lvl_kill(level);
+	/*
 	board = board_new(conf->difficulty);
 	t = board_add_text(board, (unsigned char *)BOT_VER, 10, 450);
-	board_load_next_block(board);
 	board_prepopulate(board, 2);
+	*/
+	board_load_next_block(board);
 	board_launch_next_block(board);
 
 	/* Main loop, every loop is separated by a TICK (~10ms). 

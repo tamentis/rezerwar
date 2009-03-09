@@ -1,4 +1,4 @@
-Rezerwar - a big mess of networked blocks and pipes
+Rezerwar - a big mess of networked blocks and pipes 
 Copyright (C) Bertrand Janin (tamentis@neopulsar.org)
 
 Rezerwar is a puzzle game that could be quickly described as the unlegitimate
@@ -46,3 +46,16 @@ AVALANCHE:
   is destroyed and with it all the cube below it. This is at the time the
   most score rewarding trick in Rezerwar.
 
+
+LEVEL FORMAT:
+  The levels are simple text files, here are the rules to edit/create them:
+  
+   - The lines starting with '#' are ignored completely.
+   - Blank lines (i.e. no char at all) are used as delimiters.
+   - The first non-blank line is the title of the level (Max 64)
+   - The first paragraph after the title and a blank line is the
+     description of the level, it will appear as soon as the level
+     loads.
+   - The set of characters after represent the grid of the initial
+     cubes.
+   - The 

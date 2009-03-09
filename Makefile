@@ -15,9 +15,9 @@ LIBS=`sdl-config --libs` -lSDL_mixer
 
 PROGRAM=rezerwar
 OBJECTS=main.o rmalloc.o rboard.o rboard_blocks.o rblock.o \
-	rcube.o rboard_cube.o events.o sfx.o \
+	rcube.o rboard_cube.o events.o sfx.o lvlhandler.o \
 	engine_sdl.o strlcpy.o menus.o text.o hiscore.o \
-	a_chimneys.o a_sky.o
+	a_chimneys.o a_sky.o 
 
 all: gfx_build music_build $(PROGRAM)
 
@@ -42,10 +42,12 @@ win32: icon_dot_o
 	upx $(PROGRAM).exe
 
 clean:
-	make -C gfx/ clean
-	make -C music/ clean
 	rm -f $(OBJECTS) $(PROGRAM) tags TAGS LOG
 	rm -rf doc hiscore.dat
+
+distclean: clean
+	make -C gfx/ clean
+	make -C music/ clean
 
 tags:
 	etags *.c *.h
@@ -53,3 +55,7 @@ tags:
 doc:
 	mkdir -p doc/
 	doxygen Doxyfile
+
+lvltest: rmalloc.o strlcpy.o lvlhandler.c
+	gcc $(CFLAGS) -c lvlhandler.c
+	gcc rmalloc.o strlcpy.o lvlhandler.o -o lvlhandler

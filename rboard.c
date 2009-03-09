@@ -86,6 +86,48 @@ board_new(int difficulty)
 	return b;
 }
 
+/**
+ * Create a new board and populate the cubes from the level.
+ */
+Board *
+board_new_from_level(Level *level)
+{
+	int i;
+	Board *board;
+	Cube *cube = NULL;
+
+	board = board_new(0);
+
+	for (i = 0; i < (BOARD_WIDTH * BOARD_HEIGHT); i++) {
+		switch (level->cmap[i]) {
+			case '+': cube = cube_new_type(0, CTYPE_ALL); break;
+			case '-': cube = cube_new_type(0, CTYPE_FLAT); break;
+			case '|': cube = cube_new_type(1, CTYPE_FLAT); break;
+			case 'J': cube = cube_new_type(0, CTYPE_ANGLE); break;
+			case 'L': cube = cube_new_type(1, CTYPE_ANGLE); break;
+			case 'F': cube = cube_new_type(2, CTYPE_ANGLE); break;
+			case '7': cube = cube_new_type(3, CTYPE_ANGLE); break;
+			case '>': cube = cube_new_type(0, CTYPE_KNOB); break;
+			case '_': cube = cube_new_type(1, CTYPE_KNOB); break;
+			case '<': cube = cube_new_type(2, CTYPE_KNOB); break;
+			case '^': cube = cube_new_type(3, CTYPE_KNOB); break;
+			case 'A': cube = cube_new_type(0, CTYPE_TEE); break;
+			case '}': cube = cube_new_type(1, CTYPE_TEE); break;
+			case 'T': cube = cube_new_type(2, CTYPE_TEE); break;
+			case '{': cube = cube_new_type(3, CTYPE_TEE); break;
+			case '.':
+			default:
+				continue;
+				break;
+		}
+
+		cube->y = i / BOARD_WIDTH;
+		cube->x = i % BOARD_WIDTH;
+		board->cubes[i] = cube;
+	}
+
+	return board;
+}
 
 void
 board_kill(Board *board)

@@ -1,4 +1,3 @@
-
 /**
  * @file rezerwar.h
  * @brief Main header
@@ -24,17 +23,17 @@
 
 
 enum {
-	BLOCK_TYPE_TEE,
+	BLOCK_TYPE_TEE,		// 0
 	BLOCK_TYPE_ELL,
 	BLOCK_TYPE_JAY,
 	BLOCK_TYPE_ZEE,
 	BLOCK_TYPE_ESS,
-	BLOCK_TYPE_SQUARE,
+	BLOCK_TYPE_SQUARE,	// 5
 	BLOCK_TYPE_BAR,
 	BLOCK_TYPE_ONE,
 	BLOCK_TYPE_TWO,
 	BLOCK_TYPE_THREE,
-	BLOCK_TYPE_CORNER
+	BLOCK_TYPE_CORNER	// 10
 };
 
 /* Cube types */
@@ -96,6 +95,9 @@ enum {
 	ATYPE_BLOCK
 };
 
+/* Level definitions. */
+#define LVL_MAX_SIZE		4096
+
 typedef unsigned char byte;
 typedef enum {
 	false,
@@ -126,8 +128,10 @@ typedef struct _cube {
 	struct _cube *root;
 } Cube;
 Cube		*cube_new(byte);
+Cube		*cube_new_type(byte, int);
 void		 cube_kill(Cube *);
 Cube		*cube_new_random();
+Cube		*cube_new_random_max(int);
 void		 cube_init_texture();
 SDL_Surface	*cube_get_surface(Cube *);
 void		 cube_get_rectangle(Cube *, SDL_Rect *);
@@ -179,6 +183,25 @@ typedef struct _hiscore {
 	char name[16];
 	time_t date;
 } HiScore;
+
+/* lvlhandler.c */
+struct _queuedblock_s;
+typedef struct _level_s {
+	char *name;
+	char *description;
+	byte *cmap;
+	struct _queuedblock_s **queue;
+} Level;
+typedef struct _queuedblock_s {
+	int type;
+	int pos;
+	byte *cmap;
+} QueuedBlock;
+
+Level		*lvl_load(char *);
+void		 lvl_dump(Level *);
+void		 lvl_kill(Level *);
+
 
 /* block.c */
 typedef struct _block_data {
@@ -257,6 +280,7 @@ typedef struct _board_data {
 } Board;
 
 Board		*board_new(int);
+Board		*board_new_from_level(Level *);
 void		 board_kill(Board *);
 void		 board_loadbg(Board *, char *);
 void		 board_refresh(Board *);
@@ -291,6 +315,7 @@ byte		 board_move_check(Board *, Block *, Sint8, Sint8);
 void		 board_rotate_cw(Board *);
 void		 board_update_map(Board *);
 void		 board_dump_block_map(Board *);
+void		 board_cube_bomb(Board *, Cube *);
 
 /* text related */
 Text		*board_add_text(Board *, unsigned char *, int, int);
@@ -330,4 +355,11 @@ void		 a_chimneys_update(Board *, u_int32_t);
 
 /* sfx */
 void		 sfx_play_tick1();
+void		 sfx_play_tack1();
+void		 sfx_play_boom();
+void		 sfx_play_music();
+void		 sfx_play_horn();
+void		 sfx_play_menunav();
+void		 sfx_play_menuselect();
 void		 sfx_load_library();
+void		 sfx_play_lazer();
