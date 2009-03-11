@@ -13,12 +13,12 @@ extern Uint32 key;
 #define A_SKY_SPEED 150
 
 SDL_Surface *skytex = NULL;
-u_int32_t a_sky_offset = 0;
-u_int32_t a_sky_last = 0;
+uint32_t a_sky_offset = 0;
+uint32_t a_sky_last = 0;
 
 
 void
-a_sky_update(Board *board, u_int32_t now)
+a_sky_update(Board *board, uint32_t now)
 {
 	if ((a_sky_last + A_SKY_SPEED) < now) {
 		a_sky_offset++;

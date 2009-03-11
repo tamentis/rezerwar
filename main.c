@@ -7,7 +7,7 @@
 #include "rezerwar.h"
 
 
-#define BOT_VER "rezerwar alpha 2009-03-01"
+#define BOT_VER "rezerwar alpha 2009-03-08"
 
 
 Board *board;
@@ -45,7 +45,7 @@ void
 game_loop()
 {
 	Level *level;
-	u_int32_t start, now, framecount = 0, fps_lastframe = 0,
+	uint32_t start, now, framecount = 0, fps_lastframe = 0,
 		  fps_lastframedisplay = 0;
 	int elapsed;
 	char fpsbuf[16];
@@ -115,10 +115,9 @@ main(int ac, char **av)
 {
 	int status = 0;
 
-	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO) != 0) {
-		fprintf(stderr, "Unable to initialize SDL: %s\n", SDL_GetError());
-		exit(-1);
-	}
+	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO) != 0)
+		fatal("Unable to initialize SDL: %s\n", SDL_GetError());
+
 	atexit(SDL_Quit);
 
 	SDL_EnableUNICODE(1);
@@ -131,12 +130,7 @@ main(int ac, char **av)
 	sprites = SDL_LoadBMP("gfx/sprites.bmp");
 	SDL_SetColorKey(sprites, SDL_SRCCOLORKEY|SDL_RLEACCEL, key);
 
-	/* Open a mixer */
-	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 512) < 0) {
-		fprintf(stderr, "Unable to initialize SDL_mixer: %s\n", SDL_GetError());
-		exit(-1);
-	}
-	Mix_AllocateChannels(16);
+	init_audio();
 
 	sfx_load_library();
 	sfx_play_horn();

@@ -156,6 +156,39 @@ cube_new_random()
 }
 
 
+/**
+ * Given one char representing a character, instanciate a new cube.
+ */
+Cube *
+cube_new_from_char(char c)
+{
+	Cube *cube = NULL;
+
+	switch (c) {
+		case '+': cube = cube_new_type(0, CTYPE_ALL); break;
+		case '-': cube = cube_new_type(0, CTYPE_FLAT); break;
+		case '|': cube = cube_new_type(1, CTYPE_FLAT); break;
+		case 'J': cube = cube_new_type(0, CTYPE_ANGLE); break;
+		case 'L': cube = cube_new_type(1, CTYPE_ANGLE); break;
+		case 'F': cube = cube_new_type(2, CTYPE_ANGLE); break;
+		case '7': cube = cube_new_type(3, CTYPE_ANGLE); break;
+		case '>': cube = cube_new_type(0, CTYPE_KNOB); break;
+		case '_': cube = cube_new_type(1, CTYPE_KNOB); break;
+		case '<': cube = cube_new_type(2, CTYPE_KNOB); break;
+		case '^': cube = cube_new_type(3, CTYPE_KNOB); break;
+		case 'A': cube = cube_new_type(0, CTYPE_TEE); break;
+		case '}': cube = cube_new_type(1, CTYPE_TEE); break;
+		case 'T': cube = cube_new_type(2, CTYPE_TEE); break;
+		case '{': cube = cube_new_type(3, CTYPE_TEE); break;
+		case '.':
+		default:
+			break;
+	}
+
+	return cube;
+}
+
+
 void
 cube_kill(Cube *cube)
 {

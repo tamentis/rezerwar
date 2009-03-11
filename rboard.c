@@ -34,6 +34,10 @@ board_new(int difficulty)
 	for (i = 0; i < size; i++)
 		b->cubes[i] = NULL;
 
+	/* Initialize the Block Queue */
+	b->bqueue = NULL;
+	b->bqueue_len = 0;
+
 	/* Block related members. */
 	b->block_count = 0;
 	b->blocks = NULL;
@@ -92,38 +96,32 @@ board_new(int difficulty)
 Board *
 board_new_from_level(Level *level)
 {
-	int i;
+	int i, j;
 	Board *board;
+	Block *block = NULL;
 	Cube *cube = NULL;
 
 	board = board_new(0);
 
 	for (i = 0; i < (BOARD_WIDTH * BOARD_HEIGHT); i++) {
-		switch (level->cmap[i]) {
-			case '+': cube = cube_new_type(0, CTYPE_ALL); break;
-			case '-': cube = cube_new_type(0, CTYPE_FLAT); break;
-			case '|': cube = cube_new_type(1, CTYPE_FLAT); break;
-			case 'J': cube = cube_new_type(0, CTYPE_ANGLE); break;
-			case 'L': cube = cube_new_type(1, CTYPE_ANGLE); break;
-			case 'F': cube = cube_new_type(2, CTYPE_ANGLE); break;
-			case '7': cube = cube_new_type(3, CTYPE_ANGLE); break;
-			case '>': cube = cube_new_type(0, CTYPE_KNOB); break;
-			case '_': cube = cube_new_type(1, CTYPE_KNOB); break;
-			case '<': cube = cube_new_type(2, CTYPE_KNOB); break;
-			case '^': cube = cube_new_type(3, CTYPE_KNOB); break;
-			case 'A': cube = cube_new_type(0, CTYPE_TEE); break;
-			case '}': cube = cube_new_type(1, CTYPE_TEE); break;
-			case 'T': cube = cube_new_type(2, CTYPE_TEE); break;
-			case '{': cube = cube_new_type(3, CTYPE_TEE); break;
-			case '.':
-			default:
-				continue;
-				break;
-		}
-
+		cube = cube_new_from_char(level->cmap[i]);
+		if (cube == NULL)
+			continue;
 		cube->y = i / BOARD_WIDTH;
 		cube->x = i % BOARD_WIDTH;
 		board->cubes[i] = cube;
+	}
+
+	board->bqueue_len = level->queue_len;
+	board->bqueue = malloc(sizeof(Block *) * board->bqueue_len);
+	for (i = 0; i < board->bqueue_len; i++) {
+		block = block_new_of_type(level->queue[i]->type);
+		block->current_position = level->queue[i]->pos;
+		for (j = 0; j < level->queue[i]->cmap_len; j++) {
+			cube_kill(block->cubes[j]);
+			block->cubes[j] = cube_new_from_char(level->queue[i]->cmap[j]);
+		}
+		board->bqueue[i] = block;
 	}
 
 	return board;
@@ -329,7 +327,7 @@ board_gameover(Board *board)
 
 /* board_update() - this function handles all the elements at ticking point */
 void
-board_update(Board *board, u_int32_t now)
+board_update(Board *board, uint32_t now)
 {
 	if (board->paused == 1 || board->gameover == 1)
 		return;

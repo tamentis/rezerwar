@@ -329,7 +329,7 @@ int
 menu_runner(Menu *menu)
 {
 	SDL_Surface *intro;
-	u_int32_t now, framecount = 0, fps_lastframe = 0;
+	uint32_t now, framecount = 0, fps_lastframe = 0;
 	byte running = 0;
 	int elapsed;
 	SDL_Event event;

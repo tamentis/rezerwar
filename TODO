@@ -1,5 +1,3 @@
- - use err/errx whenever something could fail.
- - finish the queue reader.
  - add the bubble handler.
  - add a timed mode to clean the screen.
  - add a 'tutorial' that shows how to play.

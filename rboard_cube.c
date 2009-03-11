@@ -14,7 +14,7 @@ extern SDL_Surface *screen;
  * Update all the cubes logic (non-graphic stuff).
  */
 void
-board_update_cubes(Board *board, u_int32_t now)
+board_update_cubes(Board *board, uint32_t now)
 {
 	int i;
 	int size = board->width * board->height;
@@ -133,7 +133,7 @@ board_remove_water(Board *board)
  * pipes on the same side.
  */
 void
-board_update_water(Board *board, u_int32_t now)
+board_update_water(Board *board, uint32_t now)
 {
 	int i;
 	Cube *cube;

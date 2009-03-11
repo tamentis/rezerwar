@@ -17,7 +17,7 @@ PROGRAM=rezerwar
 OBJECTS=main.o rmalloc.o rboard.o rboard_blocks.o rblock.o \
 	rcube.o rboard_cube.o events.o sfx.o lvlhandler.o \
 	engine_sdl.o strlcpy.o menus.o text.o hiscore.o \
-	a_chimneys.o a_sky.o 
+	a_chimneys.o a_sky.o strsep.o fatal.o
 
 all: gfx_build music_build $(PROGRAM)
 

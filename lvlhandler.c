@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <err.h>
 
 #include "SDL.h"
 
@@ -22,7 +21,7 @@ lvl_getline(byte *lbuf, byte *buf)
 		lbuf[len] = buf[len];
 		len++;
 		if (len > 80)
-			errx(-1, "Syntax error: line too long! (MAX=80)");
+			fatal("Syntax error: line too long! (MAX=80)");
 	}
 	lbuf[len] = '\0';
 
@@ -42,18 +41,19 @@ lvl_load(char *name)
 	byte buffer[LVL_MAX_SIZE];
 	byte lbuf[81];
 	byte *cursor = buffer;
-	size_t len, offset;
-	int phase = 0;
+	byte *c;
+	size_t len, offset, lineno = 1;
+	int phase = 0, i, j;
 
 	snprintf(filename, 64, "levels/%s.lvl", name);
 
 	fp = fopen(filename, "r");
 	if (fp == NULL)
-		err(-1, "Error opening \"%s\"", name);
+		fatal("Error opening \"%s\"", name);
 
 	len = fread(buffer, 1, LVL_MAX_SIZE, fp);
 	if (len >= LVL_MAX_SIZE)
-		errx(-1, "Level file too big (LVL_MAX_SIZE=%d)", LVL_MAX_SIZE);
+		fatal("Level file too big (LVL_MAX_SIZE=%d)", LVL_MAX_SIZE);
 
 	fclose(fp);
 
@@ -61,13 +61,14 @@ lvl_load(char *name)
 	level->name = NULL;
 	level->description = NULL;
 	level->queue = NULL;
+	level->queue_len = 0;
 	level->cmap = malloc(sizeof(byte) * BOARD_WIDTH * BOARD_HEIGHT);
 
-	len = 0;
-	for (;;) {
+	for (i = 0; cursor < buffer + len;) {
 		offset = lvl_getline(lbuf, cursor);
 		if (offset == -1)
 			break;
+		lineno++;
 		cursor += offset;
 
 		/* Skip comments */
@@ -81,7 +82,7 @@ lvl_load(char *name)
 		/* Delimitors between the phases */
 		if (lbuf[0] == '\0') {
 			phase++;
-			len = 0;
+			i = 0;
 			continue;
 		}
 
@@ -97,25 +98,41 @@ lvl_load(char *name)
 		/* Save the description (phase 1) */
 		if (phase == 1) {
 			level->description = realloc(level->description, 
-					len + offset);
-			memcpy(level->description + len, lbuf, offset);
-			level->description[len + offset - 1] = '\n';
-			len += offset;
+					i + offset);
+			memcpy(level->description + i, lbuf, offset);
+			level->description[i + offset - 1] = '\n';
+			i += offset;
 		}
 
 		/* Save the map */
 		if (phase == 2) {
 			if (offset - 1 > BOARD_WIDTH)
-				errx(-1, "Syntax error: map line has to be %d wide.", BOARD_WIDTH);
-			memcpy(level->cmap + len, lbuf, offset);
-			len += offset - 1;
-			if (len > BOARD_WIDTH * BOARD_HEIGHT)
-				errx(-1, "map seems bigger than board.");
+				fatal("Syntax error: map line has to be %d wide.", BOARD_WIDTH);
+			memcpy(level->cmap + i, lbuf, offset);
+			i += offset - 1;
+			if (i > BOARD_WIDTH * BOARD_HEIGHT)
+				fatal("map seems bigger than board.");
 		}
 
 		/* Save the queue */
 		if (phase == 3) {
-			printf("SAVING CUBE ORDER\n");
+			if (offset < 4)
+				fatal("Syntax error on line %d: cube definition erroneous.", lineno);
+			level->queue = realloc(level->queue, 
+					sizeof(QueuedBlock*) * (i + 1));
+			level->queue[i] = malloc(sizeof(QueuedBlock));
+			level->queue[i]->type = lbuf[0] - 48;
+			level->queue[i]->pos = lbuf[1] - 48;
+			level->queue[i]->cmap_len = offset - 3;
+			level->queue[i]->cmap = malloc(offset - 3);
+			c = lbuf + 2;
+			j = 0;
+			while (*c != '\n' && j < offset - 3) {
+				level->queue[i]->cmap[j] = c[j];
+				j++;
+			}
+			i++;
+			level->queue_len++;
 		}
 	}
 
@@ -125,9 +142,23 @@ lvl_load(char *name)
 void
 lvl_dump(Level *level)
 {
+	int i, j;
+
 	printf("NAME: %s\n", level->name);
 	printf("DESCRIPTION:\n%s\n", level->description);
 	printf("MAP:%s\n", level->cmap);
+	printf("QUEUE\n");
+
+	for (i = 0; i < level->queue_len; i++) {
+		printf(" - type=%d, pos=%d, cubes(%d)=",
+				level->queue[i]->type,
+				level->queue[i]->pos,
+				level->queue[i]->cmap_len);
+		for (j = 0; j < level->queue[i]->cmap_len; j++) {
+			printf("%02hhx ", level->queue[i]->cmap[j]);
+		}
+		printf("\n");
+	}
 }
 
 void

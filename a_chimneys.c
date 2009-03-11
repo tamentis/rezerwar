@@ -14,11 +14,11 @@ extern SDL_Surface *sprites;
 
 int a_chimneys_offsets[] = { 0, 1, 2, 1 };
 int a_chimneys_status = 0;
-u_int32_t a_chimneys_last = 0;
+uint32_t a_chimneys_last = 0;
 
 
 void
-a_chimneys_update(Board *board, u_int32_t now)
+a_chimneys_update(Board *board, uint32_t now)
 {
 	if (now < (a_chimneys_last + A_CHIMNEY_SPEED))
 		return;

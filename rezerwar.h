@@ -191,10 +191,12 @@ typedef struct _level_s {
 	char *description;
 	byte *cmap;
 	struct _queuedblock_s **queue;
+	size_t queue_len;
 } Level;
 typedef struct _queuedblock_s {
 	int type;
 	int pos;
+	size_t cmap_len;
 	byte *cmap;
 } QueuedBlock;
 
@@ -214,7 +216,7 @@ typedef struct _block_data {
 	Sint8 x;
 	Sint8 y;
 	byte prev_y;
-	u_int32_t tick;
+	uint32_t tick;
 	byte type;
 } Block;
 
@@ -256,6 +258,8 @@ typedef struct _board_data {
 	int block_count;
 	Block *current_block;
 	Block *next_block;
+	Block **bqueue;
+	size_t bqueue_len;
 	/* controls */
 	byte moving_left;
 	byte moving_right;
@@ -284,7 +288,7 @@ Board		*board_new_from_level(Level *);
 void		 board_kill(Board *);
 void		 board_loadbg(Board *, char *);
 void		 board_refresh(Board *);
-void		 board_update(Board *, u_int32_t);
+void		 board_update(Board *, uint32_t);
 void		 board_toggle_pause(Board *);
 void		 board_gameover(Board *);
 void		 board_prepopulate(Board *, int);
@@ -293,8 +297,8 @@ void		 board_add_cube(Board *);
 void		 board_refresh_cubes(Board *);
 void		 board_dump_cube_map(Board *);
 void		 board_spread_water(Board *, Cube *, Cube *, int);
-void		 board_update_water(Board *, u_int32_t);
-void		 board_update_cubes(Board *, u_int32_t);
+void		 board_update_water(Board *, uint32_t);
+void		 board_update_cubes(Board *, uint32_t);
 Cube		*board_get_cube(Board *, int, int);
 void		 board_run_avalanche(Board *, Cube *);
 void		 board_run_avalanche_column(Board *, Cube *);
@@ -302,15 +306,15 @@ int		 board_get_area_type(Board *, int, int);
 /* rboard_blocks.c */
 void		 board_refresh_blocks(Board *);
 void		 board_refresh_next(Board *);
-void		 board_update_blocks(Board *, u_int32_t);
-void		 board_update_single_block(Board *, u_int32_t, int);
+void		 board_update_blocks(Board *, uint32_t);
+void		 board_update_single_block(Board *, uint32_t, int);
 void		 board_add_block(Board *, Block *);
 void		 board_launch_next_block(Board *);
 void		 board_load_next_block(Board *);
 void		 board_change_next_block(Board *);
 void		 board_move_current_block_left(Board *);
 void		 board_move_current_block_right(Board *);
-void		 board_set_block_speed(Board *, u_int32_t);
+void		 board_set_block_speed(Board *, uint32_t);
 byte		 board_move_check(Board *, Block *, Sint8, Sint8);
 void		 board_rotate_cw(Board *);
 void		 board_update_map(Board *);
@@ -350,10 +354,11 @@ int		 main_menu(void);
 /* animations */
 void		 a_sky_refresh(Board *);
 void		 a_chimneys_refresh(Board *);
-void		 a_sky_update(Board *, u_int32_t);
-void		 a_chimneys_update(Board *, u_int32_t);
+void		 a_sky_update(Board *, uint32_t);
+void		 a_chimneys_update(Board *, uint32_t);
 
 /* sfx */
+void		 init_audio();
 void		 sfx_play_tick1();
 void		 sfx_play_tack1();
 void		 sfx_play_boom();
@@ -363,3 +368,7 @@ void		 sfx_play_menunav();
 void		 sfx_play_menuselect();
 void		 sfx_load_library();
 void		 sfx_play_lazer();
+
+/* fatal.c */
+void		 fatal(char *fmt, ...);
+

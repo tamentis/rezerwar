@@ -4,10 +4,10 @@
 
 
 /* Keep records. */
-u_int32_t total = 0;
-u_int32_t current = 0;
-u_int32_t max = 0;
-u_int32_t current_c = 0;
+uint32_t total = 0;
+uint32_t current = 0;
+uint32_t max = 0;
+uint32_t current_c = 0;
 
 
 /* What will hold the list of pointers, and the cursor to the last one. */

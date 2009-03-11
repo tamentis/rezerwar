@@ -22,12 +22,21 @@ board_add_block(Board *board, Block *block)
 
 /**
  * This function will load a different type of block depending on the difficulty of the
- * current board.
+ * current board. If we have a pending queue, use it instead of generating
+ * randomly.
  */
 void
 board_load_next_block(Board *board)
 {
 	long int r;
+
+	if (board->bqueue_len) {
+		printf("Load queued block\n");
+		board->next_block = board->bqueue[board->bqueue_len - 1];
+		board->bqueue[board->bqueue_len - 1] = NULL;
+		board->bqueue_len--;
+		return;
+	}
 
 	switch (board->difficulty) {
 		/* Only one cube blocks */
@@ -240,7 +249,7 @@ board_cube_bomb(Board *board, Cube *cube)
  * with increasing score.
  */
 void
-board_update_blocks(Board *board, u_int32_t now)
+board_update_blocks(Board *board, uint32_t now)
 {
 	int i;
 
@@ -275,7 +284,7 @@ board_update_blocks(Board *board, u_int32_t now)
  * reprensented by 'now'.
  */
 void
-board_update_single_block(Board *board, u_int32_t now, int i) {
+board_update_single_block(Board *board, uint32_t now, int i) {
 	Block *block = board->blocks[i];
 
 	/* This block's tick has expired, we need to move it. */
@@ -412,7 +421,7 @@ board_move_current_block_right(Board *board)
 
 
 void
-board_set_block_speed(Board *board, u_int32_t speed)
+board_set_block_speed(Board *board, uint32_t speed)
 {
 	board->block_speed = speed;
 }
