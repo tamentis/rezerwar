@@ -186,6 +186,7 @@ board_transfer_cubes(Board *board, Block *block)
 			cube = block->cubes[pos[j] - 1];
 
 			board->cubes[i] = cube;
+			board->cube_count++;
 
 			if (cube != NULL) {
 				cube->x = block->x + x;
@@ -194,6 +195,7 @@ board_transfer_cubes(Board *board, Block *block)
 
 			block->cubes[pos[j] - 1] = NULL;
 
+			/* If one of the cube is a bomb, trigger it! */
 			switch (cube->type) {
 				case CTYPE_BOMB:
 					board_cube_bomb(board, cube);
@@ -304,7 +306,7 @@ board_update_single_block(Board *board, uint32_t now, int i) {
 					sfx_play_tack1();
 					board_launch_next_block(board);
 				} else {
-					board_gameover(board);
+					board_gameover(board, false);
 				}
 			}
 			board_transfer_cubes(board, block);

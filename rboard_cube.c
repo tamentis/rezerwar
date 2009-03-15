@@ -34,6 +34,7 @@ board_update_cubes(Board *board, uint32_t now)
 			if (cube->fade_status > BSIZE / 2) {
 				cube_kill(cube);
 				board->cubes[i] = NULL;
+				board->cube_count--;
 			}
 			continue;
 		}
@@ -48,6 +49,12 @@ board_update_cubes(Board *board, uint32_t now)
 			block->y = cube->y;
 			board->cubes[i] = NULL;
 		}
+	}
+
+	/* Check the cube count for CLEARALL levels. */
+	if (board->objective_type == OBJTYPE_CLEARALL && 
+			board->cube_count == 0) {
+		board_gameover(board, true);
 	}
 }
 
@@ -189,7 +196,7 @@ board_run_avalanche(Board *board, Cube *cube)
 	Text *avtxt;
 
 	/* Start a fading text... */
-	avtxt = board_add_text(board, (byte *)"EXCELLENT!", 240, 240);
+	avtxt = board_add_text(board, "EXCELLENT!", 240, 240);
 	text_set_color1(avtxt, 255, 0, 0);
 	text_set_color2(avtxt, 80, 0, 0);
 	avtxt->effect |= EFFECT_SHAKE|EFFECT_FADEOUT;
@@ -426,6 +433,7 @@ board_prepopulate(Board *board, int lines)
 			cube->x = x;
 			cube->y = y;
 			board->cubes[y * board->width + x] = cube;
+			board->cube_count++;
 		}
 	}
 }

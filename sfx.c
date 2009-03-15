@@ -6,7 +6,7 @@
 
 #include "rezerwar.h"
 
-bool has_sound = true;
+bool has_sound = false;
 
 Mix_Chunk *tick1;
 Mix_Chunk *tack1;
@@ -20,8 +20,8 @@ void
 init_audio()
 {
 	/* Open a mixer */
-	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 512) < 0)
-		has_sound = false;
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 512) >= 0)
+		has_sound = true;
 
 	if (has_sound)
 		Mix_AllocateChannels(16);
@@ -46,8 +46,7 @@ sfx_load_sample(char *filename)
 void
 sfx_load_library()
 {
-	if (!has_sound)
-		return;
+	if (!has_sound) return;
 
 	tick1 = sfx_load_sample("sfx/tick1.ogg");
 	tack1 = sfx_load_sample("sfx/tack1.ogg");

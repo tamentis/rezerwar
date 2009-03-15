@@ -4,16 +4,17 @@
 
 Tutorial 1
 
-Welcome to rzrwar!
-For your first lesson, you just need to use the flat pipes to connect to
-the end on the middle of the screen, no need to rotate, just place them
-one after another.
+Welcome to rzrwar!\n
+For your first lesson, you just need to use
+the flat pipes to connect to the end on the
+middle of the screen, no need to rotate, just
+place them one after another.
 
 .........
 .........
 .........
 .........
-....+....
+.........
 .........
 .........
 .........
@@ -22,10 +23,13 @@ one after another.
 
 # Those are defined backward, starts from the bottom
 70-
-30-7L-
 70-
-60----
+70-
+70-
 70-
 70-
 
+# Level objective type
+$ObjectiveType: CLEARALL
+$NextLevel: tuto_02
 

@@ -1,4 +1,11 @@
- - add the bubble handler.
+ - make the game_loop return a relevant MTYPE.
+
+ - add a menu with "next level, replay, main menu and quit".
+
+ - add the start_time to the board.
+ - add the max seconds conf variable.
+
+ - add objective to levels.
  - add a timed mode to clean the screen.
  - add a 'tutorial' that shows how to play.
  - add blue and red blocks which will freeze and thaw the water.

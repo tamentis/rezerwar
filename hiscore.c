@@ -65,10 +65,10 @@ hiscore_dump(Board *board)
 
 	for (i = 0; i < 10; i++) {
 		snprintf(buf, 16, "%d", hs[i]->score);
-		text = board_add_text(board, (byte*)buf, 200, 120 + 24 * i);
+		text = board_add_text(board, buf, 200, 120 + 24 * i);
 		text_set_color1(text, 80, 190, 100);
 		text_set_color2(text, 30, 130, 40);
-		text = board_add_text(board, (byte*)hs[i]->name, 350, 120 + 24 * i);
+		text = board_add_text(board, hs[i]->name, 350, 120 + 24 * i);
 		text_set_color1(text, 80, 100, 190);
 		text_set_color2(text, 30, 40, 130);
 	}

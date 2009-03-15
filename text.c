@@ -15,7 +15,7 @@ void
 font_get_glyph_rect(char c, SDL_Rect *l)
 {
 	l->y = 0;
-	l->h = 19;
+	l->h = FONT_HEIGHT;
 	l->w = 13;
 
 	switch(c) {
@@ -45,24 +45,24 @@ font_get_glyph_rect(char c, SDL_Rect *l)
 		case 'x': case 'X': l->x = 466; l->w = 16; break;
 		case 'y': case 'Y': l->x = 482; break;
 		case 'z': case 'Z': l->x = 495; break;
-		case '0': l->y = 19; l->x = 160; l->w = 14; break;
-		case '1': l->y = 19; l->x = 174; l->w = 7; break;
-		case '2': l->y = 19; l->x = 181; l->w = 15; break;
-		case '3': l->y = 19; l->x = 196; l->w = 15; break;
-		case '4': l->y = 19; l->x = 211; l->w = 15; break;
-		case '5': l->y = 19; l->x = 226; l->w = 14; break;
-		case '6': l->y = 19; l->x = 240; l->w = 15; break;
-		case '7': l->y = 19; l->x = 256; l->w = 14; break;
-		case '8': l->y = 19; l->x = 269; l->w = 15; break;
-		case '9': l->y = 19; l->x = 284; l->w = 15; break;
-		case '-': l->y = 19; l->x = 299; l->w = 11; break;
-		case '.': l->y = 19; l->x = 310; l->w =  5; break;
-		case '/': l->y = 19; l->x = 315; l->w = 11; break;
-		case '?': l->y = 19; l->x = 326; l->w = 13; break;
-		case '!': l->y = 19; l->x = 339; l->w =  5; break;
-		case '\'': l->y = 19; l->x = 344; l->w = 6; break;
-		case ':': l->y = 19; l->x = 350; l->w = 5; break;
-		default:  l->y = 19; l->x = 356; l->w = 8; break;
+		case '0': l->y = FONT_HEIGHT; l->x = 160; l->w = 14; break;
+		case '1': l->y = FONT_HEIGHT; l->x = 174; l->w = 7; break;
+		case '2': l->y = FONT_HEIGHT; l->x = 181; l->w = 15; break;
+		case '3': l->y = FONT_HEIGHT; l->x = 196; l->w = 15; break;
+		case '4': l->y = FONT_HEIGHT; l->x = 211; l->w = 15; break;
+		case '5': l->y = FONT_HEIGHT; l->x = 226; l->w = 14; break;
+		case '6': l->y = FONT_HEIGHT; l->x = 240; l->w = 15; break;
+		case '7': l->y = FONT_HEIGHT; l->x = 256; l->w = 14; break;
+		case '8': l->y = FONT_HEIGHT; l->x = 269; l->w = 15; break;
+		case '9': l->y = FONT_HEIGHT; l->x = 284; l->w = 15; break;
+		case '-': l->y = FONT_HEIGHT; l->x = 299; l->w = 11; break;
+		case '.': l->y = FONT_HEIGHT; l->x = 310; l->w =  5; break;
+		case '/': l->y = FONT_HEIGHT; l->x = 315; l->w = 11; break;
+		case '?': l->y = FONT_HEIGHT; l->x = 326; l->w = 13; break;
+		case '!': l->y = FONT_HEIGHT; l->x = 339; l->w =  5; break;
+		case '\'': l->y = FONT_HEIGHT; l->x = 344; l->w = 6; break;
+		case ':': l->y = FONT_HEIGHT; l->x = 350; l->w = 5; break;
+		default:  l->y = FONT_HEIGHT; l->x = 356; l->w = 8; break;
 	}
 
 	// Offset
@@ -168,10 +168,26 @@ text_render(Text *text, SDL_Surface *s)
 	int rx = 0, ry = 0;
 
 	while (*c != '\0') {
+		/* Real Newline */
+		if (*c == '\n') {
+			cursor = 0;
+			ry += FONT_HEIGHT + text->line_spacing;
+			c++;
+			continue;
+		}
+		/* Forced Newline */
+		if (*c == '\\' && *(c+1) == 'n')  {
+			cursor = 0;
+			ry += FONT_HEIGHT + text->line_spacing;
+			c += 2;
+			continue;
+		}
+
 		if (text->effect & EFFECT_SHAKE) {
 			text_effect_shake(text, &rx, &ry);
 		}
 		cursor += text_render_glyph(s, *c, cursor + rx, 0 + ry);
+
 		c++;
 	}
 
@@ -181,7 +197,7 @@ text_render(Text *text, SDL_Surface *s)
 
 
 /**
- * Easy function to set the color1.
+ * Easy function to set the color1 and color2.
  */
 void
 text_set_color1(Text *text, byte r, byte g, byte b)
@@ -191,11 +207,6 @@ text_set_color1(Text *text, byte r, byte g, byte b)
 	text->color1_g = g;
 	text->color1_b = b;
 }
-
-
-/**
- * Easy function to set the color2.
- */
 void
 text_set_color2(Text *text, byte r, byte g, byte b)
 {
@@ -203,6 +214,23 @@ text_set_color2(Text *text, byte r, byte g, byte b)
 	text->color2_r = r;
 	text->color2_g = g;
 	text->color2_b = b;
+}
+
+
+/**
+ * Even easier function to set both colors with Web-friendly Hex values.
+ */
+void
+text_set_colors(Text *text, uint32_t col1, uint32_t col2)
+{
+	text->colorized = true;
+	text->color1_r = (col1 & 0x00FF0000) >> 16;
+	text->color1_g = (col1 & 0x0000FF00) >> 8;
+	text->color1_b =  col1 & 0x000000FF;
+
+	text->color2_r = (col2 & 0x00FF0000) >> 16;
+	text->color2_g = (col2 & 0x0000FF00) >> 8;
+	text->color2_b =  col2 & 0x000000FF;
 }
 
 
@@ -219,13 +247,15 @@ text_calculate_size(Text *text)
 	while (*c != '\0') {
 		font_get_glyph_rect(*c, &r);
 		text->width += r.w;
+		if (*c == '\n' || (*c == '\\' && *(c+1) == 'n'))
+			text->height += FONT_HEIGHT;
 		c++;
 	}
 }
 
 
 Text *
-text_new(unsigned char *value)
+text_new(char *value)
 {
 	Text *text;
 
@@ -234,11 +264,12 @@ text_new(unsigned char *value)
 	text->x = 0;
 	text->y = 0;
 	text->width = 0;
-	text->height = 19;
+	text->height = FONT_HEIGHT;
 	text->effect = 0;
 	text->fx_fade_data = -255;
 	text->value = NULL;
 	text->length = -1;
+	text->line_spacing = 2;
 
 	text->trashed = false;
 	text->colorized = false;
@@ -259,7 +290,7 @@ text_new(unsigned char *value)
  * and we are trying to set another empty value, just return.
  */
 void
-text_set_value(Text *text, unsigned char *value)
+text_set_value(Text *text, char *value)
 {
 	if (value[0] == '\0' && text->length == 0)
 		return;
@@ -337,7 +368,7 @@ void
 text_get_rectangle(Text *text, SDL_Rect *r)
 {
 	r->w = text->width;
-	r->h = 19;
+	r->h = FONT_HEIGHT;
 	r->y = text->y;
 	if (text->centered == true)
 		r->x = (screen->w - text->width) / 2;

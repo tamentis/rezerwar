@@ -10,6 +10,9 @@ extern SDL_Surface *screen;
 extern Uint32 key;
 
 
+/**
+ * Instanciate a new board (begin a new game)
+ */
 Board *
 board_new(int difficulty)
 {
@@ -30,6 +33,7 @@ board_new(int difficulty)
 	b->bg = NULL;
 
 	/* Cube related members initialization. */
+	b->cube_count = 0;
 	b->cubes = r_malloc(size * sizeof(Cube *));
 	for (i = 0; i < size; i++)
 		b->cubes[i] = NULL;
@@ -58,8 +62,9 @@ board_new(int difficulty)
 
 	/* Player related */
 	b->score = 0;
-	b->paused = 0;
-	b->gameover = 0;
+	b->paused = false;
+	b->gameover = false;
+	b->silent = false;
 
 	/* Prompt init. */
 	b->prompt_text = NULL;
@@ -67,10 +72,10 @@ board_new(int difficulty)
 
 	/* Modal and score */
 	b->modal = false;
-	b->score_t = board_add_text(b, (unsigned char *)"0", 10, 10);
+	b->score_t = board_add_text(b, "0", 10, 10);
 
 	/* Status message */
-	b->status_t = board_add_text(b, (unsigned char *)"", 260, 240);
+	b->status_t = board_add_text(b, "", 260, 240);
 	b->status_t->effect = EFFECT_SHAKE;
 	b->status_t->centered = true;
 	text_set_color1(b->status_t, 225, 186, 0);
@@ -78,7 +83,7 @@ board_new(int difficulty)
 
 	/* (optional) FPS display */
 	b->show_fps = false;
-	b->fps_t = board_add_text(b, (byte *)"", 550, 10);
+	b->fps_t = board_add_text(b, "", 550, 10);
 	text_set_color1(b->status_t, 225, 40, 0);
 	text_set_color2(b->status_t, 56,  8, 8);
 
@@ -90,6 +95,7 @@ board_new(int difficulty)
 	return b;
 }
 
+
 /**
  * Create a new board and populate the cubes from the level.
  */
@@ -100,9 +106,11 @@ board_new_from_level(Level *level)
 	Board *board;
 	Block *block = NULL;
 	Cube *cube = NULL;
+	Text *title, *description, *prompt;
 
 	board = board_new(0);
 
+	/* Transfer the cubes */
 	for (i = 0; i < (BOARD_WIDTH * BOARD_HEIGHT); i++) {
 		cube = cube_new_from_char(level->cmap[i]);
 		if (cube == NULL)
@@ -110,8 +118,10 @@ board_new_from_level(Level *level)
 		cube->y = i / BOARD_WIDTH;
 		cube->x = i % BOARD_WIDTH;
 		board->cubes[i] = cube;
+		board->cube_count++;
 	}
 
+	/* Transfer the queue */
 	board->bqueue_len = level->queue_len;
 	board->bqueue = malloc(sizeof(Block *) * board->bqueue_len);
 	for (i = 0; i < board->bqueue_len; i++) {
@@ -123,6 +133,30 @@ board_new_from_level(Level *level)
 		}
 		board->bqueue[i] = block;
 	}
+
+	/* Prepare the board to welcome the text */
+	board->modal = true;
+	board->silent = true;
+	board->paused = true;
+
+	/* Copy level related stuff */
+	board->objective_type = level->objective_type;
+	board->next_level = r_strcp(level->next);
+
+	/* Draw the title */
+	title = board_add_text(board, level->name, 20, 20);
+	title->centered = true;
+	title->temp = true;
+	text_set_colors(title, 0xFFE64B, 0xB35904);
+
+	/* Draw the description */
+	description = board_add_text(board, level->description, 20, 90);
+	description->temp = true;
+
+	/* Draw the press p to contine */
+	prompt = board_add_text(board, "press 'p' to start", 400, 440);
+	prompt->temp = true;
+	text_set_colors(prompt, 0xFFE64B, 0xB35904);
 
 	return board;
 }
@@ -176,7 +210,7 @@ board_kill(Board *board)
 
 
 Text *
-board_add_text(Board *board, unsigned char *value, int x, int y)
+board_add_text(Board *board, char *value, int x, int y)
 {
 	Text *t;
 
@@ -202,9 +236,13 @@ board_refresh_texts(Board *board)
 	SDL_Surface *s, *m;
 
 	/* Update the score Text */
-	unsigned char score[20];
-	snprintf((char *)score, 20, "score: %d", board->score);
-	text_set_value(board->score_t, score);
+	if (board->silent == true) {
+		text_set_value(board->score_t, "");
+	} else {
+		char score[20];
+		snprintf((char *)score, 20, "score: %d", board->score);
+		text_set_value(board->score_t, score);
+	}
 
 	/* Add a modal under all the text. */
 	if (board->modal == true) {
@@ -236,17 +274,37 @@ board_refresh_texts(Board *board)
 }
 
 
+/**
+ * Toggle paused state. Ignore the request in GameOver mode.
+ */
 void
 board_toggle_pause(Board *board)
 {
-	if (board->paused == 1) {
+	Text *t;
+	int i;
+
+	if (board->gameover)
+		return;
+
+	if (board->paused == true) {
 		board->modal = false;
-		board->paused = 0;
-		text_set_value(board->status_t, (unsigned char *)"");
+		board->paused = false;
+		text_set_value(board->status_t, "");
+
+		/* Remove all the text marked 'temp'. */
+		for (i = 0; i < board->text_count; i++) {
+			t = board->texts[i];
+			if (t == NULL)
+				continue;
+
+			if (t->temp == true)
+				t->trashed = true;
+		}
 	} else {
 		board->modal = true;
-		board->paused = 1;
-		text_set_value(board->status_t, (unsigned char *)"paused!");
+		board->paused = true;
+		if (board->silent == false)
+			text_set_value(board->status_t, "paused!");
 	}
 }
 
@@ -288,7 +346,7 @@ board_save_score(Text *text, Text *x)
 		hiscore_add((char *)text->value, board->score);
 	}
 	board->status_t->y = 80;
-	text_set_value(board->status_t, (byte*)"High Scores");
+	text_set_value(board->status_t, "High Scores");
 	hiscore_dump(board);
 	text->trashed = true;
 	x->trashed = true;
@@ -303,34 +361,49 @@ board_save_score(Text *text, Text *x)
  * for the name of the player.
  */
 void
-board_gameover(Board *board)
+board_gameover(Board *board, bool success)
 {
 	Text *txt, *prompt;
 
+	board->silent = false;
 	board->modal = true;
-	board->gameover = 1;
-	text_set_value(board->status_t, (unsigned char *)"game over!");
-	if (hiscore_check(board->score) == false)
-		return;
+	board->gameover = true;
 
-	txt = board_add_text(board, (byte *)"enter your name:", 0, 270);
-	txt->centered = true;
-	prompt = board_add_text(board, (byte *)"", 0, 310);
-	text_set_color1(prompt, 80, 100, 190);
-	text_set_color2(prompt, 30, 40, 130);
-	prompt->centered = true;
-	board->prompt_text = prompt;
-	board->prompt_func = board_save_score;
-	board->prompt_data = txt;
+	if (success) {
+		board->modal = true;
+		text_set_value(board->status_t, "congratulations!");
+		board_refresh_texts(board);
+		gameover_menu();
+	} else {
+		text_set_value(board->status_t, "game over!");
+		if (hiscore_check(board->score) == false)
+			return;
+
+		txt = board_add_text(board, "enter your name:", 0, 270);
+		txt->centered = true;
+		prompt = board_add_text(board, "", 0, 310);
+		text_set_color1(prompt, 80, 100, 190);
+		text_set_color2(prompt, 30, 40, 130);
+		prompt->centered = true;
+		board->prompt_text = prompt;
+		board->prompt_func = board_save_score;
+		board->prompt_data = txt;
+	}
 }
 
 
-/* board_update() - this function handles all the elements at ticking point */
-void
+/**
+ * This function handles all the elements at ticking point, if anything
+ * pushed the board to a game over, let the caller know.
+ */
+int
 board_update(Board *board, uint32_t now)
 {
-	if (board->paused == 1 || board->gameover == 1)
-		return;
+	if (board->paused == true)
+		return 1;
+
+	if (board->gameover == true)
+		return 0;
 
 	board_update_blocks(board, now);
 	board_update_cubes(board, now);
@@ -339,5 +412,7 @@ board_update(Board *board, uint32_t now)
 	/* Animations */
 	a_chimneys_update(board, now);
 	a_sky_update(board, now);
+
+	return 1;
 }
 

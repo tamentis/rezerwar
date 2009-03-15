@@ -41,8 +41,8 @@ conf_init()
 }
 
 
-void
-game_loop()
+int
+game_loop(char *levelname)
 {
 	Level *level;
 	uint32_t start, now, framecount = 0, fps_lastframe = 0,
@@ -51,18 +51,20 @@ game_loop()
 	char fpsbuf[16];
 	byte playing = 1;
 	SDL_Event event;
-//	Text *t;
+
+	sfx_play_music("level1");
 
 	/* Prepare board and load the first block. */
-	level = lvl_load("tuto_01");
-	board = board_new_from_level(level);
-	lvl_dump(level);
-	lvl_kill(level);
-	/*
-	board = board_new(conf->difficulty);
-	t = board_add_text(board, (unsigned char *)BOT_VER, 10, 450);
-	board_prepopulate(board, 2);
-	*/
+	if (levelname == NULL) {
+		board = board_new(conf->difficulty);
+		board_prepopulate(board, 4);
+	} else {
+		level = lvl_load(levelname);
+		board = board_new_from_level(level);
+		lvl_dump(level);
+		lvl_kill(level);
+	}
+	board_add_text(board, (char *)BOT_VER, 10, 450);
 	board_load_next_block(board);
 	board_launch_next_block(board);
 
@@ -79,15 +81,15 @@ game_loop()
 			break;
 
 		now = SDL_GetTicks();
-		board_update(board, now);
+		playing = board_update(board, now);
 
 		/* Print Frame Per Second. */
 		if (now - fps_lastframedisplay > 1000) {
 			if (board->show_fps) {
 				snprintf(fpsbuf, 16, "FPS: %u\n", framecount);
-				text_set_value(board->fps_t, (byte*)fpsbuf);
+				text_set_value(board->fps_t, fpsbuf);
 			} else {
-				text_set_value(board->fps_t, (byte*)"");
+				text_set_value(board->fps_t, "");
 			}
 			fps_lastframedisplay = now;
 			framecount = 0;
@@ -107,35 +109,83 @@ game_loop()
 	}
 
 	board_kill(board);
+
+	return MTYPE_SUBMENU;
 }
+
+
+/**
+ * Check for the presence of an cmd line flag.
+ */
+bool
+has_flag(int ac, char **av, char *flag)
+{
+	int i;
+
+	if (ac <= 1)
+		return false;
+
+	for (i = 0; i < ac; i++) {
+		if (strcmp(av[i], flag) == 0)
+			return true;
+	}
+
+	return false;
+}
+
+
+/**
+ * Return whether the user requested sound to run or not.
+ */
+bool
+need_audio(int ac, char **av)
+{
+	return !has_flag(ac, av, "-nosound");
+}
+
+
+/**
+ * Return the fullscreen bit if needed.
+ */
+uint32_t
+need_fullscreen(int ac, char **av)
+{
+	return has_flag(ac, av, "-fullscreen") == true ? SDL_FULLSCREEN : 0;
+}
+
 
 
 int
 main(int ac, char **av)
 {
-	int status = 0;
+	int status = MTYPE_SUBMENU;
+	uint32_t sdl_flags = 0;
+	bool loop = true;
 
 	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO) != 0)
 		fatal("Unable to initialize SDL: %s\n", SDL_GetError());
+
+	/* Set the graphic flags */
+	sdl_flags  = SDL_SWSURFACE|SDL_DOUBLEBUF;
+	sdl_flags |= need_fullscreen(ac, av);
 
 	atexit(SDL_Quit);
 
 	SDL_EnableUNICODE(1);
 
-	/* Create main window, seed random, load the sprites and set the alpha. */
+	/* Create main window, seed rand, load the sprites and set the alpha. */
 	srand(time(NULL));
-	screen = SDL_SetVideoMode(640, 480, 32, SDL_SWSURFACE|SDL_DOUBLEBUF);
+	screen = SDL_SetVideoMode(640, 480, 32, sdl_flags);
 	key = SDL_MapRGB(screen->format, 0, 255, 255);
 	SDL_WM_SetCaption("rezerwar", NULL);
 	sprites = SDL_LoadBMP("gfx/sprites.bmp");
 	SDL_SetColorKey(sprites, SDL_SRCCOLORKEY|SDL_RLEACCEL, key);
 
-	init_audio();
+	if (need_audio(ac, av))
+		init_audio();
 
 	sfx_load_library();
 	sfx_play_horn();
-
-//	sfx_play_music();
 
 	/* Normal flow... */
 	intro_studio();
@@ -143,12 +193,21 @@ main(int ac, char **av)
 
 	/* Loop between game and menu as long as no "quit" was selected. */
 	do {
-		status = main_menu();
-		if (status == 1)
-			break;
-		sfx_play_music("level1");
-		game_loop();
-	} while (1);
+		switch (status) {
+			case MTYPE_SUBMENU:
+				status = main_menu();
+				break;
+			case MTYPE_QUIT:
+				loop = false;
+				break;
+			case MTYPE_PLAIN:
+				status = game_loop(NULL);
+				break;
+			case MTYPE_START:
+				status = game_loop("tuto_01");
+				break;
+		}
+	} while (loop);
 
 	/* Death */
 	hiscore_free();

@@ -1,19 +1,24 @@
-/**
- * @file rezerwar.h
- * @brief Main header
- *
- * This header provides all the structures and prototypes for the whole
- * game.
+/*
+ * Copyright 2009, (c) Bertrand Janin <tamentis@neopulsar.org>
+ * http://tamentis.com/
  */
 
+/* Main speed and flow control */
 #define MAXFPS			30
 #define TICK			10
 
+/* Board constants */
 #define BOARD_LEFT		176
 #define BOARD_TOP		90
 #define BOARD_WIDTH		9
 #define BOARD_HEIGHT		10
+
+/* A couple hard-coded sizes.. */
 #define BSIZE			32
+#define FONT_HEIGHT		19
+#define LVL_MAX_SIZE		4096
+
+/* Speed relative to difficulty */
 #define SPEED_NORMAL		500
 #define SPEED_LESS5K		400
 #define SPEED_LESS10K		300
@@ -21,7 +26,7 @@
 #define SPEED_LESS50K		100
 #define SPEED_MAX		50
 
-
+/* Block types */
 enum {
 	BLOCK_TYPE_TEE,		// 0
 	BLOCK_TYPE_ELL,
@@ -38,12 +43,12 @@ enum {
 
 /* Cube types */
 enum {
-	CTYPE_EMPTY,
+	CTYPE_EMPTY,		// 0
 	CTYPE_ANGLE,
 	CTYPE_TEE,
 	CTYPE_FLAT,
 	CTYPE_KNOB,
-	CTYPE_ALL,
+	CTYPE_ALL,		// 5
 	CTYPE_BOMB
 };
 
@@ -76,7 +81,9 @@ enum {
 	MTYPE_QUIT,
 	MTYPE_START,
 	MTYPE_SUBMENU,
-	MTYPE_TOGGLE
+	MTYPE_PLAIN,
+	MTYPE_TOGGLE,
+	MTYPE_NEXTLEVEL
 };
 
 /* Text Effect types */
@@ -95,25 +102,53 @@ enum {
 	ATYPE_BLOCK
 };
 
-/* Level definitions. */
-#define LVL_MAX_SIZE		4096
+/* Level Objective types. */
+enum {
+	OBJTYPE_CLEARALL,
+	OBJTYPE_TIMED_BLOCKS,
+	OBJTYPE_TIMED_SCORE,
+	OBJTYPE_LINK,
+	OBJTYPE_LENGTH
+};
 
+/* Pre-define types */
+struct _board_s;
+
+/* Boolean and byte types, easier to read ;) */
 typedef unsigned char byte;
 typedef enum {
 	false,
 	true
 } bool;
 
-/* mem */
+
+/* Memory Management functions */
 void		*r_malloc(size_t);
 void		 r_free(void *);
 void		 r_checkmem();
+char		*r_strcp(char *);
 
-typedef struct _configuration {
-	int difficulty;
-} Configuration;
 
-/* rcube.c */
+/* Event functions */
+byte		 handle_events(SDL_Event *);
+void		 wait_for_keymouse(void);
+int		 cancellable_delay(int);
+
+
+/* Graphic related wrappers */
+int		 surface_fadein(SDL_Surface *, int);
+int		 surface_fadeout(SDL_Surface *);
+void		 r_setpixel(Uint16, Uint16, byte, byte, byte);
+void		 r_setline(Uint16, Uint16, Uint16, byte, byte, byte);
+SDL_Surface	*loadimage(char *);
+
+
+/* String related functions from OpenBSD */
+size_t		 strlcpy(char *dst, const char *src, size_t siz);
+char		*strsep(char **, const char *);
+
+
+/* Cube structure */
 typedef struct _cube {
 	int current_position;
 	int x;
@@ -127,8 +162,11 @@ typedef struct _cube {
 	struct _cube **network;
 	struct _cube *root;
 } Cube;
+
+/* Cube functions */
 Cube		*cube_new(byte);
 Cube		*cube_new_type(byte, int);
+Cube		*cube_new_from_char(char);
 void		 cube_kill(Cube *);
 Cube		*cube_new_random();
 Cube		*cube_new_random_max(int);
@@ -145,46 +183,57 @@ void		 cube_network_flush(Cube *);
 void		 cube_network_taint(Cube *);
 
 
-/* text.c */
-typedef struct text_s {
-	int x;
+/* Text structure */
+typedef struct _text_s {
+	int x;			// position on the screen
 	int y;
-	int width;
+	int width;		// size of the text surface (rendered)
 	int height;
-	bool colorized;
-	byte color1_r;
+	bool colorized;		// fast check to skip the colorization.
+	byte color1_r;		// text colors
 	byte color1_g;
 	byte color1_b;
 	byte color2_r;
 	byte color2_g;
 	byte color2_b;
-	int font;
-	int effect;
-	int fx_fade_data;
-	unsigned char *value;
-	int length;
-	bool trashed;
-	bool centered;
+	int effect;		// bit map of effects
+	int fx_fade_data;	// fade value
+	unsigned char *value;	// actual c-string text
+	int length;		// num of chars in the value
+	int line_spacing;	// num. of pixels between lines
+	bool trashed;		// kill on next tick
+	bool centered;		// horizontal centering
+	bool temp;		// trash on next move
 } Text;
 
-Text		*text_new(unsigned char *);
+/* Text functions */
+Text		*text_new(char *);
 void		 text_kill(Text *);
 SDL_Surface	*text_get_surface(Text *);
 void		 text_get_rectangle(Text *, SDL_Rect *);
-void		 text_set_value(Text *, unsigned char *);
+void		 text_set_value(Text *, char *);
+void		 text_set_colors(Text *, uint32_t, uint32_t);
 void		 text_set_color1(Text *, byte, byte, byte);
 void		 text_set_color2(Text *, byte, byte, byte);
 void		 text_del_last_char(Text *);
 void		 text_add_char(Text *, char);
 
-/* hiscore.c */
+
+/* HiScore structure */
 typedef struct _hiscore {
 	int score;
 	char name[16];
 	time_t date;
 } HiScore;
 
-/* lvlhandler.c */
+/* HiScore functions */
+void		 hiscore_add(char *, int);
+void		 hiscore_dump(struct _board_s *);
+bool 		 hiscore_check(int);
+void		 hiscore_free();
+
+
+/* Level related structures */
 struct _queuedblock_s;
 typedef struct _level_s {
 	char *name;
@@ -192,6 +241,8 @@ typedef struct _level_s {
 	byte *cmap;
 	struct _queuedblock_s **queue;
 	size_t queue_len;
+	int objective_type;
+	char *next;
 } Level;
 typedef struct _queuedblock_s {
 	int type;
@@ -200,12 +251,13 @@ typedef struct _queuedblock_s {
 	byte *cmap;
 } QueuedBlock;
 
+/* Level functions */
 Level		*lvl_load(char *);
 void		 lvl_dump(Level *);
 void		 lvl_kill(Level *);
 
 
-/* block.c */
+/* Block structure */
 typedef struct _block_data {
 	byte falling;
 	byte size;
@@ -220,6 +272,7 @@ typedef struct _block_data {
 	byte type;
 } Block;
 
+/* Block-related functions */
 Block		*block_new(byte);
 void		 block_kill(Block *);
 SDL_Surface	*block_get_surface(Block *);
@@ -239,8 +292,15 @@ Block		*block_new_of_type(int);
 void		 block_rotate_cw(Block *);
 void		 block_rotate_ccw(Block *);
 
-/* board.c */
-typedef struct _board_data {
+
+/* Configuration structure (part of Board) */
+typedef struct _configuration {
+	int difficulty;
+} Configuration;
+
+
+/* Board structure */
+typedef struct _board_s {
 	/* main characteristics */
 	byte width;
 	byte height;
@@ -250,6 +310,7 @@ typedef struct _board_data {
 	char bgfilename[256];
 	SDL_Surface *bg;
 	/* cubes */
+	int cube_count;
 	Cube **cubes;
 	/* blocks */
 	int block_speed;
@@ -267,7 +328,7 @@ typedef struct _board_data {
 	int lateral_speed;
 	/* texts */
 	bool modal;
-	Text **texts;
+	struct _text_s **texts;
 	int text_count;
 	Text *status_t;
 	Text *score_t;
@@ -279,20 +340,25 @@ typedef struct _board_data {
 	void *prompt_data;
 	/* player stuff */
 	int score;
-	int paused;
-	int gameover;
+	bool paused;		// stop the game flow when true
+	bool silent;		// do not show paused or score
+	bool gameover;		// stop the game completely on next tick
+	/* current level */
+	int objective_type;
+	char *next_level;
 } Board;
 
+/* Board functions */
 Board		*board_new(int);
 Board		*board_new_from_level(Level *);
 void		 board_kill(Board *);
 void		 board_loadbg(Board *, char *);
 void		 board_refresh(Board *);
-void		 board_update(Board *, uint32_t);
+int		 board_update(Board *, uint32_t);
 void		 board_toggle_pause(Board *);
-void		 board_gameover(Board *);
+void		 board_gameover(Board *, bool);
 void		 board_prepopulate(Board *, int);
-/* rboard_cubes.c */
+/* Board functions (cube related) */
 void		 board_add_cube(Board *);
 void		 board_refresh_cubes(Board *);
 void		 board_dump_cube_map(Board *);
@@ -303,7 +369,7 @@ Cube		*board_get_cube(Board *, int, int);
 void		 board_run_avalanche(Board *, Cube *);
 void		 board_run_avalanche_column(Board *, Cube *);
 int		 board_get_area_type(Board *, int, int);
-/* rboard_blocks.c */
+/* Board functions (block related) */
 void		 board_refresh_blocks(Board *);
 void		 board_refresh_next(Board *);
 void		 board_update_blocks(Board *, uint32_t);
@@ -320,44 +386,22 @@ void		 board_rotate_cw(Board *);
 void		 board_update_map(Board *);
 void		 board_dump_block_map(Board *);
 void		 board_cube_bomb(Board *, Cube *);
-
-/* text related */
-Text		*board_add_text(Board *, unsigned char *, int, int);
-
-/* events.c */
-byte		 handle_events(SDL_Event *);
-void		 wait_for_keymouse(void);
-int		 cancellable_delay(int);
-
-/* hiscore.c */
-void		 hiscore_add(char *, int);
-void		 hiscore_dump(Board *);
-bool 		 hiscore_check(int);
-void		 hiscore_free();
-
-/* engine_sdl.c */
-int		 surface_fadein(SDL_Surface *, int);
-int		 surface_fadeout(SDL_Surface *);
-void		 r_setpixel(Uint16, Uint16, byte, byte, byte);
-void		 r_setline(Uint16, Uint16, Uint16, byte, byte, byte);
+/* Board functions (text related) */
+Text		*board_add_text(Board *, char *, int, int);
 
 
-SDL_Surface	*loadimage(char *);
-
-/* strlcpy.c */
-size_t		 strlcpy(char *dst, const char *src, size_t siz);
-
-
-/* menus.c */
+/* Main menu */
 int		 main_menu(void);
 
-/* animations */
+
+/* Animations */
 void		 a_sky_refresh(Board *);
 void		 a_chimneys_refresh(Board *);
 void		 a_sky_update(Board *, uint32_t);
 void		 a_chimneys_update(Board *, uint32_t);
 
-/* sfx */
+
+/* Audio functions */
 void		 init_audio();
 void		 sfx_play_tick1();
 void		 sfx_play_tack1();
@@ -369,6 +413,7 @@ void		 sfx_play_menuselect();
 void		 sfx_load_library();
 void		 sfx_play_lazer();
 
-/* fatal.c */
+
+/* Error control */
 void		 fatal(char *fmt, ...);
 

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "SDL.h"
+#include "rezerwar.h"
 
 
 /* Keep records. */
@@ -67,6 +68,20 @@ r_free(void *p)
 		}
 	}
 }
+
+
+/**
+ * Copy a NUL delimited string and return the fresh copy.
+ */
+char *
+r_strcp(char *src)
+{
+	size_t len = strlen(src) + 1;
+	char *dst = malloc(len);
+	strlcpy(dst, src, len);
+	return dst;
+}
+
 
 void
 r_checkmem()

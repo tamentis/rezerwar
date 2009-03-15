@@ -22,6 +22,7 @@ typedef struct _menu_item {
 typedef struct _menu {
 	int x;
 	int y;
+	char *bg_image;
 	MenuItem **items;
 	int length;
 	int current;
@@ -44,6 +45,7 @@ new_menu(void)
 	menu->items = NULL;
 	menu->length = 0;
 	menu->current = 0;
+	menu->bg_image = NULL;
 
 	return menu;
 }
@@ -91,8 +93,6 @@ kill_menu_item(MenuItem *item)
 
 
 
-
-
 void
 menu_item_set_difficulty(MenuItem *item)
 {
@@ -103,7 +103,7 @@ menu_item_set_difficulty(MenuItem *item)
 		"Difficulty: Hard",
 		"Difficulty: Ultra" };
 
-	text_set_value(item->text, (unsigned char*)diff_t[conf->difficulty]);
+	text_set_value(item->text, diff_t[conf->difficulty]);
 }
 
 
@@ -121,7 +121,7 @@ add_item_to_menu(Menu *menu, char *text, int type, int subtype, int x_offset)
 	item->subtype = subtype;
 	item->x_offset = x_offset;
 
-	item->text = text_new((unsigned char *)text);
+	item->text = text_new(text);
 	item->text->centered = true;
 	text_set_color2(item->text, 0x00, 0x0e, 0x26);
 	text_set_color1(item->text, 0x58, 0x89, 0xc6);
@@ -138,9 +138,21 @@ void
 menu_load_main(Menu *menu)
 {
 	flush_menu_items(menu);
-	add_item_to_menu(menu, "start new game", MTYPE_START, 0, 0);
+	add_item_to_menu(menu, "start game", MTYPE_START, 0, 0);
+	add_item_to_menu(menu, "plain board", MTYPE_PLAIN, 0, 0);
 	add_item_to_menu(menu, "options", MTYPE_SUBMENU, 2, 45);
 	add_item_to_menu(menu, "quit", MTYPE_QUIT, 0, 65);
+}
+
+
+void
+menu_load_gameover(Menu *menu)
+{
+	flush_menu_items(menu);
+	add_item_to_menu(menu, "next level", MTYPE_NEXTLEVEL, 0, 0);
+	add_item_to_menu(menu, "replay level", MTYPE_PLAIN, 0, 0);
+	add_item_to_menu(menu, "main menu", MTYPE_SUBMENU, 1, 45);
+	add_item_to_menu(menu, "quit rzwar", MTYPE_QUIT, 0, 65);
 }
 
 
@@ -335,8 +347,14 @@ menu_runner(Menu *menu)
 	SDL_Event event;
 
 	/* Load the initial image and fade into it. */
-	intro = SDL_LoadBMP("gfx/gamemenu.bmp");
-	surface_fadein(intro, 8);
+	if (menu->bg_image != NULL) {
+		intro = SDL_LoadBMP(menu->bg_image);
+		surface_fadein(intro, 8);
+	} else {
+		intro = SDL_CreateRGBSurface(0, screen->w, screen->h,
+				screen->format->BitsPerPixel, 0, 0, 0, 0);
+		SDL_BlitSurface(screen, NULL, intro, NULL);
+	}
 
 	while (running == 0) {
 		while (SDL_PollEvent(&event)) {
@@ -375,7 +393,8 @@ main_menu()
 
 	menu = new_menu();
 	menu->x = 224;
-	menu->y = 265;
+	menu->y = 245;
+	menu->bg_image = "gfx/gamemenu.bmp";
 
 	menu_load_main(menu);
 
@@ -387,3 +406,20 @@ main_menu()
 	return status;
 }
 
+
+int
+gameover_menu()
+{
+	Menu *menu;
+	int status;
+
+	menu = new_menu();
+	menu->x = 200;
+	menu->y = 285;
+	menu_load_gameover(menu);
+	status = menu_runner(menu);
+
+	kill_menu(menu);
+
+	return status;
+}

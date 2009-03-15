@@ -29,6 +29,52 @@ lvl_getline(byte *lbuf, byte *buf)
 }
 
 
+void
+lvl_var_objtype(Level *level, char *value)
+{
+	if (strcmp(value, "CLEARALL") == 0) {
+		level->objective_type = OBJTYPE_CLEARALL;
+	} else {
+		fatal("Unknown value for ObjectiveType");
+	}
+}
+
+
+void
+lvl_var_nextlevel(Level *level, char *value)
+{
+	size_t len = strlen(value) + 1;
+
+	level->next = malloc(len);
+	strlcpy(level->next, value, len);
+}
+
+/**
+ * Get a variable line buffer, split it and assign the proper variable.
+ */
+void
+lvl_splitvar(Level *level, byte *lbuf, size_t len)
+{
+	char *c, *l = (char *)lbuf;
+
+	/* Find the first colon (non optional) and terminal the string to
+	 * find the variable name, increment c to skip the colon/NUL */
+	c = strchr(l, ':');
+	if (c == NULL) fatal("Syntax error: variable without ':'.");
+	*c = '\0';
+
+	/* Skip the NUL/:, the spaces... */
+	c++; while (*c == ' ') c++;
+
+	if (strcmp("ObjectiveType", l) == 0)
+		lvl_var_objtype(level, c);
+	else if (strcmp("NextLevel", l) == 0)
+		lvl_var_nextlevel(level, c);
+	else
+		fatal("Syntax error: unknown variable: \"%s\".", l);
+}
+
+
 /**
  * Return a freshly loaded level.
  */
@@ -60,6 +106,7 @@ lvl_load(char *name)
 	level = malloc(sizeof(Level));
 	level->name = NULL;
 	level->description = NULL;
+	level->next = NULL;
 	level->queue = NULL;
 	level->queue_len = 0;
 	level->cmap = malloc(sizeof(byte) * BOARD_WIDTH * BOARD_HEIGHT);
@@ -133,6 +180,11 @@ lvl_load(char *name)
 			}
 			i++;
 			level->queue_len++;
+		}
+
+		/* Variables */
+		if (lbuf[0] == '$') {
+			lvl_splitvar(level, lbuf + 1, offset - 2);
 		}
 	}
 
