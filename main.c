@@ -38,9 +38,14 @@ conf_init()
 {
 	conf = r_malloc(sizeof(Configuration));
 	conf->difficulty = DIFF_EASIEST;
+	conf->next_level = NULL;
 }
 
 
+/**
+ * This is the game loop, it is called whenever a game has to be started,
+ * it will instanciate a board and return when the game is over.
+ */
 int
 game_loop(char *levelname)
 {
@@ -49,7 +54,7 @@ game_loop(char *levelname)
 		  fps_lastframedisplay = 0;
 	int elapsed;
 	char fpsbuf[16];
-	byte playing = 1;
+	enum mtype status = 0;
 	SDL_Event event;
 
 	sfx_play_music("level1");
@@ -71,17 +76,17 @@ game_loop(char *levelname)
 	/* Main loop, every loop is separated by a TICK (~10ms). 
 	 * The board is refreshed every 1/MAXFPS seconds. */
 	start = SDL_GetTicks();
-	while (playing) {
+	while (status == MTYPE_NOP) {
 		while (SDL_PollEvent(&event)) {
-			playing = handle_events(&event);
+			status = handle_events(&event);
 		}
 
 		/* Exit the loop prematurely if we need to leave */
-		if (playing != 1)
+		if (status != MTYPE_NOP)
 			break;
 
 		now = SDL_GetTicks();
-		playing = board_update(board, now);
+		status = board_update(board, now);
 
 		/* Print Frame Per Second. */
 		if (now - fps_lastframedisplay > 1000) {
@@ -109,8 +114,9 @@ game_loop(char *levelname)
 	}
 
 	board_kill(board);
+	sfx_stop_music();
 
-	return MTYPE_SUBMENU;
+	return status;
 }
 
 
@@ -194,8 +200,12 @@ main(int ac, char **av)
 	/* Loop between game and menu as long as no "quit" was selected. */
 	do {
 		switch (status) {
+			case MTYPE_BREAK:
 			case MTYPE_SUBMENU:
 				status = main_menu();
+				break;
+			case MTYPE_NEXTLEVEL:
+				status = game_loop(conf->next_level);
 				break;
 			case MTYPE_QUIT:
 				loop = false;
@@ -210,10 +220,12 @@ main(int ac, char **av)
 	} while (loop);
 
 	/* Death */
+	sfx_unload_library();
+	Mix_CloseAudio();
 	hiscore_free();
+	r_free(conf->next_level);
 	r_free(conf);
 	r_checkmem();
-	Mix_CloseAudio();
 
 	return 0;
 }

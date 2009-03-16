@@ -277,6 +277,9 @@ board_update_blocks(Board *board, uint32_t now)
 			continue;
 
 		board_update_single_block(board, now, i);
+
+		if (board->gameover == true)
+			break;
 	}
 }
 
@@ -306,7 +309,8 @@ board_update_single_block(Board *board, uint32_t now, int i) {
 					sfx_play_tack1();
 					board_launch_next_block(board);
 				} else {
-					board_gameover(board, false);
+					board->gameover = true;
+					return;
 				}
 			}
 			board_transfer_cubes(board, block);

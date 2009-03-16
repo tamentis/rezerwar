@@ -6,8 +6,8 @@
 #include "rezerwar.h"
 
 /**
- * Copy the next line of *buf in *lbuf, assuming it has enough space and return
- * the number of char we moved including the new line.
+ * Copy the next line of *buf in *lbuf, assuming it has enough space and
+ * return the number of char we moved including the new line.
  */
 size_t
 lvl_getline(byte *lbuf, byte *buf)
@@ -34,6 +34,8 @@ lvl_var_objtype(Level *level, char *value)
 {
 	if (strcmp(value, "CLEARALL") == 0) {
 		level->objective_type = OBJTYPE_CLEARALL;
+	} else if (strcmp(value, "LINK") == 0) {
+		level->objective_type = OBJTYPE_LINK;
 	} else {
 		fatal("Unknown value for ObjectiveType");
 	}
@@ -112,7 +114,10 @@ lvl_load(char *name)
 	level->cmap = malloc(sizeof(byte) * BOARD_WIDTH * BOARD_HEIGHT);
 
 	for (i = 0; cursor < buffer + len;) {
+		/* offset becomes the total length of the string including the
+		 * terminating NUL. */
 		offset = lvl_getline(lbuf, cursor);
+
 		if (offset == -1)
 			break;
 		lineno++;
@@ -135,8 +140,8 @@ lvl_load(char *name)
 
 		/* Save the name (phase 0) */
 		if (level->name == NULL) {
-			level->name = malloc(offset + 1);
-			strlcpy(level->name, (char *)lbuf, offset + 1);
+			level->name = r_malloc(offset);
+			strlcpy(level->name, (char *)lbuf, offset);
 			phase++;
 			cursor++; // skip next blank line
 			continue;
@@ -144,10 +149,10 @@ lvl_load(char *name)
 
 		/* Save the description (phase 1) */
 		if (phase == 1) {
+			if (i > 0) level->description[i - 1] = '\n';
 			level->description = realloc(level->description, 
 					i + offset);
-			memcpy(level->description + i, lbuf, offset);
-			level->description[i + offset - 1] = '\n';
+			strlcpy(level->description + i, (char*)lbuf, offset);
 			i += offset;
 		}
 
@@ -155,7 +160,7 @@ lvl_load(char *name)
 		if (phase == 2) {
 			if (offset - 1 > BOARD_WIDTH)
 				fatal("Syntax error: map line has to be %d wide.", BOARD_WIDTH);
-			memcpy(level->cmap + i, lbuf, offset);
+			memcpy(level->cmap + i, lbuf, offset - 1);
 			i += offset - 1;
 			if (i > BOARD_WIDTH * BOARD_HEIGHT)
 				fatal("map seems bigger than board.");
@@ -216,7 +221,7 @@ lvl_dump(Level *level)
 void
 lvl_kill(Level *level)
 {
-	free(level->name);
+	r_free(level->name);
 	free(level->description);
 }
 

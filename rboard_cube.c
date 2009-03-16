@@ -54,7 +54,8 @@ board_update_cubes(Board *board, uint32_t now)
 	/* Check the cube count for CLEARALL levels. */
 	if (board->objective_type == OBJTYPE_CLEARALL && 
 			board->cube_count == 0) {
-		board_gameover(board, true);
+		board->gameover = true;
+		board->success = true;
 	}
 }
 
@@ -163,9 +164,14 @@ board_update_water(Board *board, uint32_t now)
 		if (cube == NULL) continue;
 
 		if (cube_plug_match(cube, PLUG_EAST)) {
-			if (cube->water == 1)
+			if (cube->water == 1) {
 				cube_network_taint(cube->root);
-			else
+				/* If we are in link mode, this is a win */
+				if (board->objective_type == OBJTYPE_LINK) {
+					board->gameover = true;
+					board->success = true;
+				}
+			} else
 				board_spread_water(board, cube, NULL, 2);
 		}
 	}

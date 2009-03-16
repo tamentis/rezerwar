@@ -8,6 +8,7 @@
 
 bool has_sound = false;
 
+Mix_Music *music = NULL;
 Mix_Chunk *tick1;
 Mix_Chunk *tack1;
 Mix_Chunk *horn;
@@ -42,6 +43,20 @@ sfx_load_sample(char *filename)
 	return sample;
 }
 
+void
+sfx_unload_library()
+{
+	if (!has_sound) return;
+
+	Mix_FreeChunk(tick1);
+	Mix_FreeChunk(tack1);
+	Mix_FreeChunk(horn);
+	Mix_FreeChunk(boom);
+	Mix_FreeChunk(lazer);
+	Mix_FreeChunk(menunav);
+	Mix_FreeChunk(menuselect);
+}
+
 
 void
 sfx_load_library()
@@ -69,13 +84,14 @@ void sfx_play_menuselect() { if (has_sound) Mix_PlayChannel(-1, menuselect, 0); 
 void
 sfx_play_music(char *title)
 {
-	Mix_Music *music;
 	char filename[64];
 
 	if (!has_sound)
 		return;
 
 	snprintf(filename, 64, "music/%s.ogg", title);
+
+	Mix_FreeMusic(music);
 
 	// load the song
 	if(!(music=Mix_LoadMUS(filename))) {
@@ -88,4 +104,12 @@ sfx_play_music(char *title)
 		fprintf(stderr, "Mix_LoadMUS error\n");
 		exit(-1);
 	}
+}
+
+void
+sfx_stop_music()
+{
+	Mix_FadeOutMusic(200);
+	Mix_FreeMusic(music);
+	music = NULL;
 }

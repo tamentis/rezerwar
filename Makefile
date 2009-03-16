@@ -56,6 +56,12 @@ doc:
 	mkdir -p doc/
 	doxygen Doxyfile
 
+memwatch:
+	top -d 0.1 -p `pidof rezerwar`
+
+valgrind:
+	valgrind --leak-check=full ./$(PROGRAM) >& LOG
+
 lvltest: rmalloc.o strlcpy.o lvlhandler.c
 	gcc $(CFLAGS) -c lvlhandler.c
 	gcc rmalloc.o strlcpy.o lvlhandler.o -o lvlhandler

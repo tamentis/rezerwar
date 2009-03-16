@@ -1,11 +1,13 @@
- - make the game_loop return a relevant MTYPE.
-
- - add a menu with "next level, replay, main menu and quit".
 
  - add the start_time to the board.
  - add the max seconds conf variable.
 
- - add objective to levels.
+ - actually add all the object types.
+
+ - add font2 (find a cartoonesque).
+
+ - tweak the blocks to be a little better (more pixel-art).
+
  - add a timed mode to clean the screen.
  - add a 'tutorial' that shows how to play.
  - add blue and red blocks which will freeze and thaw the water.
@@ -13,6 +15,7 @@
  - add mouse interfacing in-game to allow Maemo and iPhone to work.
  - Add an 'under pressure' block that can provide pressure for a couple
    blocks. If you don't complete the network in 10 seconds, it depletes.
+   (a little source/spring icon on top?)
  - Add a bomb block, when it falls, it destroys everything in a 1 block
    radius.
  - Create a block_allocate when creating new blocks to avoid always pushing

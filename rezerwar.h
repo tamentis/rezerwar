@@ -76,14 +76,15 @@ enum {
 };
 
 /* Menu types */
-enum {
-	MTYPE_NOP,
-	MTYPE_QUIT,
-	MTYPE_START,
-	MTYPE_SUBMENU,
-	MTYPE_PLAIN,
-	MTYPE_TOGGLE,
-	MTYPE_NEXTLEVEL
+enum mtype {
+	MTYPE_NOP,		// keep going / don't do anything different
+	MTYPE_QUIT,		// leave the game
+	MTYPE_START,		// start scenario mode
+	MTYPE_SUBMENU,		// change menu
+	MTYPE_PLAIN,		// start plain board
+	MTYPE_TOGGLE,		// toggle a menu item
+	MTYPE_NEXTLEVEL,	// self explanatory
+	MTYPE_BREAK		// leave the current mode/menu (might QUIT).
 };
 
 /* Text Effect types */
@@ -130,7 +131,7 @@ char		*r_strcp(char *);
 
 
 /* Event functions */
-byte		 handle_events(SDL_Event *);
+enum mtype	 handle_events(SDL_Event *);
 void		 wait_for_keymouse(void);
 int		 cancellable_delay(int);
 
@@ -296,6 +297,7 @@ void		 block_rotate_ccw(Block *);
 /* Configuration structure (part of Board) */
 typedef struct _configuration {
 	int difficulty;
+	char *next_level;
 } Configuration;
 
 
@@ -343,6 +345,8 @@ typedef struct _board_s {
 	bool paused;		// stop the game flow when true
 	bool silent;		// do not show paused or score
 	bool gameover;		// stop the game completely on next tick
+	bool success;		// was it good?
+	enum mtype status;	// where to return after game over
 	/* current level */
 	int objective_type;
 	char *next_level;
@@ -354,9 +358,9 @@ Board		*board_new_from_level(Level *);
 void		 board_kill(Board *);
 void		 board_loadbg(Board *, char *);
 void		 board_refresh(Board *);
-int		 board_update(Board *, uint32_t);
+enum mtype	 board_update(Board *, uint32_t);
 void		 board_toggle_pause(Board *);
-void		 board_gameover(Board *, bool);
+enum mtype	 board_gameover(Board *);
 void		 board_prepopulate(Board *, int);
 /* Board functions (cube related) */
 void		 board_add_cube(Board *);
@@ -392,6 +396,7 @@ Text		*board_add_text(Board *, char *, int, int);
 
 /* Main menu */
 int		 main_menu(void);
+int		 gameover_menu(void);
 
 
 /* Animations */
@@ -406,12 +411,14 @@ void		 init_audio();
 void		 sfx_play_tick1();
 void		 sfx_play_tack1();
 void		 sfx_play_boom();
-void		 sfx_play_music();
 void		 sfx_play_horn();
 void		 sfx_play_menunav();
 void		 sfx_play_menuselect();
-void		 sfx_load_library();
 void		 sfx_play_lazer();
+void		 sfx_load_library();
+void		 sfx_unload_library();
+void		 sfx_play_music(char *);
+void		 sfx_stop_music();
 
 
 /* Error control */

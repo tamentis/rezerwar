@@ -77,7 +77,7 @@ char *
 r_strcp(char *src)
 {
 	size_t len = strlen(src) + 1;
-	char *dst = malloc(len);
+	char *dst = r_malloc(len);
 	strlcpy(dst, src, len);
 	return dst;
 }

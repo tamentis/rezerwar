@@ -23,13 +23,14 @@ typedef struct _menu {
 	int x;
 	int y;
 	char *bg_image;
+	bool bg_refresh;
 	MenuItem **items;
 	int length;
 	int current;
 } Menu;
 
 
-void kill_menu_item(MenuItem *);
+void menuitem_kill(MenuItem *);
 
 
 /**
@@ -46,6 +47,7 @@ new_menu(void)
 	menu->length = 0;
 	menu->current = 0;
 	menu->bg_image = NULL;
+	menu->bg_refresh = true;
 
 	return menu;
 }
@@ -63,7 +65,7 @@ flush_menu_items(Menu *menu)
 		return;
 
 	for (i = 0; i < menu->length; i++) {
-		kill_menu_item(menu->items[i]);
+		menuitem_kill(menu->items[i]);
 	}
 	free(menu->items);
 	menu->items = NULL;
@@ -77,15 +79,16 @@ flush_menu_items(Menu *menu)
  * Destructor for the menu.
  */
 void
-kill_menu(Menu *menu)
+menu_kill(Menu *menu)
 {
 	flush_menu_items(menu);
+	r_free(menu->bg_image);
 	r_free(menu);
 }
 
 
 void
-kill_menu_item(MenuItem *item)
+menuitem_kill(MenuItem *item)
 {
 	text_kill(item->text);
 	r_free(item);
@@ -151,7 +154,7 @@ menu_load_gameover(Menu *menu)
 	flush_menu_items(menu);
 	add_item_to_menu(menu, "next level", MTYPE_NEXTLEVEL, 0, 0);
 	add_item_to_menu(menu, "replay level", MTYPE_PLAIN, 0, 0);
-	add_item_to_menu(menu, "main menu", MTYPE_SUBMENU, 1, 45);
+	add_item_to_menu(menu, "main menu", MTYPE_BREAK, 1, 45);
 	add_item_to_menu(menu, "quit rzwar", MTYPE_QUIT, 0, 65);
 }
 
@@ -178,10 +181,10 @@ void
 menu_load_submenu(Menu *menu, int subtype)
 {
 	switch (subtype) {
-		case 0:
+		case 0: // main menu no refresh
 			menu_load_main(menu);
 			break;
-		case 2:
+		case 2: // options menu
 			menu_load_options(menu);
 			break;
 		default:
@@ -346,19 +349,24 @@ menu_runner(Menu *menu)
 	int elapsed;
 	SDL_Event event;
 
-	/* Load the initial image and fade into it. */
-	if (menu->bg_image != NULL) {
-		intro = SDL_LoadBMP(menu->bg_image);
-		surface_fadein(intro, 8);
-	} else {
-		intro = SDL_CreateRGBSurface(0, screen->w, screen->h,
-				screen->format->BitsPerPixel, 0, 0, 0, 0);
-		SDL_BlitSurface(screen, NULL, intro, NULL);
-	}
-
 	while (running == 0) {
 		while (SDL_PollEvent(&event)) {
 			running = handle_menu_events(&event, menu);
+		}
+
+		if (menu->bg_refresh == true) {
+			/* Load the initial image and fade into it. */
+			if (menu->bg_image != NULL) {
+				intro = SDL_LoadBMP(menu->bg_image);
+				surface_fadein(intro, 8);
+			} else {
+				intro = SDL_CreateRGBSurface(0, screen->w, 
+						screen->h, 
+						screen->format->BitsPerPixel, 
+						0, 0, 0, 0);
+				SDL_BlitSurface(screen, NULL, intro, NULL);
+			}
+			menu->bg_refresh = false;
 		}
 
 		now = SDL_GetTicks();
@@ -394,14 +402,14 @@ main_menu()
 	menu = new_menu();
 	menu->x = 224;
 	menu->y = 245;
-	menu->bg_image = "gfx/gamemenu.bmp";
+	menu->bg_image = r_strcp("gfx/gamemenu.bmp");
 
 	menu_load_main(menu);
 
 	sfx_play_music("menu");
 	status = menu_runner(menu);
 
-	kill_menu(menu);
+	menu_kill(menu);
 
 	return status;
 }
@@ -419,7 +427,7 @@ gameover_menu()
 	menu_load_gameover(menu);
 	status = menu_runner(menu);
 
-	kill_menu(menu);
+	menu_kill(menu);
 
 	return status;
 }

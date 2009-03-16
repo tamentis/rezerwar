@@ -1,0 +1,37 @@
+# This is the first tutorial level of Rezerwar
+# (c) 2009 Bertrand Janin
+#
+
+Tutorial 2
+
+I admit the first level is too easy...\n
+Now the objective is pretty much the same
+except that you have to link both sides of
+the board. You are not limited in block
+type, do what you want, rotate, explode...
+
+.........
+.........
+.........
+.........
+.........
+.........
+.........
+.........
+.........
+.........
+
+# Those are defined backward, starts from the bottom
+70-
+70-
+70-
+70-
+70-
+70-
+70J
+70-
+70-
+
+# Level objective type
+$ObjectiveType: LINK
+

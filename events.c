@@ -1,3 +1,7 @@
+/*
+ * This file is about event handling during game play.
+ */
+
 #include <stdio.h>
 
 #include "SDL.h"
@@ -9,21 +13,27 @@ extern Board *board;
 SDL_Surface *screen;
 
 
-byte
+/**
+ * Mouse events
+ */
+enum mtype
 handle_events_mouse(SDL_Event *event)
 {
 	switch ((int)event->button.button) {
 		case 5: // mousewheel down
 		default:
-			printf("mousewheel down\n");
+			printf("[rzwar] events.c: mousewheel down\n");
 			break;
 	}
 
-	return 1;
+	return MTYPE_NOP;
 }
 
 
-byte
+/**
+ * Keyboard up (stop moving one side or stop accelerating).
+ */
+enum mtype
 handle_events_keyup(SDL_Event *event)
 {
 	switch ((int)event->key.keysym.sym) {
@@ -43,20 +53,25 @@ handle_events_keyup(SDL_Event *event)
 			break;
 	}
 
-	return 1;
+	return MTYPE_NOP;
 }
 
-int
+
+/**
+ * In prompt mode, capture all the characters from the keyboard until
+ * return.
+ */
+enum mtype
 handle_events_prompt(SDL_keysym keysym, Text *text)
 {
 	char ch;
 
 	if ((keysym.unicode & 0xFF80) != 0)
-		return 1;
+		return MTYPE_NOP;
 
 	if (keysym.sym == SDLK_BACKSPACE) {
 		text_del_last_char(text);
-		return 1;
+		return MTYPE_NOP;
 	}
 
 	if (keysym.sym == SDLK_RETURN) {
@@ -68,21 +83,25 @@ handle_events_prompt(SDL_keysym keysym, Text *text)
 		text_add_char(text, ch);
 	}
 
-	return 1;
+	return MTYPE_NOP;
 }
 
-byte
+
+/**
+ * Keydown.
+ */
+enum mtype
 handle_events_keydown(SDL_Event *event)
 {
 	/* Hijack the event system when we need to take some input. */
-	if (board->prompt_text != NULL) {
-		return handle_events_prompt(event->key.keysym, board->prompt_text);
-	}
+	if (board->prompt_text != NULL)
+		return handle_events_prompt(event->key.keysym,
+					    board->prompt_text);
 
 	switch ((int)event->key.keysym.sym) {
 		case SDLK_ESCAPE:
 		case SDLK_q:
-			return 0;
+			return MTYPE_SUBMENU;;
 		case SDLK_F12:
 			board->show_fps = !board->show_fps;
 			break;
@@ -116,23 +135,26 @@ handle_events_keydown(SDL_Event *event)
 			board_rotate_cw(board);
 			break;
 		case SDLK_p:
+		case SDLK_RETURN:
 			board_toggle_pause(board);
 			break;
 		case SDLK_f:
-			if (SDL_WM_ToggleFullScreen(screen) == 0) {
-				fprintf(stderr, "Unable to toggle fullscreen/windowed mode.\n");
-				exit(-1);
-			}
+			if (SDL_WM_ToggleFullScreen(screen) == 0)
+				fatal("Unable to toggle fullscreen/windowed mode.");
 			break;
-
+		default:
+			break;
 	}
-	return 1;
+
+	return MTYPE_NOP;
 }
 
 
-/* handle_events() - returning 1 will keep the game playing, returning 0
- * will quit. */
-byte
+/**
+ * Usually returns NOP unless SQL_QUIT (window close) is triggered, it gets
+ * its mtypes from the sub-routines.
+ */
+enum mtype
 handle_events(SDL_Event *event)
 {
 	switch (event->type) {
@@ -146,13 +168,13 @@ handle_events(SDL_Event *event)
 			return handle_events_mouse(event);
 			break;
 		case SDL_QUIT:
-			exit(0);
+			return MTYPE_QUIT;
 			break;
 		default:
 			break;
 	}
 
-	return 1;
+	return MTYPE_NOP;
 }
 
 

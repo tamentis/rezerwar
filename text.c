@@ -248,7 +248,7 @@ text_calculate_size(Text *text)
 		font_get_glyph_rect(*c, &r);
 		text->width += r.w;
 		if (*c == '\n' || (*c == '\\' && *(c+1) == 'n'))
-			text->height += FONT_HEIGHT;
+			text->height += FONT_HEIGHT + text->line_spacing;
 		c++;
 	}
 }

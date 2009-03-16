@@ -5,6 +5,7 @@
 #include "rezerwar.h"
 
 
+extern Configuration *conf;
 extern Board *board;
 extern SDL_Surface *screen;
 extern Uint32 key;
@@ -62,8 +63,10 @@ board_new(int difficulty)
 
 	/* Player related */
 	b->score = 0;
+	b->status = MTYPE_NOP;
 	b->paused = false;
 	b->gameover = false;
+	b->success = false;
 	b->silent = false;
 
 	/* Prompt init. */
@@ -123,7 +126,7 @@ board_new_from_level(Level *level)
 
 	/* Transfer the queue */
 	board->bqueue_len = level->queue_len;
-	board->bqueue = malloc(sizeof(Block *) * board->bqueue_len);
+	board->bqueue = r_malloc(sizeof(Block *) * board->bqueue_len);
 	for (i = 0; i < board->bqueue_len; i++) {
 		block = block_new_of_type(level->queue[i]->type);
 		block->current_position = level->queue[i]->pos;
@@ -141,7 +144,8 @@ board_new_from_level(Level *level)
 
 	/* Copy level related stuff */
 	board->objective_type = level->objective_type;
-	board->next_level = r_strcp(level->next);
+	if (level->next)
+		board->next_level = r_strcp(level->next);
 
 	/* Draw the title */
 	title = board_add_text(board, level->name, 20, 20);
@@ -202,6 +206,14 @@ board_kill(Board *board)
 		text_kill(board->texts[i]);
 	}
 	free(board->texts);
+
+	/* Block queue cleanup */
+	r_free(board->bqueue);
+	board->bqueue = NULL;
+	board->bqueue_len = 0;
+
+	/* Level stuff */
+	r_free(board->next_level);
 
 	/* General board clean up */
 	SDL_FreeSurface(board->bg);
@@ -301,6 +313,7 @@ board_toggle_pause(Board *board)
 				t->trashed = true;
 		}
 	} else {
+		board->silent = false;
 		board->modal = true;
 		board->paused = true;
 		if (board->silent == false)
@@ -352,7 +365,7 @@ board_save_score(Text *text, Text *x)
 	x->trashed = true;
 	board->prompt_text = NULL;
 
-	return 1;
+	return gameover_menu();
 }
 
 
@@ -360,24 +373,23 @@ board_save_score(Text *text, Text *x)
  * Called when the game has ended, if the score is a high one, prompt
  * for the name of the player.
  */
-void
-board_gameover(Board *board, bool success)
+enum mtype
+board_gameover(Board *board)
 {
 	Text *txt, *prompt;
 
 	board->silent = false;
 	board->modal = true;
-	board->gameover = true;
 
-	if (success) {
+	if (board->success) {
 		board->modal = true;
 		text_set_value(board->status_t, "congratulations!");
 		board_refresh_texts(board);
-		gameover_menu();
+		return gameover_menu();
 	} else {
 		text_set_value(board->status_t, "game over!");
 		if (hiscore_check(board->score) == false)
-			return;
+			return MTYPE_NOP;
 
 		txt = board_add_text(board, "enter your name:", 0, 270);
 		txt->centered = true;
@@ -389,30 +401,40 @@ board_gameover(Board *board, bool success)
 		board->prompt_func = board_save_score;
 		board->prompt_data = txt;
 	}
+
+	return MTYPE_NOP;
 }
 
 
 /**
  * This function handles all the elements at ticking point, if anything
- * pushed the board to a game over, let the caller know.
+ * pushed the board to a game over, let the caller know with an mtype.
  */
-int
+enum mtype
 board_update(Board *board, uint32_t now)
 {
-	if (board->paused == true)
-		return 1;
+	enum mtype status;
 
-	if (board->gameover == true)
-		return 0;
+	if (board->paused == true)
+		return MTYPE_NOP;
 
 	board_update_blocks(board, now);
 	board_update_cubes(board, now);
 	board_update_water(board, now);
 
+	if (board->gameover == true) {
+		status = board_gameover(board);
+		if (status == MTYPE_NEXTLEVEL) {
+			r_free(conf->next_level);
+			conf->next_level = r_strcp(board->next_level);
+		}
+		return status;
+	}
+
 	/* Animations */
 	a_chimneys_update(board, now);
 	a_sky_update(board, now);
 
-	return 1;
+	return MTYPE_NOP;
 }
 
