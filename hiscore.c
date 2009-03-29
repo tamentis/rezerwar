@@ -6,6 +6,8 @@
 
 #include "rezerwar.h"
 
+extern Configuration *conf;
+extern SDL_Surface *screen;
 HiScore **hs = NULL;
 
 /**
@@ -51,27 +53,93 @@ hiscore_load()
 	}
 }
 
+enum mtype
+hiscore_prompt() {
+	SDL_Surface *back = copy_screen();
+	Text *title, *name, *prompt;
+	bool done = false;
+
+	title = text_new("new high score!");
+	title->centered = true;
+	title->y = 200;
+	title->font = 1;
+	text_set_colors(title, 0xff9020, 0xa9440d);
+
+	name = text_new(" enter your name:");
+	name->centered = true;
+	name->font = 1;
+	name->y = 230;
+	text_set_colors(name, 0xff9020, 0xa9440d);
+
+	prompt = text_new("");
+	prompt->centered = true;
+	prompt->max_length = 20;
+	prompt->y = 260;
+	prompt->font = 1;
+	text_set_colors(prompt, 0x6782cf, 0x010193);
+
+	while (done == false) {
+		done = prompt_polling(prompt);
+		
+		SDL_BlitSurface(back, NULL, screen, NULL);
+		blit_modal(160);
+		text_blit(title, screen);
+		text_blit(name, screen);
+		text_blit(prompt, screen);
+		SDL_Flip(screen);
+		SDL_Delay(50);
+	}
+
+	/* Restore the surface just in case ... */
+	SDL_BlitSurface(back, NULL, screen, NULL);
+	blit_modal(160);
+
+	/* Record the score */
+	if (prompt->length > 0)
+		hiscore_add(prompt->value, conf->last_score);
+
+	SDL_FreeSurface(back);
+	text_kill(title);
+	text_kill(name);
+	text_kill(prompt);
+
+	return MTYPE_HISCORES;
+}
+
 /**
  * Dump all the text on the board for the high score.
  */
 void
-hiscore_dump(Board *board)
+hiscore_show()
 {
 	int i;
 	Text *text;
 	char buf[16];
 
 	hiscore_load();
+	text = text_new("");
 
 	for (i = 0; i < 10; i++) {
 		snprintf(buf, 16, "%d", hs[i]->score);
-		text = board_add_text(board, buf, 200, 120 + 24 * i);
+		text_set_value(text, buf);
+		text->x = 200;
+		text->y = 120 + 24 * i;
 		text_set_color1(text, 80, 190, 100);
 		text_set_color2(text, 30, 130, 40);
-		text = board_add_text(board, hs[i]->name, 350, 120 + 24 * i);
+		text_blit(text, screen);
+
+		text_set_value(text, hs[i]->name);
+		text->x = 350;
 		text_set_color1(text, 80, 100, 190);
 		text_set_color2(text, 30, 40, 130);
+		text_blit(text, screen);
 	}
+
+	text_kill(text);
+
+	SDL_Flip(screen);
+
+	wait_for_keymouse();
 }
 
 /**

@@ -148,7 +148,8 @@ font_get_glyph_rect(int font, char c, SDL_Rect *l)
 
 
 /**
- * This function prints a single letter on screen and return x+width of the char
+ * This function prints a single letter on screen and return x+width of the 
+ * char
  */
 int
 text_render_glyph(Text *text, SDL_Surface *s, char c, int x, int y)
@@ -240,7 +241,7 @@ text_effect_colorize(Text *text, SDL_Surface *s)
 void
 text_render(Text *text, SDL_Surface *s)
 {
-	unsigned char *c = text->value;
+	char *c = text->value;
 	int cursor = 0;
 	int rx = 0, ry = 0;
 	int fheight = get_font_height(text);
@@ -319,7 +320,7 @@ void
 text_calculate_size(Text *text)
 {
 	SDL_Rect r;
-	unsigned char *c = text->value;
+	char *c = text->value;
 	int fheight = get_font_height(text);
 
 	text->width = 0;
@@ -348,6 +349,7 @@ text_new(char *value)
 	text->fx_fade_data = -255;
 	text->value = NULL;
 	text->length = -1;
+	text->max_length = 4096;
 	text->line_spacing = 2;
 
 	text->trashed = false;
@@ -390,12 +392,15 @@ text_add_char(Text *text, char ch)
 	char *new_prompt;
 	int nlen = text->length + 1;
 
+	if (nlen >= text->max_length)
+		return;
+
 	new_prompt = r_malloc(nlen + 1);
 	strlcpy(new_prompt, (char*)text->value, nlen + 1);
 	new_prompt[nlen] = '\0';
 	new_prompt[nlen - 1] = ch;
 	r_free(text->value);
-	text->value = (byte*)new_prompt;
+	text->value = new_prompt;
 	text->length = nlen;
 
 	text_calculate_size(text);
@@ -419,6 +424,18 @@ text_kill(Text *text)
 	r_free(text);
 }
 
+
+void
+text_blit(Text *text, SDL_Surface *dest)
+{
+	SDL_Rect r;
+	SDL_Surface *rendered;
+	
+	rendered = text_get_surface(text);
+	text_get_rectangle(text, &r);
+	SDL_BlitSurface(rendered, NULL, dest, &r);
+	SDL_FreeSurface(rendered);
+}
 
 /**
  * Return an SDL Surface of the rendered text, at this point in time.

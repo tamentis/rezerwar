@@ -132,6 +132,22 @@ surface_shutter_open()
 }
 
 /**
+ * Create a copy of the screen and return it as a new SDL_Surface, don't
+ * forget to free it after usage.
+ */
+SDL_Surface *
+copy_screen()
+{
+	SDL_Surface *org;
+
+	org = SDL_CreateRGBSurface(0, screen->w, screen->h, 
+			screen->format->BitsPerPixel, 0, 0, 0, 0);
+	SDL_BlitSurface(screen, NULL, org, NULL);
+
+	return org;
+}
+
+/**
  * Fade a surface in the screen. If any event occur, return 1 if the fade was
  * aborted by a keystroke.
  */
@@ -145,9 +161,7 @@ surface_fadein(SDL_Surface *surf, int speed)
 	int max = 255 / speed;
 
 	/* Create a dump of the current screen to fade from */
-	org = SDL_CreateRGBSurface(0, screen->w, screen->h, 
-			screen->format->BitsPerPixel, 0, 0, 0, 0);
-	SDL_BlitSurface(screen, NULL, org, NULL);
+	org = copy_screen();
 
 	/* Loop 'max' times and every time, dump first the original and then
 	 * a increasingly transparent 'surf' */
@@ -175,6 +189,22 @@ surface_fadein(SDL_Surface *surf, int speed)
 	return r;
 }
 
+/**
+ * Dump a faded black surface on the screen.
+ */
+void
+blit_modal(unsigned opacity)
+{
+	SDL_Surface *m;
+
+	m = SDL_CreateRGBSurface(0, screen->w, screen->h, 
+			screen->format->BitsPerPixel, 0, 0, 0, 0);
+	SDL_FillRect(m, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
+	SDL_SetAlpha(m, SDL_SRCALPHA|SDL_RLEACCEL, opacity);
+	SDL_BlitSurface(m, NULL, screen, NULL);
+
+	SDL_FreeSurface(m);
+}
 
 /**
  * Fade a surface out of the screen (to black). If a keystroke is recorded,

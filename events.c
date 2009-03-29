@@ -59,31 +59,45 @@ handle_events_keyup(SDL_Event *event)
 
 /**
  * In prompt mode, capture all the characters from the keyboard until
- * return.
+ * return. Return true when return was entered.
  */
-enum mtype
+bool
 handle_events_prompt(SDL_keysym keysym, Text *text)
 {
 	char ch;
 
 	if ((keysym.unicode & 0xFF80) != 0)
-		return MTYPE_NOP;
+		return false;
 
 	if (keysym.sym == SDLK_BACKSPACE) {
 		text_del_last_char(text);
-		return MTYPE_NOP;
+		return false;
 	}
 
 	if (keysym.sym == SDLK_RETURN) {
-		return (*(board->prompt_func))(text, board->prompt_data);
+		return true;
 	}
 
 	ch = keysym.unicode & 0x7F;
-	if (isalnum(ch) != 0) {
+	if (isalnum(ch) != 0)
 		text_add_char(text, ch);
+
+	return false;
+}
+
+
+bool
+prompt_polling(Text *prompt)
+{
+	SDL_Event event;
+	bool done = false;
+
+	while (SDL_PollEvent(&event)) {
+		if (event.type != SDL_KEYDOWN) continue;
+		done = handle_events_prompt(event.key.keysym, prompt);
 	}
 
-	return MTYPE_NOP;
+	return done;
 }
 
 
@@ -93,11 +107,6 @@ handle_events_prompt(SDL_keysym keysym, Text *text)
 enum mtype
 handle_events_keydown(SDL_Event *event)
 {
-	/* Hijack the event system when we need to take some input. */
-	if (board->prompt_text != NULL)
-		return handle_events_prompt(event->key.keysym,
-					    board->prompt_text);
-
 	switch ((int)event->key.keysym.sym) {
 		case SDLK_ESCAPE:
 		case SDLK_q:

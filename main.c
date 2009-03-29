@@ -23,11 +23,10 @@ intro_studio(void)
 	SDL_Surface *intro;
 	int x;
 
-	intro = SDL_LoadBMP("gfx/tdc.bmp");
+	intro = SDL_LoadBMP("gfx/splash/tdc.bmp");
 
 	x = surface_fadein(intro, 2);
 	if (x == 0) x = cancellable_delay(1);
-//	if (x == 0) surface_fadeout(intro);
 
 	SDL_FreeSurface(intro);
 }
@@ -208,11 +207,26 @@ main(int ac, char **av)
 			case MTYPE_NEXTLEVEL:
 				status = game_loop(conf->next_level, TTYPE_NONE);
 				break;
+			case MTYPE_GAMEOVER_WIN:
+				status = gameover_menu();
+				break;
+			case MTYPE_GAMEOVER_LOSE:
+				status = gameover_menu();
+				break;
+			case MTYPE_GAMEOVER_HISCORE:
+				printf("MTYPE_GAMEOVER_HISCORE\n");
+				status = hiscore_prompt();
+				break;
+			case MTYPE_HISCORES:
+				status = MTYPE_SUBMENU;
+				hiscore_show();
+				break;
 			case MTYPE_QUIT:
 				loop = false;
 				break;
 			case MTYPE_PLAIN:
-				status = game_loop(NULL, TTYPE_NONE);
+				surface_shutter_close();
+				status = game_loop(NULL, TTYPE_SHUTTER_OPEN);
 				break;
 			case MTYPE_START:
 				surface_shutter_close();

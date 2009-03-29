@@ -91,6 +91,10 @@ enum mtype {
 	MTYPE_PLAIN,		// start plain board
 	MTYPE_TOGGLE,		// toggle a menu item
 	MTYPE_NEXTLEVEL,	// self explanatory
+	MTYPE_GAMEOVER_WIN,	// win and offer next level
+	MTYPE_GAMEOVER_LOSE,	// replay (tutorial)
+	MTYPE_GAMEOVER_HISCORE, // prompt name and show hiscore
+	MTYPE_HISCORES,		// show the current hiscores
 	MTYPE_BREAK		// leave the current mode/menu (might QUIT).
 };
 
@@ -121,6 +125,7 @@ enum {
 
 /* Pre-define types */
 struct _board_s;
+struct _text_s;
 
 /* Boolean and byte types, easier to read ;) */
 typedef unsigned char byte;
@@ -141,14 +146,19 @@ char		*r_strcp(char *);
 enum mtype	 handle_events(SDL_Event *);
 void		 wait_for_keymouse(void);
 int		 cancellable_delay(int);
+bool		 prompt_polling(struct _text_s *);
 
 
 /* Graphic related wrappers */
 int		 surface_fadein(SDL_Surface *, int);
 int		 surface_fadeout(SDL_Surface *);
+void		 surface_shutter_open();
+void		 surface_shutter_close();
 void		 r_setpixel(Uint16, Uint16, byte, byte, byte);
 void		 r_setline(Uint16, Uint16, Uint16, byte, byte, byte);
 SDL_Surface	*loadimage(char *);
+SDL_Surface	*copy_screen();
+void		 blit_modal(unsigned);
 
 
 /* String related functions from OpenBSD */
@@ -206,8 +216,9 @@ typedef struct _text_s {
 	byte color2_b;
 	int effect;		// bit map of effects
 	int fx_fade_data;	// fade value
-	unsigned char *value;	// actual c-string text
+	char *value;		// actual c-string text
 	int length;		// num of chars in the value
+	int max_length;		// max num of chars
 	int line_spacing;	// num. of pixels between lines
 	bool trashed;		// kill on next tick
 	bool centered;		// horizontal centering
@@ -226,6 +237,7 @@ void		 text_set_color1(Text *, byte, byte, byte);
 void		 text_set_color2(Text *, byte, byte, byte);
 void		 text_del_last_char(Text *);
 void		 text_add_char(Text *, char);
+void		 text_blit(Text *, SDL_Surface *);
 
 
 /* HiScore structure */
@@ -237,7 +249,8 @@ typedef struct _hiscore {
 
 /* HiScore functions */
 void		 hiscore_add(char *, int);
-void		 hiscore_dump(struct _board_s *);
+void		 hiscore_show();
+enum mtype	 hiscore_prompt();
 bool 		 hiscore_check(int);
 void		 hiscore_free();
 
@@ -303,10 +316,11 @@ void		 block_rotate_cw(Block *);
 void		 block_rotate_ccw(Block *);
 
 
-/* Configuration structure (part of Board) */
+/* Configuration structure (keep data between games) */
 typedef struct _configuration {
 	int difficulty;
 	char *next_level;
+	int last_score;
 } Configuration;
 
 
@@ -407,7 +421,7 @@ Text		*board_add_text(Board *, char *, int, int);
 
 /* Main menu */
 int		 main_menu(void);
-int		 gameover_menu(Board *);
+int		 gameover_menu();
 
 
 /* Animations */

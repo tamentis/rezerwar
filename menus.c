@@ -10,6 +10,9 @@ extern Configuration *conf;
 extern SDL_Surface *screen;
 extern SDL_Surface *sprites;
 
+/* This is a dump of the screen before the menu is drawn. */
+SDL_Surface *gameover_background;
+
 
 typedef struct _menu_item {
 	Text *text;
@@ -23,6 +26,8 @@ typedef struct _menu {
 	int x;
 	int y;
 	char *bg_image;
+	SDL_Surface *bg_surface;
+	bool modal;
 	bool bg_refresh;
 	MenuItem **items;
 	int length;
@@ -48,6 +53,8 @@ new_menu(void)
 	menu->current = 0;
 	menu->bg_image = NULL;
 	menu->bg_refresh = true;
+	menu->bg_surface = NULL;
+	menu->modal = false;
 
 	return menu;
 }
@@ -360,12 +367,11 @@ menu_runner(Menu *menu)
 			if (menu->bg_image != NULL) {
 				intro = SDL_LoadBMP(menu->bg_image);
 				surface_fadein(intro, 8);
+			} else if (menu->bg_surface != NULL) {
+				SDL_BlitSurface(menu->bg_surface, NULL,
+						intro, NULL);
 			} else {
-				intro = SDL_CreateRGBSurface(0, screen->w, 
-						screen->h, 
-						screen->format->BitsPerPixel, 
-						0, 0, 0, 0);
-				SDL_BlitSurface(screen, NULL, intro, NULL);
+				intro = copy_screen();
 			}
 			menu->bg_refresh = false;
 		}
@@ -377,6 +383,9 @@ menu_runner(Menu *menu)
 			framecount++;
 			fps_lastframe = now;
 			SDL_BlitSurface(intro, NULL, screen, NULL);
+
+			if (menu->modal == true)
+				blit_modal(160);
 
 			menu_refresh(menu);
 			SDL_Flip(screen);
@@ -417,7 +426,7 @@ main_menu()
 
 
 int
-gameover_menu(Board *board)
+gameover_menu()
 {
 	Menu *menu;
 	int status;
@@ -429,10 +438,13 @@ gameover_menu(Board *board)
 	menu = new_menu();
 	menu->x = 200;
 	menu->y = 285;
+	menu->modal = true;
 	menu_load_gameover(menu, allow_next_level);
 	status = menu_runner(menu);
 
 	menu_kill(menu);
+
+	SDL_FreeSurface(gameover_background);
 
 	return status;
 }

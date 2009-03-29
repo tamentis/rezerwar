@@ -310,3 +310,4 @@ cube_get_plug_status(Cube *cube1, byte plug1, Cube *cube2, byte plug2) {
 	return status;
 }
 
+
