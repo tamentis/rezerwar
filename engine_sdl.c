@@ -76,6 +76,60 @@ black_screen(Uint8 s)
 	SDL_Delay(s * 1000);
 }
 
+void
+surface_shutter(int start, int stop, int speed)
+{
+	SDL_Surface *org;
+	SDL_Rect top, bottom;
+	int i;
+
+	/* If the shutter is going backward, you need to dump the original
+	 * screen every time */
+	if (start > stop) {
+		/* Create a dump of the current screen to fade from */
+		org = SDL_CreateRGBSurface(0, screen->w, screen->h, 
+				screen->format->BitsPerPixel, 0, 0, 0, 0);
+		SDL_BlitSurface(screen, NULL, org, NULL);
+	}
+
+	top.w = screen->w;
+	top.h = start;
+	top.x = 0;
+	top.y = 0;
+
+	bottom.w = screen->w;
+	bottom.h = start;
+	bottom.x = 0;
+	bottom.y = screen->h - start;
+
+	/* Loop 'max' times and every time, dump first the original and then
+	 * a increasingly transparent 'surf' */
+	for (i = start; start < stop ? i < stop : i > stop; i += speed) {
+		if (start > stop)
+			SDL_BlitSurface(org, NULL, screen, NULL);
+		SDL_FillRect(screen, &top, 0);
+		SDL_FillRect(screen, &bottom, 0);
+
+		top.h = i;
+		bottom.h = i;
+		bottom.y -= speed;
+
+		SDL_Flip(screen);
+		SDL_Delay(10);
+	}
+}
+
+void
+surface_shutter_close()
+{
+	surface_shutter(0, screen->h / 2 + 20, 10);
+}
+
+void
+surface_shutter_open()
+{
+	surface_shutter(screen->h / 2 + 20, 0, -10);
+}
 
 /**
  * Fade a surface in the screen. If any event occur, return 1 if the fade was
@@ -87,9 +141,20 @@ surface_fadein(SDL_Surface *surf, int speed)
 	Uint8 i;
 	int r = 0;
 	SDL_Event event;
+	SDL_Surface *org;
 	int max = 255 / speed;
 
+	/* Create a dump of the current screen to fade from */
+	org = SDL_CreateRGBSurface(0, screen->w, screen->h, 
+			screen->format->BitsPerPixel, 0, 0, 0, 0);
+	SDL_BlitSurface(screen, NULL, org, NULL);
+
+	/* Loop 'max' times and every time, dump first the original and then
+	 * a increasingly transparent 'surf' */
 	for (i = 0; i < max; i++) {
+		/* Skip 128 as it has a special meaning for SDL */
+		if (i * speed == 128) continue;
+
 		if (SDL_PollEvent(&event) && (event.type == SDL_KEYDOWN ||
 					event.type == SDL_MOUSEBUTTONDOWN)) {
 			r = 1;
@@ -99,10 +164,13 @@ surface_fadein(SDL_Surface *surf, int speed)
 		memset(screen->pixels, 0, screen->w * screen->h *
 				screen->format->BytesPerPixel);
 		SDL_SetAlpha(surf, SDL_RLEACCEL | SDL_SRCALPHA, i * speed);
+		SDL_BlitSurface(org, NULL, screen, NULL);
 		SDL_BlitSurface(surf, NULL, screen, NULL);
 		SDL_Flip(screen);
 		SDL_Delay(10);
 	}
+
+	SDL_FreeSurface(org);
 
 	return r;
 }

@@ -141,18 +141,19 @@ void
 menu_load_main(Menu *menu)
 {
 	flush_menu_items(menu);
-	add_item_to_menu(menu, "start game", MTYPE_START, 0, 0);
-	add_item_to_menu(menu, "plain board", MTYPE_PLAIN, 0, 0);
+	add_item_to_menu(menu, "tutorial", MTYPE_START, 0, 0);
+	add_item_to_menu(menu, "play", MTYPE_PLAIN, 0, 0);
 	add_item_to_menu(menu, "options", MTYPE_SUBMENU, 2, 45);
 	add_item_to_menu(menu, "quit", MTYPE_QUIT, 0, 65);
 }
 
 
 void
-menu_load_gameover(Menu *menu)
+menu_load_gameover(Menu *menu, bool allow_next_level)
 {
 	flush_menu_items(menu);
-	add_item_to_menu(menu, "next level", MTYPE_NEXTLEVEL, 0, 0);
+	if (allow_next_level == true)
+		add_item_to_menu(menu, "next level", MTYPE_NEXTLEVEL, 0, 0);
 	add_item_to_menu(menu, "replay level", MTYPE_PLAIN, 0, 0);
 	add_item_to_menu(menu, "main menu", MTYPE_BREAK, 1, 45);
 	add_item_to_menu(menu, "quit rzwar", MTYPE_QUIT, 0, 65);
@@ -416,15 +417,19 @@ main_menu()
 
 
 int
-gameover_menu()
+gameover_menu(Board *board)
 {
 	Menu *menu;
 	int status;
+	bool allow_next_level = true;
+
+	if (conf->next_level == NULL)
+		allow_next_level = false;
 
 	menu = new_menu();
 	menu->x = 200;
 	menu->y = 285;
-	menu_load_gameover(menu);
+	menu_load_gameover(menu, allow_next_level);
 	status = menu_runner(menu);
 
 	menu_kill(menu);

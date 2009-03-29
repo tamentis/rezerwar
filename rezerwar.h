@@ -15,7 +15,8 @@
 
 /* A couple hard-coded sizes.. */
 #define BSIZE			32
-#define FONT_HEIGHT		19
+#define FONT0_HEIGHT		19
+#define FONT1_HEIGHT		17
 #define LVL_MAX_SIZE		4096
 
 /* Speed relative to difficulty */
@@ -27,7 +28,7 @@
 #define SPEED_MAX		50
 
 /* Block types */
-enum {
+enum btype {
 	BLOCK_TYPE_TEE,		// 0
 	BLOCK_TYPE_ELL,
 	BLOCK_TYPE_JAY,
@@ -42,7 +43,7 @@ enum {
 };
 
 /* Cube types */
-enum {
+enum ctype {
 	CTYPE_EMPTY,		// 0
 	CTYPE_ANGLE,
 	CTYPE_TEE,
@@ -50,6 +51,12 @@ enum {
 	CTYPE_KNOB,
 	CTYPE_ALL,		// 5
 	CTYPE_BOMB
+};
+
+/* Transition types */
+enum ttype {
+	TTYPE_NONE,
+	TTYPE_SHUTTER_OPEN
 };
 
 /* Plug types */
@@ -205,6 +212,7 @@ typedef struct _text_s {
 	bool trashed;		// kill on next tick
 	bool centered;		// horizontal centering
 	bool temp;		// trash on next move
+	int font;		// font idx
 } Text;
 
 /* Text functions */
@@ -242,6 +250,7 @@ typedef struct _level_s {
 	byte *cmap;
 	struct _queuedblock_s **queue;
 	size_t queue_len;
+	bool allow_dynamite;
 	int objective_type;
 	char *next;
 } Level;
@@ -311,9 +320,11 @@ typedef struct _board_s {
 	int difficulty;
 	char bgfilename[256];
 	SDL_Surface *bg;
+	enum ttype transition;
 	/* cubes */
 	int cube_count;
 	Cube **cubes;
+	bool allow_dynamite;
 	/* blocks */
 	int block_speed;
 	int block_speed_factor;
@@ -396,7 +407,7 @@ Text		*board_add_text(Board *, char *, int, int);
 
 /* Main menu */
 int		 main_menu(void);
-int		 gameover_menu(void);
+int		 gameover_menu(Board *);
 
 
 /* Animations */

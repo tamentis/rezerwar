@@ -51,6 +51,18 @@ lvl_var_nextlevel(Level *level, char *value)
 	strlcpy(level->next, value, len);
 }
 
+void
+lvl_var_allowdynamite(Level *level, char *value)
+{
+	if (strcmp(value, "TRUE") == 0) {
+		level->allow_dynamite = true;
+	} else if (strcmp(value, "FALSE") == 0) {
+		level->allow_dynamite = false;
+	} else {
+		fatal("Unknown value for BOOLEAN 'AllowDynamite'");
+	}
+}
+
 /**
  * Get a variable line buffer, split it and assign the proper variable.
  */
@@ -72,10 +84,28 @@ lvl_splitvar(Level *level, byte *lbuf, size_t len)
 		lvl_var_objtype(level, c);
 	else if (strcmp("NextLevel", l) == 0)
 		lvl_var_nextlevel(level, c);
+	else if (strcmp("AllowDynamite", l) == 0)
+		lvl_var_allowdynamite(level, c);
 	else
 		fatal("Syntax error: unknown variable: \"%s\".", l);
 }
 
+Level *
+lvl_new()
+{
+	Level *level;
+
+	level = malloc(sizeof(Level));
+	level->name = NULL;
+	level->description = NULL;
+	level->next = NULL;
+	level->queue = NULL;
+	level->queue_len = 0;
+	level->allow_dynamite = true;
+	level->cmap = malloc(sizeof(byte) * BOARD_WIDTH * BOARD_HEIGHT);
+
+	return level;
+}
 
 /**
  * Return a freshly loaded level.
@@ -105,13 +135,7 @@ lvl_load(char *name)
 
 	fclose(fp);
 
-	level = malloc(sizeof(Level));
-	level->name = NULL;
-	level->description = NULL;
-	level->next = NULL;
-	level->queue = NULL;
-	level->queue_len = 0;
-	level->cmap = malloc(sizeof(byte) * BOARD_WIDTH * BOARD_HEIGHT);
+	level = lvl_new();
 
 	for (i = 0; cursor < buffer + len;) {
 		/* offset becomes the total length of the string including the
@@ -205,6 +229,8 @@ lvl_dump(Level *level)
 	printf("DESCRIPTION:\n%s\n", level->description);
 	printf("MAP:%s\n", level->cmap);
 	printf("QUEUE\n");
+
+	printf("ALLOW_DYNAMITE: %d\n", level->allow_dynamite);
 
 	for (i = 0; i < level->queue_len; i++) {
 		printf(" - type=%d, pos=%d, cubes(%d)=",

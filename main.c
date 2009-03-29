@@ -23,11 +23,11 @@ intro_studio(void)
 	SDL_Surface *intro;
 	int x;
 
-	intro = SDL_LoadBMP("gfx/newgaul/newgaul.bmp");
+	intro = SDL_LoadBMP("gfx/tdc.bmp");
 
 	x = surface_fadein(intro, 2);
 	if (x == 0) x = cancellable_delay(1);
-	if (x == 0) surface_fadeout(intro);
+//	if (x == 0) surface_fadeout(intro);
 
 	SDL_FreeSurface(intro);
 }
@@ -47,7 +47,7 @@ conf_init()
  * it will instanciate a board and return when the game is over.
  */
 int
-game_loop(char *levelname)
+game_loop(char *levelname, enum ttype trans)
 {
 	Level *level;
 	uint32_t start, now, framecount = 0, fps_lastframe = 0,
@@ -69,6 +69,7 @@ game_loop(char *levelname)
 		lvl_dump(level);
 		lvl_kill(level);
 	}
+	board->transition = trans;
 	board_add_text(board, (char *)BOT_VER, 10, 450);
 	board_load_next_block(board);
 	board_launch_next_block(board);
@@ -205,16 +206,20 @@ main(int ac, char **av)
 				status = main_menu();
 				break;
 			case MTYPE_NEXTLEVEL:
-				status = game_loop(conf->next_level);
+				status = game_loop(conf->next_level, TTYPE_NONE);
 				break;
 			case MTYPE_QUIT:
 				loop = false;
 				break;
 			case MTYPE_PLAIN:
-				status = game_loop(NULL);
+				status = game_loop(NULL, TTYPE_NONE);
 				break;
 			case MTYPE_START:
-				status = game_loop("tuto_01");
+				surface_shutter_close();
+				if (ac > 1)
+					status = game_loop(av[1], TTYPE_SHUTTER_OPEN);
+				else
+					status = game_loop("tuto_01", TTYPE_SHUTTER_OPEN);
 				break;
 		}
 	} while (loop);

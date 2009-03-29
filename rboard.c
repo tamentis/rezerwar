@@ -95,6 +95,9 @@ board_new(int difficulty)
 	printf("Key: %u\n", key);
 	SDL_SetColorKey(b->bg, SDL_SRCCOLORKEY|SDL_RLEACCEL, key);
 
+	/* Level stuff */
+	b->next_level = NULL;
+
 	return b;
 }
 
@@ -144,6 +147,7 @@ board_new_from_level(Level *level)
 
 	/* Copy level related stuff */
 	board->objective_type = level->objective_type;
+	board->allow_dynamite = level->allow_dynamite;
 	if (level->next)
 		board->next_level = r_strcp(level->next);
 
@@ -156,6 +160,7 @@ board_new_from_level(Level *level)
 	/* Draw the description */
 	description = board_add_text(board, level->description, 20, 90);
 	description->temp = true;
+	description->font = 1;
 
 	/* Draw the press p to contine */
 	prompt = board_add_text(board, "press 'p' to start", 400, 440);
@@ -285,6 +290,24 @@ board_refresh_texts(Board *board)
 	}
 }
 
+/**
+ * Remove all the text marked 'temp'.
+ */
+void
+board_trash_temp_texts(Board *board)
+{
+	Text *t;
+	int i;
+
+	for (i = 0; i < board->text_count; i++) {
+		t = board->texts[i];
+		if (t == NULL)
+			continue;
+
+		if (t->temp == true)
+			t->trashed = true;
+	}
+}
 
 /**
  * Toggle paused state. Ignore the request in GameOver mode.
@@ -292,9 +315,6 @@ board_refresh_texts(Board *board)
 void
 board_toggle_pause(Board *board)
 {
-	Text *t;
-	int i;
-
 	if (board->gameover)
 		return;
 
@@ -303,15 +323,7 @@ board_toggle_pause(Board *board)
 		board->paused = false;
 		text_set_value(board->status_t, "");
 
-		/* Remove all the text marked 'temp'. */
-		for (i = 0; i < board->text_count; i++) {
-			t = board->texts[i];
-			if (t == NULL)
-				continue;
-
-			if (t->temp == true)
-				t->trashed = true;
-		}
+		board_trash_temp_texts(board);
 	} else {
 		board->silent = false;
 		board->modal = true;
@@ -319,6 +331,25 @@ board_toggle_pause(Board *board)
 		if (board->silent == false)
 			text_set_value(board->status_t, "paused!");
 	}
+}
+
+/**
+ * Apply a mask on top of all the rendered shit
+ */
+void
+board_refresh_transition(Board *board)
+{
+	switch (board->transition) {
+		case TTYPE_SHUTTER_OPEN:
+			printf("TRANSITION!\n");
+			surface_shutter_open();
+			board->transition = TTYPE_NONE;
+			break;
+		case TTYPE_NONE:
+		default:
+			break;
+	}
+
 }
 
 
@@ -346,6 +377,9 @@ board_refresh(Board *board)
 	/* Draw texts elements (meant to replace OSD), and modal */
 	board_refresh_texts(board);
 
+	/* Apply the transition if any */
+	board_refresh_transition(board);
+
 	/* Dig up the back buffer. */
 	SDL_Flip(screen);
 }
@@ -354,6 +388,8 @@ board_refresh(Board *board)
 int
 board_save_score(Text *text, Text *x)
 {
+	bool allow_next_level = true;
+
 	board->modal = true;
 	if (text->length > 0) {
 		hiscore_add((char *)text->value, board->score);
@@ -365,7 +401,8 @@ board_save_score(Text *text, Text *x)
 	x->trashed = true;
 	board->prompt_text = NULL;
 
-	return gameover_menu();
+	return MTYPE_NOP;
+//	return gameover_menu(board);
 }
 
 
@@ -382,13 +419,17 @@ board_gameover(Board *board)
 	board->modal = true;
 
 	if (board->success) {
+		board_trash_temp_texts(board);
 		board->modal = true;
 		text_set_value(board->status_t, "congratulations!");
 		board_refresh_texts(board);
-		return gameover_menu();
+		return gameover_menu(board);
 	} else {
 		text_set_value(board->status_t, "game over!");
 		if (hiscore_check(board->score) == false)
+			return MTYPE_NOP;
+
+		if (board->prompt_func != NULL)
 			return MTYPE_NOP;
 
 		txt = board_add_text(board, "enter your name:", 0, 270);
@@ -423,12 +464,12 @@ board_update(Board *board, uint32_t now)
 	board_update_water(board, now);
 
 	if (board->gameover == true) {
-		status = board_gameover(board);
-		if (status == MTYPE_NEXTLEVEL) {
-			r_free(conf->next_level);
+		r_free(conf->next_level);
+		conf->next_level = NULL;
+		if (board->next_level)
 			conf->next_level = r_strcp(board->next_level);
-		}
-		return status;
+
+		return board_gameover(board);
 	}
 
 	/* Animations */

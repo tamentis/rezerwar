@@ -57,15 +57,19 @@ block_set_position(Block *block, byte pos, byte *p)
 
 
 void
-block_generate_cubes(Block *block, int n)
+block_generate_cubes(Block *block, int n, bool allow_dynamite)
 {
 	int i;
+	int max = 6;
+
+	if (allow_dynamite == false)
+		max = 5;
 
 	block->cube_count = n;
 	block->cubes = malloc(sizeof(Cube*) * n);
 
 	for (i = 0; i < n; i++) {
-		block->cubes[i] = cube_new_random_max(6);
+		block->cubes[i] = cube_new_random_max(max);
 	}
 }
 
@@ -100,12 +104,12 @@ block_new_one_from_cube(Cube *cube)
 }
 
 Block *
-block_new_one()
+block_new_one(bool allow_dynamite)
 {
 	Block *block;
 
 	block = block_new_one_template();
-	block_generate_cubes(block, 1);
+	block_generate_cubes(block, 1, allow_dynamite);
 
 	return block;
 }
@@ -115,13 +119,13 @@ block_new_two()
 {
 	Block *block;
 	byte pos0[] = {  0, 0,
-			  1, 2 };
+			 1, 2 };
 	byte pos1[] = {  1, 0,
-			  2, 0 };
+			 2, 0 };
 	byte pos2[] = {  2, 1,
-			  0, 0 };
+			 0, 0 };
 	byte pos3[] = {  0, 2,
-			  0, 1 };
+			 0, 1 };
 
 	block = block_new(2);
 	block_set_position(block, 0, pos0);
@@ -129,7 +133,7 @@ block_new_two()
 	block_set_position(block, 2, pos2);
 	block_set_position(block, 3, pos3);
 
-	block_generate_cubes(block, 2);
+	block_generate_cubes(block, 2, true);
 
 	block->type = BLOCK_TYPE_TWO;
 
@@ -142,13 +146,13 @@ block_new_corner()
 {
 	Block *block;
 	byte pos0[] = {  1, 0,
-			  2, 3 };
+			 2, 3 };
 	byte pos1[] = {  2, 1,
-			  3, 0 };
+			 3, 0 };
 	byte pos2[] = {  3, 2,
-			  0, 1 };
+			 0, 1 };
 	byte pos3[] = {  0, 3,
-			  1, 2 };
+			 1, 2 };
 
 	block = block_new(2);
 	block_set_position(block, 0, pos0);
@@ -156,7 +160,7 @@ block_new_corner()
 	block_set_position(block, 2, pos2);
 	block_set_position(block, 3, pos3);
 
-	block_generate_cubes(block, 3);
+	block_generate_cubes(block, 3, true);
 
 	block->type = BLOCK_TYPE_CORNER;
 
@@ -169,17 +173,17 @@ block_new_three()
 {
 	Block *block;
 	byte pos0[] = {  0, 0, 0,
-			  1, 2, 3,
-			  0, 0, 0 };
+			 1, 2, 3,
+			 0, 0, 0 };
 	byte pos1[] = {  0, 1, 0,
-			  0, 2, 0,
-			  0, 3, 0 };
+			 0, 2, 0,
+			 0, 3, 0 };
 	byte pos2[] = {  0, 0, 0,
-			  3, 2, 1,
-			  0, 0, 0 };
+			 3, 2, 1,
+			 0, 0, 0 };
 	byte pos3[] = {  0, 3, 0,
-			  0, 2, 0,
-			  0, 1, 0 };
+			 0, 2, 0,
+			 0, 1, 0 };
 
 	block = block_new(3);
 	block_set_position(block, 0, pos0);
@@ -187,7 +191,7 @@ block_new_three()
 	block_set_position(block, 2, pos2);
 	block_set_position(block, 3, pos3);
 
-	block_generate_cubes(block, 3);
+	block_generate_cubes(block, 3, true);
 
 	block->type = BLOCK_TYPE_THREE;
 
@@ -200,17 +204,17 @@ block_new_tee()
 {
 	Block *block;
 	byte pos0[] = {  0, 0, 0,
-			  1, 2, 3,
-			  0, 4, 0 };
+			 1, 2, 3,
+			 0, 4, 0 };
 	byte pos1[] = {  0, 1, 0,
-			  4, 2, 0,
-			  0, 3, 0 };
+			 4, 2, 0,
+			 0, 3, 0 };
 	byte pos2[] = {  0, 4, 0,
-			  3, 2, 1,
-			  0, 0, 0 };
+			 3, 2, 1,
+			 0, 0, 0 };
 	byte pos3[] = {  0, 3, 0,
-			  0, 2, 4,
-			  0, 1, 0 };
+			 0, 2, 4,
+			 0, 1, 0 };
 
 	block = block_new(3);
 	block_set_position(block, 0, pos0);
@@ -218,7 +222,7 @@ block_new_tee()
 	block_set_position(block, 2, pos2);
 	block_set_position(block, 3, pos3);
 
-	block_generate_cubes(block, 4);
+	block_generate_cubes(block, 4, true);
 
 	block->type = BLOCK_TYPE_TEE;
 
@@ -231,21 +235,21 @@ block_new_square()
 {
 	Block *block;
 	byte pos0[] = { 0, 0, 0, 0, 
-			 0, 1, 2, 0,
-			 0, 4, 3, 0,
-			 0, 0, 0, 0 };
+			0, 1, 2, 0,
+			0, 4, 3, 0,
+			0, 0, 0, 0 };
 	byte pos1[] = { 0, 0, 0, 0, 
-			 0, 4, 1, 0,
-			 0, 3, 2, 0,
-			 0, 0, 0, 0 };
+			0, 4, 1, 0,
+			0, 3, 2, 0,
+			0, 0, 0, 0 };
 	byte pos2[] = { 0, 0, 0, 0, 
-			 0, 3, 4, 0,
-			 0, 2, 1, 0,
-			 0, 0, 0, 0 };
+			0, 3, 4, 0,
+			0, 2, 1, 0,
+			0, 0, 0, 0 };
 	byte pos3[] = { 0, 0, 0, 0, 
-			 0, 2, 3, 0,
-			 0, 1, 4, 0,
-			 0, 0, 0, 0 };
+			0, 2, 3, 0,
+			0, 1, 4, 0,
+			0, 0, 0, 0 };
 
 	block = block_new(4);
 	block_set_position(block, 0, pos0);
@@ -253,7 +257,7 @@ block_new_square()
 	block_set_position(block, 2, pos2);
 	block_set_position(block, 3, pos3);
 
-	block_generate_cubes(block, 4);
+	block_generate_cubes(block, 4, true);
 
 	block->type = BLOCK_TYPE_SQUARE;
 
@@ -266,17 +270,17 @@ block_new_zee()
 {
 	Block *block;
 	byte pos0[] = { 0, 0, 0, 
-			 1, 2, 0,
-			 0, 3, 4 };
+			1, 2, 0,
+			0, 3, 4 };
 	byte pos1[] = { 0, 0, 1,
-			 0, 3, 2,
-			 0, 4, 0 };
+			0, 3, 2,
+			0, 4, 0 };
 	byte pos2[] = { 0, 0, 0, 
-			 4, 3, 0,
-			 0, 2, 1 };
+			4, 3, 0,
+			0, 2, 1 };
 	byte pos3[] = { 0, 0, 4,
-			 0, 2, 3,
-			 0, 1, 0 };
+			0, 2, 3,
+			0, 1, 0 };
 
 	block = block_new(3);
 	block_set_position(block, 0, pos0);
@@ -284,7 +288,7 @@ block_new_zee()
 	block_set_position(block, 2, pos2);
 	block_set_position(block, 3, pos3);
 
-	block_generate_cubes(block, 4);
+	block_generate_cubes(block, 4, true);
 
 	block->type = BLOCK_TYPE_ZEE;
 
@@ -297,17 +301,17 @@ block_new_ess()
 {
 	Block *block;
 	byte pos0[] = { 0, 0, 0,
-			 0, 3, 4,
-			 1, 2, 0 };
+			0, 3, 4,
+			1, 2, 0 };
 	byte pos1[] = { 0, 1, 0,
-			 0, 2, 3,
-			 0, 0, 4 };
+			0, 2, 3,
+			0, 0, 4 };
 	byte pos2[] = { 0, 0, 0,
-			 0, 2, 1,
-			 4, 3, 0 };
+			0, 2, 1,
+			4, 3, 0 };
 	byte pos3[] = { 0, 4, 0,
-			 0, 3, 2,
-			 0, 0, 1 };
+			0, 3, 2,
+			0, 0, 1 };
 
 	block = block_new(3);
 	block_set_position(block, 0, pos0);
@@ -315,7 +319,7 @@ block_new_ess()
 	block_set_position(block, 2, pos2);
 	block_set_position(block, 3, pos3);
 
-	block_generate_cubes(block, 4);
+	block_generate_cubes(block, 4, true);
 
 	block->type = BLOCK_TYPE_ESS;
 
@@ -328,21 +332,21 @@ block_new_bar()
 {
 	Block *block;
 	byte pos0[] = { 0, 0, 0, 0,
-			 0, 0, 0, 0,
-			 1, 2, 3, 4,
-			 0, 0, 0, 0 };
+			0, 0, 0, 0,
+			1, 2, 3, 4,
+			0, 0, 0, 0 };
 	byte pos1[] = { 0, 1, 0, 0,
-			 0, 2, 0, 0,
-			 0, 3, 0, 0,
-			 0, 4, 0, 0 };
+			0, 2, 0, 0,
+			0, 3, 0, 0,
+			0, 4, 0, 0 };
 	byte pos2[] = { 0, 0, 0, 0,
-			 0, 0, 0, 0,
-			 4, 3, 2, 1,
-			 0, 0, 0, 0 };
+			0, 0, 0, 0,
+			4, 3, 2, 1,
+			0, 0, 0, 0 };
 	byte pos3[] = { 0, 4, 0, 0,
-			 0, 3, 0, 0,
-			 0, 2, 0, 0,
-			 0, 1, 0, 0 };
+			0, 3, 0, 0,
+			0, 2, 0, 0,
+			0, 1, 0, 0 };
 
 	block = block_new(4);
 	block_set_position(block, 0, pos0);
@@ -350,7 +354,7 @@ block_new_bar()
 	block_set_position(block, 2, pos2);
 	block_set_position(block, 3, pos3);
 
-	block_generate_cubes(block, 4);
+	block_generate_cubes(block, 4, true);
 
 	block->type = BLOCK_TYPE_BAR;
 
@@ -381,7 +385,7 @@ block_new_ell()
 	block_set_position(block, 2, pos2);
 	block_set_position(block, 3, pos3);
 
-	block_generate_cubes(block, 4);
+	block_generate_cubes(block, 4, true);
 
 	block->type = BLOCK_TYPE_ELL;
 
@@ -412,7 +416,7 @@ block_new_jay()
 	block_set_position(block, 2, pos2);
 	block_set_position(block, 3, pos3);
 
-	block_generate_cubes(block, 4);
+	block_generate_cubes(block, 4, true);
 
 	block->type = BLOCK_TYPE_JAY;
 
@@ -445,7 +449,7 @@ block_new_of_type(int type)
 			block = block_new_square();
 			break;
 		case BLOCK_TYPE_ONE:
-			block = block_new_one();
+			block = block_new_one(true);
 			break;
 		case BLOCK_TYPE_TWO:
 			block = block_new_two();

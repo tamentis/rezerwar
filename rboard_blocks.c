@@ -41,7 +41,7 @@ board_load_next_block(Board *board)
 	switch (board->difficulty) {
 		/* Only one cube blocks */
 		case DIFF_EASIEST:
-			board->next_block = block_new_one();
+			board->next_block = block_new_one(board->allow_dynamite);
 			break;
 		/* One and two cubes blocks */
 		case DIFF_EASY:

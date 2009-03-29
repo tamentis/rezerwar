@@ -185,6 +185,7 @@ board_update_water(Board *board, uint32_t now)
 
 		if (cube->network_size > 1 && cube->water == 3 &&
 				cube->network_integrity == 1) {
+			if (cube->fade_status > 0) continue;
 			board_run_avalanche(board, cube);
 		}
 	}
@@ -202,7 +203,8 @@ board_run_avalanche(Board *board, Cube *cube)
 	Text *avtxt;
 
 	/* Start a fading text... */
-	avtxt = board_add_text(board, "EXCELLENT!", 240, 240);
+	avtxt = board_add_text(board, "EXCELLENT!", 240, 200);
+	avtxt->temp = true;
 	text_set_color1(avtxt, 255, 0, 0);
 	text_set_color2(avtxt, 80, 0, 0);
 	avtxt->effect |= EFFECT_SHAKE|EFFECT_FADEOUT;

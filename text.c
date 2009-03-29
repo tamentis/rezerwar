@@ -11,11 +11,19 @@ extern SDL_Surface *screen;
 extern SDL_Surface *sprites;
 extern Uint32 key;
 
+int
+get_font_height(Text *text) {
+	if (text->font == 0)
+		return FONT0_HEIGHT;
+
+	return FONT1_HEIGHT;
+}
+
 void
-font_get_glyph_rect(char c, SDL_Rect *l)
+font0_get_glyph_rect(char c, SDL_Rect *l)
 {
 	l->y = 0;
-	l->h = FONT_HEIGHT;
+	l->h = FONT0_HEIGHT;
 	l->w = 13;
 
 	switch(c) {
@@ -45,28 +53,97 @@ font_get_glyph_rect(char c, SDL_Rect *l)
 		case 'x': case 'X': l->x = 466; l->w = 16; break;
 		case 'y': case 'Y': l->x = 482; break;
 		case 'z': case 'Z': l->x = 495; break;
-		case '0': l->y = FONT_HEIGHT; l->x = 160; l->w = 14; break;
-		case '1': l->y = FONT_HEIGHT; l->x = 174; l->w = 7; break;
-		case '2': l->y = FONT_HEIGHT; l->x = 181; l->w = 15; break;
-		case '3': l->y = FONT_HEIGHT; l->x = 196; l->w = 15; break;
-		case '4': l->y = FONT_HEIGHT; l->x = 211; l->w = 15; break;
-		case '5': l->y = FONT_HEIGHT; l->x = 226; l->w = 14; break;
-		case '6': l->y = FONT_HEIGHT; l->x = 240; l->w = 15; break;
-		case '7': l->y = FONT_HEIGHT; l->x = 256; l->w = 14; break;
-		case '8': l->y = FONT_HEIGHT; l->x = 269; l->w = 15; break;
-		case '9': l->y = FONT_HEIGHT; l->x = 284; l->w = 15; break;
-		case '-': l->y = FONT_HEIGHT; l->x = 299; l->w = 11; break;
-		case '.': l->y = FONT_HEIGHT; l->x = 310; l->w =  5; break;
-		case '/': l->y = FONT_HEIGHT; l->x = 315; l->w = 11; break;
-		case '?': l->y = FONT_HEIGHT; l->x = 326; l->w = 13; break;
-		case '!': l->y = FONT_HEIGHT; l->x = 339; l->w =  5; break;
-		case '\'': l->y = FONT_HEIGHT; l->x = 344; l->w = 6; break;
-		case ':': l->y = FONT_HEIGHT; l->x = 350; l->w = 5; break;
-		default:  l->y = FONT_HEIGHT; l->x = 356; l->w = 8; break;
+		case '0': l->y = FONT0_HEIGHT; l->x = 160; l->w = 14; break;
+		case '1': l->y = FONT0_HEIGHT; l->x = 174; l->w = 7; break;
+		case '2': l->y = FONT0_HEIGHT; l->x = 181; l->w = 15; break;
+		case '3': l->y = FONT0_HEIGHT; l->x = 196; l->w = 15; break;
+		case '4': l->y = FONT0_HEIGHT; l->x = 211; l->w = 15; break;
+		case '5': l->y = FONT0_HEIGHT; l->x = 226; l->w = 14; break;
+		case '6': l->y = FONT0_HEIGHT; l->x = 240; l->w = 15; break;
+		case '7': l->y = FONT0_HEIGHT; l->x = 256; l->w = 14; break;
+		case '8': l->y = FONT0_HEIGHT; l->x = 269; l->w = 15; break;
+		case '9': l->y = FONT0_HEIGHT; l->x = 284; l->w = 15; break;
+		case '-': l->y = FONT0_HEIGHT; l->x = 299; l->w = 11; break;
+		case '.': l->y = FONT0_HEIGHT; l->x = 310; l->w =  5; break;
+		case '/': l->y = FONT0_HEIGHT; l->x = 315; l->w = 11; break;
+		case '?': l->y = FONT0_HEIGHT; l->x = 326; l->w = 13; break;
+		case '!': l->y = FONT0_HEIGHT; l->x = 339; l->w =  5; break;
+		case '\'': l->y = FONT0_HEIGHT; l->x = 344; l->w = 6; break;
+		case ':': l->y = FONT0_HEIGHT; l->x = 350; l->w = 5; break;
+		default:  l->y = FONT0_HEIGHT; l->x = 356; l->w = 8; break;
 	}
 
 	// Offset
 	l->y += 128;
+}
+
+void
+font1_get_glyph_rect(char c, SDL_Rect *l)
+{
+	l->y = 0;
+	l->h = FONT1_HEIGHT;
+	l->w = 12;
+
+	switch(c) {
+		case 'a': case 'A': l->x = 161; break;
+		case 'b': case 'B': l->x = 173; l->w = 11; break;
+		case 'c': case 'C': l->x = 184; break;
+		case 'd': case 'D': l->x = 196; break;
+		case 'e': case 'E': l->x = 208; l->w = 11; break;
+		case 'f': case 'F': l->x = 219; l->w = 13; break;
+		case 'g': case 'G': l->x = 232; l->w = 13; break;
+		case 'h': case 'H': l->x = 245; break;
+		case 'i': case 'I': l->x = 257; l->w = 10; break;
+		case 'j': case 'J': l->x = 267; break;
+		case 'k': case 'K': l->x = 279; break;
+		case 'l': case 'L': l->x = 291; break;
+		case 'm': case 'M': l->x = 303; l->w = 13; break;
+		case 'n': case 'N': l->x = 316; break;
+		case 'o': case 'O': l->x = 328; l->w = 15; break;
+		case 'p': case 'P': l->x = 343; l->w = 14; break;
+		case 'q': case 'Q': l->x = 357; l->w = 16; break;
+		case 'r': case 'R': l->x = 373; l->w = 13; break;
+		case 's': case 'S': l->x = 386; l->w = 15; break;
+		case 't': case 'T': l->x = 401; l->w = 15; break;
+		case 'u': case 'U': l->x = 416; break;
+		case 'v': case 'V': l->x = 427; break;
+		case 'w': case 'W': l->x = 439; l->w = 16; break;
+		case 'x': case 'X': l->x = 455; l->w = 14; break;
+		case 'y': case 'Y': l->x = 469; break;
+		case 'z': case 'Z': l->x = 481; l->w = 14; break;
+		case '0': l->y = FONT1_HEIGHT; l->x = 161; l->w = 14; break;
+		case '1': l->y = FONT1_HEIGHT; l->x = 175; l->w = 6; break;
+		case '2': l->y = FONT1_HEIGHT; l->x = 181; break;
+		case '3': l->y = FONT1_HEIGHT; l->x = 192; l->w = 13; break;
+		case '4': l->y = FONT1_HEIGHT; l->x = 205; l->w = 13; break;
+		case '5': l->y = FONT1_HEIGHT; l->x = 218; l->w = 13; break;
+		case '6': l->y = FONT1_HEIGHT; l->x = 231; l->w = 13; break;
+		case '7': l->y = FONT1_HEIGHT; l->x = 244; l->w = 11; break;
+		case '8': l->y = FONT1_HEIGHT; l->x = 255; l->w = 13; break;
+		case '9': l->y = FONT1_HEIGHT; l->x = 268; break;
+		case '-': l->y = FONT1_HEIGHT; l->x = 280; l->w =  9; break;
+		case '.': l->y = FONT1_HEIGHT; l->x = 289; l->w =  5; break;
+		case ',': l->y = FONT1_HEIGHT; l->x = 294; l->w =  5; break;
+		case '/': l->y = FONT1_HEIGHT; l->x = 298; l->w = 12; break;
+		case '?': l->y = FONT1_HEIGHT; l->x = 310; l->w = 13; break;
+		case '!': l->y = FONT1_HEIGHT; l->x = 323; l->w =  9; break;
+		case '\'': l->y = FONT1_HEIGHT; l->x = 332; l->w = 6; break;
+		case ':': l->y = FONT1_HEIGHT; l->x = 338; l->w = 6; break;
+		default:  l->y = FONT1_HEIGHT; l->x = 345; l->w = 8; break;
+	}
+
+	// Offset
+	l->y += 202;
+}
+
+void
+font_get_glyph_rect(int font, char c, SDL_Rect *l)
+{
+	if (font == 0) {
+		font0_get_glyph_rect(c, l);
+	} else {
+		font1_get_glyph_rect(c, l);
+	}
 }
 
 
@@ -74,14 +151,14 @@ font_get_glyph_rect(char c, SDL_Rect *l)
  * This function prints a single letter on screen and return x+width of the char
  */
 int
-text_render_glyph(SDL_Surface *s, char c, int x, int y)
+text_render_glyph(Text *text, SDL_Surface *s, char c, int x, int y)
 {
 	SDL_Rect lr, dr;
 
 	dr.x = x;
 	dr.y = y;
 
-	font_get_glyph_rect(c, &lr);
+	font_get_glyph_rect(text->font, c, &lr);
 	dr.w = lr.w;
 	dr.h = lr.h;
 	SDL_BlitSurface(sprites, &lr, s, &dr);
@@ -166,19 +243,20 @@ text_render(Text *text, SDL_Surface *s)
 	unsigned char *c = text->value;
 	int cursor = 0;
 	int rx = 0, ry = 0;
+	int fheight = get_font_height(text);
 
 	while (*c != '\0') {
 		/* Real Newline */
 		if (*c == '\n') {
 			cursor = 0;
-			ry += FONT_HEIGHT + text->line_spacing;
+			ry += fheight + text->line_spacing;
 			c++;
 			continue;
 		}
 		/* Forced Newline */
 		if (*c == '\\' && *(c+1) == 'n')  {
 			cursor = 0;
-			ry += FONT_HEIGHT + text->line_spacing;
+			ry += fheight + text->line_spacing;
 			c += 2;
 			continue;
 		}
@@ -186,7 +264,7 @@ text_render(Text *text, SDL_Surface *s)
 		if (text->effect & EFFECT_SHAKE) {
 			text_effect_shake(text, &rx, &ry);
 		}
-		cursor += text_render_glyph(s, *c, cursor + rx, 0 + ry);
+		cursor += text_render_glyph(text, s, *c, cursor + rx, 0 + ry);
 
 		c++;
 	}
@@ -242,13 +320,14 @@ text_calculate_size(Text *text)
 {
 	SDL_Rect r;
 	unsigned char *c = text->value;
+	int fheight = get_font_height(text);
 
 	text->width = 0;
 	while (*c != '\0') {
-		font_get_glyph_rect(*c, &r);
+		font_get_glyph_rect(text->font, *c, &r);
 		text->width += r.w;
 		if (*c == '\n' || (*c == '\\' && *(c+1) == 'n'))
-			text->height += FONT_HEIGHT + text->line_spacing;
+			text->height += fheight + text->line_spacing;
 		c++;
 	}
 }
@@ -264,7 +343,7 @@ text_new(char *value)
 	text->x = 0;
 	text->y = 0;
 	text->width = 0;
-	text->height = FONT_HEIGHT;
+	text->height = FONT0_HEIGHT;
 	text->effect = 0;
 	text->fx_fade_data = -255;
 	text->value = NULL;
@@ -277,6 +356,8 @@ text_new(char *value)
 	text->color1_r = 0xFF;
 	text->color1_g = 0xFF;
 	text->color1_b = 0xFF;
+
+	text->font = 0;
 
 	text->centered = false;
 	
@@ -367,8 +448,10 @@ text_get_surface(Text *text)
 void
 text_get_rectangle(Text *text, SDL_Rect *r)
 {
+	int fheight = get_font_height(text);
+
 	r->w = text->width;
-	r->h = FONT_HEIGHT;
+	r->h = fheight;
 	r->y = text->y;
 	if (text->centered == true)
 		r->x = (screen->w - text->width) / 2;

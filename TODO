@@ -1,3 +1,4 @@
+ - Add a transition when leaving the menu.
 
  - add the start_time to the board.
  - add the max seconds conf variable.
