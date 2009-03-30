@@ -163,7 +163,7 @@ board_new_from_level(Level *level)
 	description->font = 1;
 
 	/* Draw the press p to contine */
-	prompt = board_add_text(board, "press 'p' to start", 400, 440);
+	prompt = board_add_text(board, "press 'enter' to start", 360, 440);
 	prompt->temp = true;
 	text_set_colors(prompt, 0xFFE64B, 0xB35904);
 
@@ -335,7 +335,6 @@ board_refresh_transition(Board *board)
 {
 	switch (board->transition) {
 		case TTYPE_SHUTTER_OPEN:
-			printf("TRANSITION!\n");
 			surface_shutter_open();
 			board->transition = TTYPE_NONE;
 			break;
@@ -386,8 +385,13 @@ enum mtype
 board_gameover(Board *board)
 {
 	/* Success is only for tutorial mode. */
-	if (board->success)
+	if (board->success) {
+		if (board->next_level) {
+			r_free(conf->next_level);
+			conf->next_level = r_strcp(board->next_level);
+		}
 		return MTYPE_GAMEOVER_WIN;
+	}
 
 	/* The player made a hiscore! */
 	if (hiscore_check(board->score) == true) {

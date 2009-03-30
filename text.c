@@ -11,6 +11,9 @@ extern SDL_Surface *screen;
 extern SDL_Surface *sprites;
 extern Uint32 key;
 
+int text_wave_offsets[] = { 0, 1, 2, 1, 0, -1, -2, -1 };
+
+
 int
 get_font_height(Text *text) {
 	if (text->font == 0)
@@ -180,6 +183,19 @@ text_effect_shake(Text *text, int *rx, int *ry)
 	*ry = (rand() % 50 > 40 ? (rand() % (force + 1)) : 0);
 }
 
+void
+text_effect_wave(Text *text, int count, int *ry)
+{
+	int offset;
+
+	if (count == 0)
+		text->fx_wave_data++;
+
+	offset = (text->fx_wave_data + count) % 8;
+
+	*ry = text_wave_offsets[offset] + 2;
+}
+
 
 /**
  * This effect updates the alpha level of a surface and trash it when it reach
@@ -245,6 +261,7 @@ text_render(Text *text, SDL_Surface *s)
 	int cursor = 0;
 	int rx = 0, ry = 0;
 	int fheight = get_font_height(text);
+	int count = 0;
 
 	while (*c != '\0') {
 		/* Real Newline */
@@ -262,12 +279,16 @@ text_render(Text *text, SDL_Surface *s)
 			continue;
 		}
 
-		if (text->effect & EFFECT_SHAKE) {
+		if (text->effect & EFFECT_SHAKE)
 			text_effect_shake(text, &rx, &ry);
-		}
+		
+		if (text->effect & EFFECT_WAVE)
+			text_effect_wave(text, count, &ry);
+		
 		cursor += text_render_glyph(text, s, *c, cursor + rx, 0 + ry);
 
 		c++;
+		count++;
 	}
 
 	if (text->colorized == true)
@@ -347,6 +368,7 @@ text_new(char *value)
 	text->height = FONT0_HEIGHT;
 	text->effect = 0;
 	text->fx_fade_data = -255;
+	text->fx_wave_data = 0;
 	text->value = NULL;
 	text->length = -1;
 	text->max_length = 4096;
@@ -359,7 +381,7 @@ text_new(char *value)
 	text->color1_g = 0xFF;
 	text->color1_b = 0xFF;
 
-	text->font = 0;
+	text->font = 1;
 
 	text->centered = false;
 	
@@ -444,8 +466,14 @@ SDL_Surface *
 text_get_surface(Text *text)
 {
 	SDL_Surface *s;
+	int width = text->width;
+	int height = text->height;
 
-	s = SDL_CreateRGBSurface(0, text->width, text->height, 
+	/* Make way for the wave! */
+	if (text->effect & EFFECT_WAVE)
+		height += 4;
+
+	s = SDL_CreateRGBSurface(0, width, height, 
 			screen->format->BitsPerPixel, 0, 0, 0, 0);
 	SDL_FillRect(s, NULL, key);
 	SDL_SetColorKey(s, SDL_SRCCOLORKEY|SDL_RLEACCEL, key);
@@ -466,10 +494,17 @@ void
 text_get_rectangle(Text *text, SDL_Rect *r)
 {
 	int fheight = get_font_height(text);
+	int y = text->y;
+
+	/* Make way for the wave! */
+	if (text->effect & EFFECT_WAVE) {
+		fheight += 4;
+		y -= 2;
+	}
 
 	r->w = text->width;
 	r->h = fheight;
-	r->y = text->y;
+	r->y = y;
 	if (text->centered == true)
 		r->x = (screen->w - text->width) / 2;
 	else

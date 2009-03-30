@@ -100,9 +100,10 @@ enum mtype {
 
 /* Text Effect types */
 enum {
-	EFFECT_NONE,
-	EFFECT_SHAKE,
-	EFFECT_FADEOUT
+	EFFECT_NONE    = 0,
+	EFFECT_SHAKE   = 1 << 0,
+	EFFECT_WAVE    = 1 << 1,
+	EFFECT_FADEOUT = 1 << 2
 };
 
 /* Area types. */
@@ -216,6 +217,7 @@ typedef struct _text_s {
 	byte color2_b;
 	int effect;		// bit map of effects
 	int fx_fade_data;	// fade value
+	int fx_wave_data;	// sinus value
 	char *value;		// actual c-string text
 	int length;		// num of chars in the value
 	int max_length;		// max num of chars
@@ -321,6 +323,7 @@ typedef struct _configuration {
 	int difficulty;
 	char *next_level;
 	int last_score;
+	bool sound;
 } Configuration;
 
 
@@ -433,6 +436,7 @@ void		 a_chimneys_update(Board *, uint32_t);
 
 /* Audio functions */
 void		 init_audio();
+void		 sfx_toggle_mute(bool);
 void		 sfx_play_tick1();
 void		 sfx_play_tack1();
 void		 sfx_play_boom();

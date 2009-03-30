@@ -1,15 +1,7 @@
- - Reorganize the tree....
-
- - Add a transition when leaving the menu.
-
  - add the start_time to the board.
  - add the max seconds conf variable.
 
  - actually add all the object types.
-
- - add font2 (find a cartoonesque).
-
- - tweak the blocks to be a little better (more pixel-art).
 
  - add a timed mode to clean the screen.
  - add a 'tutorial' that shows how to play.

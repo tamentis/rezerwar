@@ -7,7 +7,7 @@
 #include "rezerwar.h"
 
 
-#define BOT_VER "rezerwar alpha 2009-03-08"
+#define BOT_VER "rezerwar alpha 2009-03-29"
 
 
 Board *board;
@@ -38,6 +38,7 @@ conf_init()
 	conf = r_malloc(sizeof(Configuration));
 	conf->difficulty = DIFF_EASIEST;
 	conf->next_level = NULL;
+	conf->sound = true;
 }
 
 
@@ -214,7 +215,6 @@ main(int ac, char **av)
 				status = gameover_menu();
 				break;
 			case MTYPE_GAMEOVER_HISCORE:
-				printf("MTYPE_GAMEOVER_HISCORE\n");
 				status = hiscore_prompt();
 				break;
 			case MTYPE_HISCORES:

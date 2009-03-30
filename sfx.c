@@ -100,7 +100,7 @@ sfx_play_music(char *title)
 	}
 
 	// set the post mix processor up
-	if (Mix_PlayMusic(music, 0)==-1) {
+	if (Mix_PlayMusic(music, -1)==-1) {
 		fprintf(stderr, "Mix_LoadMUS error\n");
 		exit(-1);
 	}
@@ -112,4 +112,16 @@ sfx_stop_music()
 	Mix_FadeOutMusic(200);
 	Mix_FreeMusic(music);
 	music = NULL;
+}
+
+void
+sfx_toggle_mute(bool yup)
+{
+	if (yup) {
+		Mix_Volume(-1, 0);
+		Mix_VolumeMusic(0);
+	} else {
+		Mix_Volume(-1, MIX_MAX_VOLUME);
+		Mix_VolumeMusic(MIX_MAX_VOLUME);
+	}
 }

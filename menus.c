@@ -5,6 +5,10 @@
 
 #include "rezerwar.h"
 
+enum toggle_types {
+	TOGGLE_DIFFICULTY,
+	TOGGLE_SOUND
+};
 
 extern Configuration *conf;
 extern SDL_Surface *screen;
@@ -116,6 +120,16 @@ menu_item_set_difficulty(MenuItem *item)
 	text_set_value(item->text, diff_t[conf->difficulty]);
 }
 
+void
+menu_item_set_sound(MenuItem *item)
+{
+	char *sound_t[] = {
+		"Sound/Music: Off",
+		"Sound/Music: On" };
+
+	text_set_value(item->text, sound_t[conf->sound]);
+}
+
 
 /**
  * This function creates a new entry in the menu, it assumes you know
@@ -174,14 +188,18 @@ menu_load_gameover(Menu *menu, bool allow_next_level)
 void
 menu_load_options(Menu *menu)
 {
-	MenuItem *diff_item;
+	MenuItem *diff_item, *sound_item;
 
 	flush_menu_items(menu);
-	diff_item = add_item_to_menu(menu, "difficulty", MTYPE_TOGGLE, 0, 0);
-	add_item_to_menu(menu, "things", MTYPE_NOP, 0, 0);
+	diff_item = add_item_to_menu(menu, "difficulty", MTYPE_TOGGLE, 
+			TOGGLE_DIFFICULTY, 0);
+	sound_item = add_item_to_menu(menu, "sound/music", MTYPE_TOGGLE,
+			TOGGLE_SOUND, 0);
+	add_item_to_menu(menu, "set controls", MTYPE_NOP, 0, 0);
 	add_item_to_menu(menu, "back to main", MTYPE_SUBMENU, 0, 0);
 
 	menu_item_set_difficulty(diff_item);
+	menu_item_set_sound(sound_item);
 }
 
 
@@ -206,11 +224,17 @@ menu_toggle_item(Menu *menu, MenuItem *item)
 {
 	switch (item->subtype) {
 		/* Difficulty */
-		case 0:
+		case TOGGLE_DIFFICULTY:
 			conf->difficulty++;
 			if (conf->difficulty >= DIFF_LENGTH)
 				conf->difficulty = 0;
 			menu_item_set_difficulty(item);
+			break;
+		case TOGGLE_SOUND:
+			printf("TOGGLE_SOUND!\n");
+			sfx_toggle_mute(conf->sound);
+			conf->sound = !conf->sound;
+			menu_item_set_sound(item);
 			break;
 		default:
 			break;
@@ -259,10 +283,12 @@ menu_refresh(Menu *menu)
 		item->text->y = menu->y + i * 30;
 		if (i == menu->current) {
 			item->text->colorized = true;
-			item->text->effect |= EFFECT_SHAKE;
+//			item->text->effect |= EFFECT_SHAKE;
+			item->text->effect |= EFFECT_WAVE;
 		} else {
 			item->text->colorized = false;
-			item->text->effect &= ~EFFECT_SHAKE;
+//			item->text->effect &= ~EFFECT_SHAKE;
+			item->text->effect &= ~EFFECT_WAVE;
 		}
 		s = text_get_surface(item->text);
 		text_get_rectangle(item->text, &(item->rect));
