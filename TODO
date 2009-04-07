@@ -1,18 +1,18 @@
+ - make sure finishing a level in tutorial mode doesn't show hiscores...
+ - work on lvl2.
+ - improve musics!
+
  - add the start_time to the board.
  - add the max seconds conf variable.
-
- - actually add all the object types.
+ - add the TargetScore.
 
  - add a timed mode to clean the screen.
  - add a 'tutorial' that shows how to play.
  - add blue and red blocks which will freeze and thaw the water.
- - Move all the SDL related stuff in wrappers within sdl_engine.c
  - add mouse interfacing in-game to allow Maemo and iPhone to work.
  - Add an 'under pressure' block that can provide pressure for a couple
    blocks. If you don't complete the network in 10 seconds, it depletes.
    (a little source/spring icon on top?)
- - Add a bomb block, when it falls, it destroys everything in a 1 block
-   radius.
  - Create a block_allocate when creating new blocks to avoid always pushing
    blocks at the end of the array.
  - You can harden blocks so they can last a couple generations of water, this

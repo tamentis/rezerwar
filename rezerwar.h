@@ -50,7 +50,8 @@ enum ctype {
 	CTYPE_FLAT,
 	CTYPE_KNOB,
 	CTYPE_ALL,		// 5
-	CTYPE_BOMB
+	CTYPE_BOMB,
+	CTYPE_ROCK
 };
 
 /* Transition types */
@@ -268,6 +269,7 @@ typedef struct _level_s {
 	bool allow_dynamite;
 	int objective_type;
 	char *next;
+	int max_blocks;
 } Level;
 typedef struct _queuedblock_s {
 	int type;
@@ -351,6 +353,7 @@ typedef struct _board_s {
 	Block *next_block;
 	Block **bqueue;
 	size_t bqueue_len;
+	int remains;		// number of blocks to end of level
 	/* controls */
 	byte moving_left;
 	byte moving_right;

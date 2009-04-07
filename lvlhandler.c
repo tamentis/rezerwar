@@ -5,6 +5,54 @@
 
 #include "rezerwar.h"
 
+/*************************
+* LEVEL PSEUDO VARIABLES *
+*************************/
+
+/* $ObjectiveType */
+void
+lvl_var_objtype(Level *level, char *value)
+{
+	if (strcmp(value, "CLEARALL") == 0) {
+		level->objective_type = OBJTYPE_CLEARALL;
+	} else if (strcmp(value, "LINK") == 0) {
+		level->objective_type = OBJTYPE_LINK;
+	} else {
+		fatal("Unknown value for ObjectiveType");
+	}
+}
+
+/* $NextLevel */
+void
+lvl_var_nextlevel(Level *level, char *value)
+{
+	size_t len = strlen(value) + 1;
+
+	level->next = malloc(len);
+	strlcpy(level->next, value, len);
+}
+
+/* $AllowDynamite */
+void
+lvl_var_allowdynamite(Level *level, char *value)
+{
+	if (strcmp(value, "TRUE") == 0) {
+		level->allow_dynamite = true;
+	} else if (strcmp(value, "FALSE") == 0) {
+		level->allow_dynamite = false;
+	} else {
+		fatal("Unknown value for BOOLEAN 'AllowDynamite'");
+	}
+}
+
+/* $MaxBlocksAllowed */
+void
+lvl_var_maxblocksallowed(Level *level, char *value)
+{
+	level->max_blocks = atoi(value);
+}
+
+
 /**
  * Copy the next line of *buf in *lbuf, assuming it has enough space and
  * return the number of char we moved including the new line.
@@ -26,41 +74,6 @@ lvl_getline(byte *lbuf, byte *buf)
 	lbuf[len] = '\0';
 
 	return len + 1;
-}
-
-
-void
-lvl_var_objtype(Level *level, char *value)
-{
-	if (strcmp(value, "CLEARALL") == 0) {
-		level->objective_type = OBJTYPE_CLEARALL;
-	} else if (strcmp(value, "LINK") == 0) {
-		level->objective_type = OBJTYPE_LINK;
-	} else {
-		fatal("Unknown value for ObjectiveType");
-	}
-}
-
-
-void
-lvl_var_nextlevel(Level *level, char *value)
-{
-	size_t len = strlen(value) + 1;
-
-	level->next = malloc(len);
-	strlcpy(level->next, value, len);
-}
-
-void
-lvl_var_allowdynamite(Level *level, char *value)
-{
-	if (strcmp(value, "TRUE") == 0) {
-		level->allow_dynamite = true;
-	} else if (strcmp(value, "FALSE") == 0) {
-		level->allow_dynamite = false;
-	} else {
-		fatal("Unknown value for BOOLEAN 'AllowDynamite'");
-	}
 }
 
 /**
@@ -86,10 +99,15 @@ lvl_splitvar(Level *level, byte *lbuf, size_t len)
 		lvl_var_nextlevel(level, c);
 	else if (strcmp("AllowDynamite", l) == 0)
 		lvl_var_allowdynamite(level, c);
+	else if (strcmp("MaxBlocksAllowed", l) == 0)
+		lvl_var_maxblocksallowed(level, c);
 	else
 		fatal("Syntax error: unknown variable: \"%s\".", l);
 }
 
+/**
+ * Level constructor
+ */
 Level *
 lvl_new()
 {
@@ -220,6 +238,9 @@ lvl_load(char *name)
 	return level;
 }
 
+/**
+ * Debugging tool for Level
+ */
 void
 lvl_dump(Level *level)
 {
@@ -244,6 +265,9 @@ lvl_dump(Level *level)
 	}
 }
 
+/**
+ * Level destructor
+ */
 void
 lvl_kill(Level *level)
 {

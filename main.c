@@ -7,7 +7,7 @@
 #include "rezerwar.h"
 
 
-#define BOT_VER "rezerwar alpha 2009-03-29"
+#define BOT_VER "rezerwar alpha 2009-04-06"
 
 
 Board *board;
@@ -70,7 +70,7 @@ game_loop(char *levelname, enum ttype trans)
 		lvl_kill(level);
 	}
 	board->transition = trans;
-	board_add_text(board, (char *)BOT_VER, 10, 450);
+	board_add_text(board, (char *)BOT_VER, 5, 455);
 	board_load_next_block(board);
 	board_launch_next_block(board);
 

@@ -82,6 +82,20 @@ cube_new_type(byte start_pos, int type)
 	return cube;
 }
 
+/**
+ * Create a rock, random color.
+ */
+Cube *
+cube_new_rock()
+{
+	Cube *cube;
+
+	cube = cube_new(rand() % 4);
+	cube->type = CTYPE_ROCK;
+
+	return cube;
+}
+
 void
 cube_network_add(Cube *root, Cube *cube)
 {
@@ -180,6 +194,7 @@ cube_new_from_char(char c)
 		case '}': cube = cube_new_type(1, CTYPE_TEE); break;
 		case 'T': cube = cube_new_type(2, CTYPE_TEE); break;
 		case '{': cube = cube_new_type(3, CTYPE_TEE); break;
+		case 'R': cube = cube_new_rock(); break;
 		case '.':
 		default:
 			break;

@@ -12,7 +12,7 @@ extern Uint32 key;
 
 
 /**
- * Instanciate a new board (begin a new game)
+ * Board constructor
  */
 Board *
 board_new(int difficulty)
@@ -50,6 +50,7 @@ board_new(int difficulty)
 	b->next_block = NULL;
 	b->block_speed = SPEED_NORMAL;
 	b->block_speed_factor = 1;
+	b->remains = -1;
 
 	/* Texts (future OSD) related members */
 	b->texts = NULL;
@@ -103,7 +104,7 @@ board_new(int difficulty)
 
 
 /**
- * Create a new board and populate the cubes from the level.
+ * Create a new board and populate the cubes from the given level.
  */
 Board *
 board_new_from_level(Level *level)
@@ -150,6 +151,8 @@ board_new_from_level(Level *level)
 	board->allow_dynamite = level->allow_dynamite;
 	if (level->next)
 		board->next_level = r_strcp(level->next);
+	if (level->max_blocks)
+		board->remains = level->max_blocks;
 
 	/* Draw the title */
 	title = board_add_text(board, level->name, 20, 20);
@@ -163,7 +166,7 @@ board_new_from_level(Level *level)
 	description->font = 1;
 
 	/* Draw the press p to contine */
-	prompt = board_add_text(board, "press 'enter' to start", 360, 440);
+	prompt = board_add_text(board, "press 'enter' to start", 350, 440);
 	prompt->temp = true;
 	text_set_colors(prompt, 0xFFE64B, 0xB35904);
 
@@ -503,12 +506,27 @@ board_launch_next_block(Board *board)
 {
 	Block *nb = board->next_block;
 
-	board_add_block(board, nb);
+	/* If we had 0 remaining blocks... you lost. */
+	if (board->remains == 0) {
+		board->gameover = true;
+		return;
+	}
 
+	/* Load the new block */
+	board_add_block(board, nb);
+	board->current_block = nb;
 	nb->x = (byte)(board->width / 2) - (byte)(nb->size / 2);
 	nb->y = 0;
 
-	board->current_block = nb;
+	/* Decrement the remaining blocks */
+	if (board->remains > 0)
+		board->remains--;
+
+	/* If we are NOW at 0, you are on your last block */
+	if (board->remains == 0) {
+		board->next_block = NULL;
+		return;
+	}
 
 	board_load_next_block(board);
 }
@@ -929,6 +947,10 @@ board_update_cubes(Board *board, uint32_t now)
 			continue;
 		}
 
+		/* If the cube is a rock, just skip, rocks don't move */
+		if (cube->type == CTYPE_ROCK)
+			continue;
+
 		/* Check if the cube has free space under itself, if yes 
 		 * disconnect it as a cube and create a new block. */
 		type = board_get_area_type(board, cube->x, cube->y + 1);
@@ -1093,7 +1115,8 @@ board_run_avalanche(Board *board, Cube *cube)
 	Text *avtxt;
 
 	/* Start a fading text... */
-	avtxt = board_add_text(board, "EXCELLENT!", 240, 200);
+	avtxt = board_add_text(board, "Excellent!", 240, 200);
+	avtxt->centered = true;
 	avtxt->temp = true;
 	text_set_color1(avtxt, 255, 0, 0);
 	text_set_color2(avtxt, 80, 0, 0);
