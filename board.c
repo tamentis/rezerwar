@@ -51,6 +51,7 @@ board_new(int difficulty)
 	b->block_speed = SPEED_NORMAL;
 	b->block_speed_factor = 1;
 	b->remains = -1;
+	b->launch_next = false;
 
 	/* Texts (future OSD) related members */
 	b->texts = NULL;
@@ -125,6 +126,11 @@ board_new_from_level(Level *level)
 		cube->y = i / BOARD_WIDTH;
 		cube->x = i % BOARD_WIDTH;
 		board->cubes[i] = cube;
+	
+		/* No need to count rocks.. their passive. */
+		if (cube->type == CTYPE_ROCK)
+			continue;
+
 		board->cube_count++;
 	}
 
@@ -425,6 +431,13 @@ board_update(Board *board, uint32_t now)
 	if (board->gameover == true)
 		return board_gameover(board);
 
+	/* We were requested to launch the next block */
+	if (board->launch_next == true) {
+		printf("CUBE COUNT: %d\n", board->cube_count);
+		board_launch_next_block(board);
+		board->launch_next = false;
+	}
+
 	/* Animations */
 	a_chimneys_update(board, now);
 	a_sky_update(board, now);
@@ -506,8 +519,11 @@ board_launch_next_block(Board *board)
 {
 	Block *nb = board->next_block;
 
+	printf("LAUNCH! (remains=%d)\n", board->remains);
+
 	/* If we had 0 remaining blocks... you lost. */
 	if (board->remains == 0) {
+		printf("RAN OUT OF BLOCKS!\n");
 		board->gameover = true;
 		return;
 	}
@@ -659,7 +675,7 @@ board_kill_row(Board *board, int row)
 
 	for (i = board->width * row; i < board->width * (row + 1); i++)
 		if (board->cubes[i] != NULL)
-			board->cubes[i]->trashed = true;
+			board_trash_cube(board, board->cubes[i]);
 }
 
 
@@ -670,7 +686,7 @@ board_kill_column(Board *board, int col)
 
 	for (i = col; i < board->width * board->height; i += board->width)
 		if (board->cubes[i] != NULL)
-			board->cubes[i]->trashed = true;
+			board_trash_cube(board, board->cubes[i]);
 }
 
 
@@ -751,7 +767,7 @@ board_update_single_block(Board *board, uint32_t now, int i) {
 				board->current_block = NULL;
 				if (block->y > 0) {
 					sfx_play_tack1();
-					board_launch_next_block(board);
+					board->launch_next = true;
 				} else {
 					board->gameover = true;
 					return;
@@ -936,8 +952,8 @@ board_update_cubes(Board *board, uint32_t now)
 		if (cube == NULL)
 			continue;
 		
-		/* Check if the cube is trashed (if yes fade it until death */
-		if (cube->trashed == 1) {
+		/* Check if the cube is trashed (if yes fade it to death) */
+		if (cube->trashed == true) {
 			cube->fade_status++;
 			if (cube->fade_status > BSIZE / 2) {
 				cube_kill(cube);
@@ -1144,7 +1160,7 @@ board_run_avalanche_column(Board *board, Cube *cube)
 	for (y = cube->y; y < board->height; y++) {
 		target = board_get_cube(board, cube->x, y);
 		if (target != NULL && target->trashed == false) {
-			target->trashed = true;
+			board_trash_cube(board, target);
 			board->score += 20;
 		}
 	}
@@ -1223,84 +1239,34 @@ board_spread_attempt(Board *board, Cube *cube, Cube *root, Sint8 ox, Sint8 oy,
 
 
 /**
- * This function will rotate around the cube and mark as trashed all the neighbors
- * of a cube.
- */
-void
-board_cube_deflagration(Board *board, Cube *cube)
-{
-	int i;
-	Cube *nc;
-	struct _coords {
-		int x;
-		int y;
-	} coords[] = {
-		{ -1, -1 }, { 0, -1 }, { 1, -1 },
-		{ -1,  0 }, /* cube */ { 1,  0 },
-		{ -1,  1 }, { 0,  1 }, { 1,  1 }
-	};
-
-	for (i = 0; i < 8; i++) {
-		nc = board_get_cube(board, cube->x + coords[i].x, cube->y + coords[i].y);
-		if (nc != NULL) {
-			nc->trashed = true;
-		}
-	}
-}
-
-
-/**
- * This function will pick how big a network has to be before we start
- * deflagrating the neighboring cubes.
- */
-void
-board_network_deflagrate(Board *board, Cube *cube)
-{
-	int i, max;
-
-	switch (board->difficulty) {
-		case DIFF_EASIEST:	max = 5; break;
-		case DIFF_EASY:		max = 8; break;
-		case DIFF_MEDIUM:	max = 12; break;
-		case DIFF_HARD:		max = 16; break;
-		case DIFF_ULTRA:	max = 20; break;
-	}
-
-	/* Standard circular deflagration */
-	if (cube->network_size > max) {
-		for (i = 0; i < cube->network_size; i++) {
-			board_cube_deflagration(board, cube->network[i]);
-		}
-		board_cube_deflagration(board, cube);
-	}
-}
-
-
-/**
- * A network is going to be destroyed, after a certain size, network explosion is causing
- * deflagration on neighboring blocks.
+ * A network is going to be destroyed.
  */
 void
 board_destroy_network(Board *board, Cube *cube)
 {
 	int i;
 
-	if (cube->trashed == 1)
+	if (cube->trashed == true)
 		return;
 
-	printf("board_destroy_network(cube@%dx%d, size=%d)\n", cube->x, cube->y,
-			cube->network_size);
+	for (i = 0; i < cube->network_size; i++)
+		board_trash_cube(board, cube->network[i]);
 
-	for (i = 0; i < cube->network_size; i++) {
-		cube->network[i]->trashed = true;
-	}
-
-//	board_network_deflagrate(board, cube);
-
-	cube->trashed = true;
+	board_trash_cube(board, cube);
 	board->score += (cube->network_size + 1) * 8;
 
 	sfx_play_lazer();
+}
+
+
+/**
+ * Mark a cube for deletion (trashed), it will fade and ultimately be removed
+ */
+void
+board_trash_cube(Board *board, Cube *cube)
+{
+	cube->trashed = true;
+	board->cube_count--;
 }
 
 

@@ -175,7 +175,7 @@ menu_load_gameover(Menu *menu, bool allow_next_level)
 	flush_menu_items(menu);
 	if (allow_next_level == true)
 		add_item_to_menu(menu, "next level", MTYPE_NEXTLEVEL, 0, 0);
-	add_item_to_menu(menu, "replay level", MTYPE_PLAIN, 0, 0);
+	add_item_to_menu(menu, "replay level", MTYPE_START, 0, 0);
 	add_item_to_menu(menu, "main menu", MTYPE_BREAK, 1, 45);
 	add_item_to_menu(menu, "quit rzwar", MTYPE_QUIT, 0, 65);
 }
@@ -452,19 +452,31 @@ main_menu()
 
 
 int
-gameover_menu()
+gameover_menu(bool success)
 {
 	Menu *menu;
+	Text *title;
 	int status;
 	bool allow_next_level = true;
 
-	if (conf->next_level == NULL)
+	if (conf->next_level == NULL || success == false)
 		allow_next_level = false;
 
+	/* Dump a modal and a title before running the menu */
+	blit_modal(160);
+	if (success == true)
+		title = text_new("Congratulations!");
+	else
+		title = text_new("You failed!");
+	title->centered = true;
+	title->y = 200;
+	text_set_colors(title, 0xff9020, 0xa9440d);
+	text_blit(title, screen);
+
+	/* Actually run the menu */
 	menu = new_menu();
 	menu->x = 200;
 	menu->y = 285;
-	menu->modal = true;
 	menu_load_gameover(menu, allow_next_level);
 	status = menu_runner(menu);
 

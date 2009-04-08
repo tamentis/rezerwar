@@ -4,35 +4,30 @@
 
 Tutorial 2
 
-I admit the first level is too easy...\n
-Now the objective is pretty much the same
-except that you have to link both sides of
-the board. You are not limited in block
-type, do what you want, rotate, explode...
+Alright, you just learned how to get rid
+of blocks in rezerwar, you need to create
+a full network.\n
+Now try to connect the two side of the 
+board... you are given all the block type,
+you don't need a perfect network, just
+enough to run water.
 
 .........
-.........
-.........
-.........
-.........
-.........
-.........
-.........
-.........
-.........
+R.......R
+R.......R
+R.......R
+R.......R
+R.......R
+R.......R
+R..RRR..R
+R..F-7..R
+-..JRL..-
 
 # Those are defined backward, starts from the bottom
-70-
-70-
-70-
-70-
-70-
-70-
-70J
-70-
-70-
+70+
 
 # Level objective type
+$AllowDynamite: FALSE
 $ObjectiveType: LINK
 $NextLevel: tuto_03
 

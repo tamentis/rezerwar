@@ -105,6 +105,7 @@ surface_shutter(int start, int stop, int speed)
 	/* Loop 'max' times and every time, dump first the original and then
 	 * a increasingly transparent 'surf' */
 	for (i = start; start < stop ? i < stop : i > stop; i += speed) {
+		/* Only need to blit the original when we open. */
 		if (start > stop)
 			SDL_BlitSurface(org, NULL, screen, NULL);
 		SDL_FillRect(screen, &top, 0);
@@ -122,13 +123,13 @@ surface_shutter(int start, int stop, int speed)
 void
 surface_shutter_close()
 {
-	surface_shutter(0, screen->h / 2 + 20, 10);
+	surface_shutter(0, screen->h / 2 + 20, 16);
 }
 
 void
 surface_shutter_open()
 {
-	surface_shutter(screen->h / 2 + 20, 0, -10);
+	surface_shutter(screen->h / 2 + 20, 0, -16);
 }
 
 /**

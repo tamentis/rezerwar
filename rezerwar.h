@@ -354,6 +354,7 @@ typedef struct _board_s {
 	Block **bqueue;
 	size_t bqueue_len;
 	int remains;		// number of blocks to end of level
+	bool launch_next;	// launch the next block at next update tick
 	/* controls */
 	byte moving_left;
 	byte moving_right;
@@ -395,6 +396,7 @@ enum mtype	 board_gameover(Board *);
 void		 board_prepopulate(Board *, int);
 /* Board functions (cube related) */
 void		 board_add_cube(Board *);
+void		 board_trash_cube(Board *, Cube *);
 void		 board_refresh_cubes(Board *);
 void		 board_dump_cube_map(Board *);
 void		 board_spread_water(Board *, Cube *, Cube *, int);

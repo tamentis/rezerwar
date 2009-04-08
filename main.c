@@ -17,6 +17,9 @@ SDL_Surface *sprites;
 Uint32 key;
 
 
+/**
+ * Fade the initial studio screen.
+ */
 void
 intro_studio(void)
 {
@@ -32,6 +35,9 @@ intro_studio(void)
 }
 
 
+/**
+ * Configuration constructor.
+ */
 void
 conf_init()
 {
@@ -209,10 +215,10 @@ main(int ac, char **av)
 				status = game_loop(conf->next_level, TTYPE_NONE);
 				break;
 			case MTYPE_GAMEOVER_WIN:
-				status = gameover_menu();
+				status = gameover_menu(true);
 				break;
 			case MTYPE_GAMEOVER_LOSE:
-				status = gameover_menu();
+				status = gameover_menu(false);
 				break;
 			case MTYPE_GAMEOVER_HISCORE:
 				status = hiscore_prompt();
