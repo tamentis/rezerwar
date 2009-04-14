@@ -52,6 +52,7 @@ board_new(int difficulty)
 	b->block_speed_factor = 1;
 	b->remains = -1;
 	b->launch_next = false;
+	b->next_line = 1;
 
 	/* Texts (future OSD) related members */
 	b->texts = NULL;
@@ -347,6 +348,9 @@ board_refresh_transition(Board *board)
 			surface_shutter_open();
 			board->transition = TTYPE_NONE;
 			break;
+		case TTYPE_PIXEL_OPEN:
+			surface_pixel_open();
+			board->transition = TTYPE_NONE;
 		case TTYPE_NONE:
 		default:
 			break;
@@ -431,6 +435,13 @@ board_update(Board *board, uint32_t now)
 	if (board->gameover == true)
 		return board_gameover(board);
 
+	/* We need a new line! */
+	if (board->next_line <= now) {
+		if (board->next_line != 1)
+			board_add_line(board);
+		board->next_line = now + NEXTLINE * 1000;
+	}
+
 	/* We were requested to launch the next block */
 	if (board->launch_next == true) {
 		printf("CUBE COUNT: %d\n", board->cube_count);
@@ -449,6 +460,35 @@ board_update(Board *board, uint32_t now)
 /*
  * Block related functions
  */
+
+
+/**
+ * Generate a random line of cube at the bottom and move everything up one
+ * cube.
+ */
+void
+board_add_line(Board *board)
+{
+	int i;
+	Cube *cube;
+
+	for (i = 0; i < (BOARD_WIDTH * BOARD_HEIGHT); i++) {
+		cube = board->cubes[i];
+
+		if (cube == NULL)
+			continue;
+
+		if (i < BOARD_WIDTH) {
+			board->gameover = true;
+			continue;
+		}
+
+		cube->y--;
+		board->cubes[i - BOARD_WIDTH] = board->cubes[i];
+	}
+
+	board_prepopulate(board, 1);
+}
 
 void
 board_add_block(Board *board, Block *block)
@@ -865,6 +905,10 @@ board_move_current_block_left(Board *board)
 	if (block == NULL)
 		return;
 
+	/* Don't rotate cube during pause. */
+	if (board->paused == true)
+		return;
+
 	if (board_move_check(board, block, -1, 0) == 0) {
 		block->x--;
 	}
@@ -880,16 +924,13 @@ board_move_current_block_right(Board *board)
 	if (block == NULL)
 		return;
 
+	/* Don't rotate cube during pause. */
+	if (board->paused == true)
+		return;
+
 	if (board_move_check(board, block, 1, 0) == 0) {
 		block->x++;
 	}
-}
-
-
-void
-board_set_block_speed(Board *board, uint32_t speed)
-{
-	board->block_speed = speed;
 }
 
 
@@ -902,6 +943,10 @@ board_rotate_cw(Board *board)
 {
 	Block *block = board->current_block;
 	byte x;
+
+	/* Don't rotate cube during pause. */
+	if (board->paused == true)
+		return;
 
 	block_rotate_cw(block);
 

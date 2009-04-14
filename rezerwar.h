@@ -6,6 +6,7 @@
 /* Main speed and flow control */
 #define MAXFPS			30
 #define TICK			10
+#define NEXTLINE		30	// nb of seconds between new lines
 
 /* Board constants */
 #define BOARD_LEFT		176
@@ -57,7 +58,8 @@ enum ctype {
 /* Transition types */
 enum ttype {
 	TTYPE_NONE,
-	TTYPE_SHUTTER_OPEN
+	TTYPE_SHUTTER_OPEN,
+	TTYPE_PIXEL_OPEN
 };
 
 /* Plug types */
@@ -344,6 +346,7 @@ typedef struct _board_s {
 	int cube_count;
 	Cube **cubes;
 	bool allow_dynamite;
+	uint32_t next_line;
 	/* blocks */
 	int block_speed;
 	int block_speed_factor;
@@ -417,7 +420,6 @@ void		 board_load_next_block(Board *);
 void		 board_change_next_block(Board *);
 void		 board_move_current_block_left(Board *);
 void		 board_move_current_block_right(Board *);
-void		 board_set_block_speed(Board *, uint32_t);
 byte		 board_move_check(Board *, Block *, Sint8, Sint8);
 void		 board_rotate_cw(Board *);
 void		 board_update_map(Board *);

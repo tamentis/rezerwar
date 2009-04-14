@@ -1,4 +1,5 @@
- - work on lvl2.
+ - add a timer that will add a new line of cubes automatically.
+ - find memory leak.
  - improve musics!
 
  - add the start_time to the board.

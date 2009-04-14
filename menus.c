@@ -392,7 +392,7 @@ menu_runner(Menu *menu)
 			/* Load the initial image and fade into it. */
 			if (menu->bg_image != NULL) {
 				intro = SDL_LoadBMP(menu->bg_image);
-				surface_fadein(intro, 8);
+				surface_fadein(intro, 16);
 			} else if (menu->bg_surface != NULL) {
 				SDL_BlitSurface(menu->bg_surface, NULL,
 						intro, NULL);

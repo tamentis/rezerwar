@@ -132,6 +132,80 @@ surface_shutter_open()
 	surface_shutter(screen->h / 2 + 20, 0, -16);
 }
 
+SDL_Surface *
+new_of_size(SDL_Surface *s)
+{
+	SDL_Surface *org;
+	org = SDL_CreateRGBSurface(0, s->w, s->h, s->format->BitsPerPixel,
+			0, 0, 0, 0);
+	return org;
+}
+
+SDL_Surface *
+surface_subsample(SDL_Surface *org, int factor)
+{
+	SDL_Surface *pix = new_of_size(org);
+	unsigned ssize = org->w * org->h;
+	unsigned i, j, bpp;
+	Uint32 *v;
+	Uint8 r, g, b;
+
+	bpp = org->format->BytesPerPixel;
+
+	for (i = 0; i < ssize; i += factor) {
+		v = org->pixels + i * bpp;
+		SDL_GetRGB(*v, org->format, &r, &g, &b);
+		for (j = 0; j < factor; j++) {
+			v = pix->pixels + (i + j) * bpp;
+			*v = SDL_MapRGB(org->format, r, g, b);
+		}
+	}
+
+	return pix;
+}
+
+/**
+ * Progressively sub-sample the original surface.
+ */
+void
+surface_pixel_close()
+{
+	SDL_Surface *org, *pix;
+	int psize;
+
+	org = copy_screen();
+
+	/* Number of frame, increase of one pixel each time... */
+	for (psize = 1; psize < 65; psize <<= 1) {
+		pix = surface_subsample(org, psize);
+		SDL_BlitSurface(pix, NULL, screen, NULL);
+		SDL_FreeSurface(pix);
+		SDL_Flip(screen);
+		SDL_Delay(40);
+	}
+}
+
+/**
+ * Progressively sub-sample the original surface.
+ */
+void
+surface_pixel_open()
+{
+	SDL_Surface *org, *pix;
+	int psize;
+
+	org = copy_screen();
+
+	/* Number of frame, increase of one pixel each time... */
+	for (psize = 64; psize > 0; psize >>= 1) {
+		pix = surface_subsample(org, psize);
+		SDL_BlitSurface(pix, NULL, screen, NULL);
+		SDL_FreeSurface(pix);
+		SDL_Flip(screen);
+		SDL_Delay(40);
+	}
+}
+
 /**
  * Create a copy of the screen and return it as a new SDL_Surface, don't
  * forget to free it after usage.
@@ -139,14 +213,13 @@ surface_shutter_open()
 SDL_Surface *
 copy_screen()
 {
-	SDL_Surface *org;
+	SDL_Surface *org = new_of_size(screen);
 
-	org = SDL_CreateRGBSurface(0, screen->w, screen->h, 
-			screen->format->BitsPerPixel, 0, 0, 0, 0);
 	SDL_BlitSurface(screen, NULL, org, NULL);
 
 	return org;
 }
+
 
 /**
  * Fade a surface in the screen. If any event occur, return 1 if the fade was
@@ -233,23 +306,3 @@ surface_fadeout(SDL_Surface *surf)
 	return 0;
 }
 
-
-/*
- * Not using SDL_Image anymore.
- */
-/*
-SDL_Surface *
-loadimage(char *filename)
-{
-	SDL_Surface *img;
-
-	img = IMG_Load(filename);
-
-	if (img == NULL) {
-		fprintf(stderr, "Unable to load image \"%s\".\n", filename);
-		exit(-1);
-	}
-
-	return img;
-}
-*/

@@ -28,7 +28,7 @@ intro_studio(void)
 
 	intro = SDL_LoadBMP("gfx/splash/tdc.bmp");
 
-	x = surface_fadein(intro, 2);
+	x = surface_fadein(intro, 4);
 	if (x == 0) x = cancellable_delay(1);
 
 	SDL_FreeSurface(intro);
@@ -179,7 +179,7 @@ main(int ac, char **av)
 		fatal("Unable to initialize SDL: %s\n", SDL_GetError());
 
 	/* Set the graphic flags */
-	sdl_flags  = SDL_SWSURFACE|SDL_DOUBLEBUF;
+	sdl_flags  = SDL_HWSURFACE|SDL_DOUBLEBUF;
 	sdl_flags |= need_fullscreen(ac, av);
 
 	atexit(SDL_Quit);
@@ -231,8 +231,9 @@ main(int ac, char **av)
 				loop = false;
 				break;
 			case MTYPE_PLAIN:
-				surface_shutter_close();
-				status = game_loop(NULL, TTYPE_SHUTTER_OPEN);
+				surface_pixel_close();
+//				surface_shutter_close();
+				status = game_loop(NULL, TTYPE_PIXEL_OPEN);
 				break;
 			case MTYPE_START:
 				surface_shutter_close();
