@@ -2,7 +2,7 @@
 # (c) 2009 Bertrand Janin
 #
 
-Tutorial 2
+Lesson 2
 
 Alright, you just learned how to get rid
 of blocks in rezerwar, you need to create
@@ -24,7 +24,13 @@ R..F-7..R
 -..JRL..-
 
 # Those are defined backward, starts from the bottom
-70+
+70-
+70-
+70-
+70-
+70-
+70-
+70-
 
 # Level objective type
 $AllowDynamite: FALSE

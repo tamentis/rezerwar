@@ -1,7 +1,5 @@
-# Tutorial 3
-#
 
-Tutorial 3
+Lesson 3
 
 Alright this one is pretty cool. Once again
 you have to connect the two side, but to do
@@ -20,9 +18,26 @@ R.......R
 RRRRRRRRR
 
 # Those are defined backward, starts from the bottom
-70-
+70+
+70+
+70+
+70+
+70+
+70+
+70+
+70+
+70+
+70+
+70+
+70+
+70+
+70+
+70+
+70+
+70+
 
 # Level objective type
 $ObjectiveType: LINK
 $AllowDynamite: FALSE
+$NextLevel: tuto_04
 

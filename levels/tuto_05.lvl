@@ -1,0 +1,29 @@
+
+Lesson 5
+
+Same story, all you need is to clear all the
+cube-pipes from the board.
+
+.........
+RR.....RR
+R.......R
+R.......R
+R....RRRR
+....P----
+...PJRRRR
+...{RRRRR
+..-JRRRRR
+RRRRRRRRR
+
+# Those are defined backward, starts from the bottom
+70-
+70-
+70-
+70-
+70-
+70-
+
+# Level objective type
+$ObjectiveType: CLEARALL
+$AllowDynamite: FALSE
+$NextLevel: tuto_06

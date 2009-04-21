@@ -1,0 +1,25 @@
+
+Lesson 4
+
+Raising the difficulty a little bit. This level
+requires the elimination of all the pipe-blocks.
+Don't worry about the rocks.
+
+.........
+R.......R
+R.......R
+R.......R
+R.......R
+.........
+....-....
+...>R<...
+..>RRR<..
+RRRRRRRRR
+
+# Those are defined backward, starts from the bottom
+70-
+
+# Level objective type
+$ObjectiveType: CLEARALL
+$AllowDynamite: FALSE
+

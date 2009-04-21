@@ -1,0 +1,26 @@
+
+Lesson 6
+
+Alright, here is a cool little level. Try to
+keep it simple and think fast, your time is
+counted.
+
+.........
+.........
+.........
+.........
+.........
+.........
+.F-...-7.
+FJR...RLT
+JRRR_RRRL
+RRRRRRRRR
+
+# Those are defined backward, starts from the bottom
+70+
+
+# Level objective type
+$ObjectiveType: CLEARALL
+$AllowDynamite: FALSE
+$TimeLimit: 20
+
