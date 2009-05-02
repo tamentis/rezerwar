@@ -382,6 +382,7 @@ text_new(char *value)
 	text->color1_b = 0xFF;
 
 	text->font = 1;
+	text->temp = false;
 
 	text->centered = false;
 	
@@ -454,6 +455,11 @@ text_blit(Text *text, SDL_Surface *dest)
 	SDL_Surface *rendered;
 	
 	rendered = text_get_surface(text);
+
+	/* Some text just have no surface, just skip the blit */
+	if (rendered == NULL)
+		return;
+
 	text_get_rectangle(text, &r);
 	SDL_BlitSurface(rendered, NULL, dest, &r);
 	SDL_FreeSurface(rendered);
@@ -468,6 +474,10 @@ text_get_surface(Text *text)
 	SDL_Surface *s;
 	int width = text->width;
 	int height = text->height;
+
+	/* A text that has no width or height has no surface, yet */
+	if (width < 1 || height < 1)
+		return NULL;
 
 	/* Make way for the wave! */
 	if (text->effect & EFFECT_WAVE)

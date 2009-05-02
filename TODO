@@ -1,22 +1,22 @@
- - add a timer that will add a new line of cubes automatically.
- - find memory leak.
+ - add mouse interfacing in-game to allow Maemo and iPhone to work.
+    - don't let block move behind cubes... (can_move type thing)
+ - allow *ANY* block to move around.
+ - add a following cursor (start with a white ball)
+ - hide the system cursor.
+ - create a nice hand cursor.
+ - when a network is complete, gray it out for a second before destroying it,
+   then destroy it faster (timed?).
+
+ - add a line at the bottom of the board that progresses to show when the
+   next line is added.
  - improve musics!
 
- - add the start_time to the board.
- - add the max seconds conf variable.
- - add the TargetScore.
+ - Contaminated water? with a little radioactive sign. Avoid connecting
+   to any network!
+ - Growing vegetation in the rezerwar?
 
- - add a timed mode to clean the screen.
- - add a 'tutorial' that shows how to play.
- - add blue and red blocks which will freeze and thaw the water.
- - add mouse interfacing in-game to allow Maemo and iPhone to work.
- - Add an 'under pressure' block that can provide pressure for a couple
-   blocks. If you don't complete the network in 10 seconds, it depletes.
-   (a little source/spring icon on top?)
  - Create a block_allocate when creating new blocks to avoid always pushing
    blocks at the end of the array.
- - You can harden blocks so they can last a couple generations of water, this
-   will help exploding center areas.
  - Give the menu a 'mask' frame, make the option menu bigger and work on a
    way to page through the lines.
 

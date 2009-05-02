@@ -184,6 +184,7 @@ cube_new_from_char(char c)
 		case '|': cube = cube_new_type(1, CTYPE_FLAT); break;
 		case 'J': cube = cube_new_type(0, CTYPE_ANGLE); break;
 		case 'L': cube = cube_new_type(1, CTYPE_ANGLE); break;
+		case 'P':
 		case 'F': cube = cube_new_type(2, CTYPE_ANGLE); break;
 		case '7': cube = cube_new_type(3, CTYPE_ANGLE); break;
 		case '>': cube = cube_new_type(0, CTYPE_KNOB); break;
@@ -252,6 +253,10 @@ cube_get_surface(Cube *cube)
 	}
 	
 	r_free(dst);
+
+	/* Once again, if we are fading this dude, we should greyscale him */
+	if (fs > 0)
+		surface_greyscale(s);
 
 	return s;
 }

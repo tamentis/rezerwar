@@ -33,6 +33,8 @@ board_new(int difficulty)
 
 	b->bg = NULL;
 
+	b->elapsed = 0;
+
 	/* Cube related members initialization. */
 	b->cube_count = 0;
 	b->cubes = r_malloc(size * sizeof(Cube *));
@@ -47,12 +49,15 @@ board_new(int difficulty)
 	b->block_count = 0;
 	b->blocks = NULL;
 	b->current_block = NULL;
+	b->dragged_block = NULL;
 	b->next_block = NULL;
 	b->block_speed = SPEED_NORMAL;
 	b->block_speed_factor = 1;
 	b->remains = -1;
 	b->launch_next = false;
 	b->next_line = 1;
+	b->rising_speed = NEXTLINE;
+	b->time_limit = -1;
 
 	/* Texts (future OSD) related members */
 	b->texts = NULL;
@@ -71,6 +76,8 @@ board_new(int difficulty)
 	b->gameover = false;
 	b->success = false;
 	b->silent = false;
+	b->allow_dynamite = true;
+	b->objective_type = OBJTYPE_NONE;
 
 	/* Prompt init. */
 	b->prompt_text = NULL;
@@ -79,6 +86,7 @@ board_new(int difficulty)
 	/* Modal and score */
 	b->modal = false;
 	b->score_t = board_add_text(b, "0", 10, 10);
+	b->timeleft_t = board_add_text(b, "", 10, 30);
 
 	/* Status message */
 	b->status_t = board_add_text(b, "", 260, 240);
@@ -95,7 +103,6 @@ board_new(int difficulty)
 
 	/* Load background. */
 	b->bg = SDL_LoadBMP("gfx/gameback.bmp");
-	printf("Key: %u\n", key);
 	SDL_SetColorKey(b->bg, SDL_SRCCOLORKEY|SDL_RLEACCEL, key);
 
 	/* Level stuff */
@@ -160,6 +167,8 @@ board_new_from_level(Level *level)
 		board->next_level = r_strcp(level->next);
 	if (level->max_blocks)
 		board->remains = level->max_blocks;
+	board->rising_speed = level->rising_speed;
+	board->time_limit = level->time_limit;
 
 	/* Draw the title */
 	title = board_add_text(board, level->name, 20, 20);
@@ -271,6 +280,13 @@ board_refresh_texts(Board *board)
 		text_set_value(board->score_t, score);
 	}
 
+	/* Update the time Text */
+	if (board->time_limit > -1) {
+		char tl[20];
+		snprintf((char *)tl, 20, "time: %d", board->time_limit);
+		text_set_value(board->timeleft_t, tl);
+	}
+
 	/* Add a modal under all the text. */
 	if (board->modal == true)
 		blit_modal(160);
@@ -287,6 +303,11 @@ board_refresh_texts(Board *board)
 		}
 		
 		s = text_get_surface(t);
+
+		/* It's legal for a text to have no surface, just skip it */
+		if (s == NULL)
+			continue;
+
 		text_get_rectangle(t, &r);
 
 		SDL_BlitSurface(s, NULL, screen, &r);
@@ -427,6 +448,17 @@ board_update(Board *board, uint32_t now)
 	if (board->paused == true)
 		return MTYPE_NOP;
 
+	board->elapsed += TICK;
+	if (board->elapsed > 1000) {
+		board->elapsed = 0;
+		board->time_limit--;
+	}
+
+	if (board->time_limit == 0) {
+		board->gameover = true;
+		return MTYPE_GAMEOVER_TIMEOUT;
+	}
+
 	board_update_blocks(board, now);
 	board_update_cubes(board, now);
 	board_update_water(board, now);
@@ -436,15 +468,14 @@ board_update(Board *board, uint32_t now)
 		return board_gameover(board);
 
 	/* We need a new line! */
-	if (board->next_line <= now) {
+	if (board->rising_speed > -1 && board->next_line <= now) {
 		if (board->next_line != 1)
 			board_add_line(board);
-		board->next_line = now + NEXTLINE * 1000;
+		board->next_line = now + board->rising_speed * 1000;
 	}
 
 	/* We were requested to launch the next block */
 	if (board->launch_next == true) {
-		printf("CUBE COUNT: %d\n", board->cube_count);
 		board_launch_next_block(board);
 		board->launch_next = false;
 	}
@@ -513,7 +544,6 @@ board_load_next_block(Board *board)
 	long int r;
 
 	if (board->bqueue_len) {
-		printf("Load queued block\n");
 		board->next_block = board->bqueue[board->bqueue_len - 1];
 		board->bqueue[board->bqueue_len - 1] = NULL;
 		board->bqueue_len--;
@@ -559,7 +589,7 @@ board_launch_next_block(Board *board)
 {
 	Block *nb = board->next_block;
 
-	printf("LAUNCH! (remains=%d)\n", board->remains);
+//	printf("LAUNCH! (remains=%d)\n", board->remains);
 
 	/* If we had 0 remaining blocks... you lost. */
 	if (board->remains == 0) {
@@ -686,7 +716,9 @@ board_transfer_cubes(Board *board, Block *block)
 			cube = block->cubes[pos[j] - 1];
 
 			board->cubes[i] = cube;
-			board->cube_count++;
+
+			if (block->existing_cubes != true)
+				board->cube_count++;
 
 			if (cube != NULL) {
 				cube->x = block->x + x;
@@ -802,13 +834,14 @@ board_update_single_block(Board *board, uint32_t now, int i) {
 
 		/* If the block didn't move, block it, and un-current */
 		if (block->prev_y == block->y) {
-			block->falling = 0;
+			block->falling = false;
 			if (block == board->current_block) {
 				board->current_block = NULL;
 				if (block->y > 0) {
 					sfx_play_tack1();
 					board->launch_next = true;
 				} else {
+					printf("NOT ENOUGH SPACE!\n");
 					board->gameover = true;
 					return;
 				}
@@ -936,13 +969,16 @@ board_move_current_block_right(Board *board)
 
 /**
  * In charge of rotating a block on a board. If there is no space for a
- * rotation, ignore, if against a block, move a bit.
+ * rotation, ignore, if against a block, move a bit. If block is NULL,
+ * default to current.
  */
 void
-board_rotate_cw(Board *board)
+board_rotate_cw(Board *board, Block *block)
 {
-	Block *block = board->current_block;
 	byte x;
+
+	if (block == NULL)
+		block = board->current_block;
 
 	/* Don't rotate cube during pause. */
 	if (board->paused == true)
@@ -1003,7 +1039,7 @@ board_update_cubes(Board *board, uint32_t now)
 			if (cube->fade_status > BSIZE / 2) {
 				cube_kill(cube);
 				board->cubes[i] = NULL;
-				board->cube_count--;
+//				board->cube_count--;
 			}
 			continue;
 		}
@@ -1017,12 +1053,16 @@ board_update_cubes(Board *board, uint32_t now)
 		type = board_get_area_type(board, cube->x, cube->y + 1);
 		if (type == ATYPE_FREE) {
 			block = block_new_one_from_cube(cube);
+			block->existing_cubes = true;
 			board_add_block(board, block);
 			block->x = cube->x;
 			block->y = cube->y;
 			board->cubes[i] = NULL;
 		}
 	}
+
+//	printf("update_cubes() count=%d blocks=%d\n", board->cube_count,
+//			board->block_count);
 
 	/* Check the cube count for CLEARALL levels. */
 	if (board->objective_type == OBJTYPE_CLEARALL && 
@@ -1204,6 +1244,9 @@ board_run_avalanche_column(Board *board, Cube *cube)
 
 	for (y = cube->y; y < board->height; y++) {
 		target = board_get_cube(board, cube->x, y);
+		/* Spare the rocks */
+		if (target->type == CTYPE_ROCK)
+			continue;
 		if (target != NULL && target->trashed == false) {
 			board_trash_cube(board, target);
 			board->score += 20;
@@ -1228,6 +1271,67 @@ board_get_cube(Board *board, int x, int y)
 		return NULL;
 
 	return (board->cubes[x + board->width * y]);
+}
+
+
+/**
+ * Return a cube at the given screen coordinates, return NULL if nothing
+ * found.
+ */
+Cube *
+board_get_cube_absolute(Board *board, int x, int y)
+{
+	int rx, ry;
+
+	rx = (x - BOARD_LEFT) / BSIZE;
+	ry = (y - BOARD_TOP) / BSIZE;
+
+	return board_get_cube(board, rx, ry);
+}
+
+
+Block *
+board_get_block(Board *board, int x, int y)
+{
+	Block *b;
+	int i;
+
+	/* Bad x value */
+	if (x < 0 || x >= board->width)
+		return NULL;
+
+	/* Bad y value */
+	if (y < 0 || y >= board->height)
+		return NULL;
+
+	/* Loop through all the currently active blocks to find out
+	 * if one matchs the current call. */
+	for (i = 0; i < board->block_count; i++) {
+		b = board->blocks[i];
+		
+		if (b == NULL)
+			continue;
+
+		if (b->x == x && b->y == y)
+			return b;
+	}
+
+	return NULL;
+}
+
+
+/**
+ * Returns a block or NULL given screen coordinates.
+ */
+Block *
+board_get_block_absolute(Board *board, int x, int y)
+{
+	int rx, ry;
+
+	rx = (x - BOARD_LEFT) / BSIZE;
+	ry = (y - BOARD_TOP) / BSIZE;
+
+	return board_get_block(board, rx, ry);
 }
 
 

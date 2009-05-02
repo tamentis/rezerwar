@@ -6,6 +6,7 @@
 
 
 extern SDL_Surface *screen;
+extern Uint32 key;
 
 
 void
@@ -76,6 +77,26 @@ black_screen(Uint8 s)
 	SDL_Delay(s * 1000);
 }
 
+/**
+ * Take a surface and convert each pixel into a greyscaled equivalent.
+ */
+void
+surface_greyscale(SDL_Surface *s)
+{
+	int i, max = s->w * s->h;
+	byte r, g, b, v;
+	Uint32 *c;
+
+	for (i = 0; i < max; i++) {
+		c = s->pixels + i * s->format->BytesPerPixel;
+		if (*c == key)
+			continue;
+		SDL_GetRGB(*c, s->format, &r, &g, &b);
+		v = (r + g + b) / 3;
+		*c = SDL_MapRGB(s->format, v, v, v);
+	}
+}
+
 void
 surface_shutter(int start, int stop, int speed)
 {
@@ -118,6 +139,9 @@ surface_shutter(int start, int stop, int speed)
 		SDL_Flip(screen);
 		SDL_Delay(10);
 	}
+
+	if (start > stop)
+		SDL_FreeSurface(org);
 }
 
 void
@@ -183,6 +207,8 @@ surface_pixel_close()
 		SDL_Flip(screen);
 		SDL_Delay(40);
 	}
+
+	SDL_FreeSurface(org);
 }
 
 /**
@@ -204,6 +230,8 @@ surface_pixel_open()
 		SDL_Flip(screen);
 		SDL_Delay(40);
 	}
+
+	SDL_FreeSurface(org);
 }
 
 /**

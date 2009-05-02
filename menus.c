@@ -144,6 +144,10 @@ add_item_to_menu(Menu *menu, char *text, int type, int subtype, int x_offset)
 	item->type = type;
 	item->subtype = subtype;
 	item->x_offset = x_offset;
+	item->rect.x = 0;
+	item->rect.y = 0;
+	item->rect.w = 0;
+	item->rect.h = 0;
 
 	item->text = text_new(text);
 	item->text->centered = true;
@@ -245,7 +249,7 @@ menu_toggle_item(Menu *menu, MenuItem *item)
 /**
  * Execute whatever is corresponding to the type of the current entry.
  */
-int
+enum mtype
 menu_select(Menu *menu)
 {
 	MenuItem *item = menu->items[menu->current];
@@ -291,6 +295,9 @@ menu_refresh(Menu *menu)
 			item->text->effect &= ~EFFECT_WAVE;
 		}
 		s = text_get_surface(item->text);
+		if (s == NULL)
+			continue;
+
 		text_get_rectangle(item->text, &(item->rect));
 		SDL_BlitSurface(s, NULL, screen, &(item->rect));
 		SDL_FreeSurface(s);
@@ -374,7 +381,7 @@ handle_menu_events(SDL_Event *event, Menu *menu)
 }
 
 
-int
+enum mtype
 menu_runner(Menu *menu)
 {
 	SDL_Surface *intro;
@@ -452,22 +459,30 @@ main_menu()
 
 
 int
-gameover_menu(bool success)
+gameover_menu(enum mtype status)
 {
 	Menu *menu;
 	Text *title;
-	int status;
 	bool allow_next_level = true;
 
-	if (conf->next_level == NULL || success == false)
+	if (conf->next_level == NULL || status != MTYPE_GAMEOVER_WIN)
 		allow_next_level = false;
 
 	/* Dump a modal and a title before running the menu */
 	blit_modal(160);
-	if (success == true)
-		title = text_new("Congratulations!");
-	else
-		title = text_new("You failed!");
+	switch (status) {
+		case MTYPE_GAMEOVER_WIN:
+			title = text_new("Congratulations!");
+			break;
+		case MTYPE_GAMEOVER_TIMEOUT:
+			title = text_new("Time out!");
+			break;
+		default:
+		case MTYPE_GAMEOVER_LOSE:
+			title = text_new("You failed!");
+			break;
+	}
+
 	title->centered = true;
 	title->y = 200;
 	text_set_colors(title, 0xff9020, 0xa9440d);

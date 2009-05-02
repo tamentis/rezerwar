@@ -14,7 +14,7 @@ uint32_t current_c = 0;
 /* What will hold the list of pointers, and the cursor to the last one. */
 size_t *slist = NULL;
 void **list = NULL;
-size_t list_size = 0;
+unsigned list_size = 0;
 
 
 void *

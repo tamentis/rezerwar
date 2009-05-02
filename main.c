@@ -72,7 +72,7 @@ game_loop(char *levelname, enum ttype trans)
 	} else {
 		level = lvl_load(levelname);
 		board = board_new_from_level(level);
-		lvl_dump(level);
+		/* lvl_dump(level); */
 		lvl_kill(level);
 	}
 	board->transition = trans;
@@ -215,10 +215,13 @@ main(int ac, char **av)
 				status = game_loop(conf->next_level, TTYPE_NONE);
 				break;
 			case MTYPE_GAMEOVER_WIN:
-				status = gameover_menu(true);
+				status = gameover_menu(status);
 				break;
 			case MTYPE_GAMEOVER_LOSE:
-				status = gameover_menu(false);
+				status = gameover_menu(status);
+				break;
+			case MTYPE_GAMEOVER_TIMEOUT:
+				status = gameover_menu(status);
 				break;
 			case MTYPE_GAMEOVER_HISCORE:
 				status = hiscore_prompt();

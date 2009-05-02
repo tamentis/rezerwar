@@ -21,9 +21,9 @@
 #define LVL_MAX_SIZE		4096
 
 /* Speed relative to difficulty */
-#define SPEED_NORMAL		500
-#define SPEED_LESS5K		400
-#define SPEED_LESS10K		300
+#define SPEED_NORMAL		1000
+#define SPEED_LESS5K		800
+#define SPEED_LESS10K		500
 #define SPEED_LESS25K		200
 #define SPEED_LESS50K		100
 #define SPEED_MAX		50
@@ -96,6 +96,7 @@ enum mtype {
 	MTYPE_NEXTLEVEL,	// self explanatory
 	MTYPE_GAMEOVER_WIN,	// win and offer next level
 	MTYPE_GAMEOVER_LOSE,	// replay (tutorial)
+	MTYPE_GAMEOVER_TIMEOUT, // ran out of time (tutorial)
 	MTYPE_GAMEOVER_HISCORE, // prompt name and show hiscore
 	MTYPE_HISCORES,		// show the current hiscores
 	MTYPE_BREAK		// leave the current mode/menu (might QUIT).
@@ -120,6 +121,7 @@ enum {
 
 /* Level Objective types. */
 enum {
+	OBJTYPE_NONE,
 	OBJTYPE_CLEARALL,
 	OBJTYPE_TIMED_BLOCKS,
 	OBJTYPE_TIMED_SCORE,
@@ -129,6 +131,7 @@ enum {
 
 /* Pre-define types */
 struct _board_s;
+struct _block_s;
 struct _text_s;
 
 /* Boolean and byte types, easier to read ;) */
@@ -158,6 +161,8 @@ int		 surface_fadein(SDL_Surface *, int);
 int		 surface_fadeout(SDL_Surface *);
 void		 surface_shutter_open();
 void		 surface_shutter_close();
+void		 surface_pixel_open();
+void		 surface_pixel_close();
 void		 r_setpixel(Uint16, Uint16, byte, byte, byte);
 void		 r_setline(Uint16, Uint16, Uint16, byte, byte, byte);
 SDL_Surface	*loadimage(char *);
@@ -271,7 +276,9 @@ typedef struct _level_s {
 	bool allow_dynamite;
 	int objective_type;
 	char *next;
-	int max_blocks;
+	int max_blocks;			// max blocks per level
+	int time_limit;			// max seconds per level
+	int rising_speed;		// seconds between floor rising
 } Level;
 typedef struct _queuedblock_s {
 	int type;
@@ -287,8 +294,8 @@ void		 lvl_kill(Level *);
 
 
 /* Block structure */
-typedef struct _block_data {
-	byte falling;
+typedef struct _block_s {
+	bool falling;
 	byte size;
 	byte **positions;
 	Cube **cubes;
@@ -299,6 +306,7 @@ typedef struct _block_data {
 	byte prev_y;
 	uint32_t tick;
 	byte type;
+	bool existing_cubes;
 } Block;
 
 /* Block-related functions */
@@ -347,11 +355,13 @@ typedef struct _board_s {
 	Cube **cubes;
 	bool allow_dynamite;
 	uint32_t next_line;
+	uint32_t elapsed;	// msec passed since start.
 	/* blocks */
 	int block_speed;
 	int block_speed_factor;
 	Block **blocks;
 	int block_count;
+	Block *dragged_block;
 	Block *current_block;
 	Block *next_block;
 	Block **bqueue;
@@ -370,6 +380,7 @@ typedef struct _board_s {
 	Text *status_t;
 	Text *score_t;
 	Text *fps_t;
+	Text *timeleft_t;
 	bool show_fps;
 	/* prompt related */
 	Text *prompt_text;
@@ -382,6 +393,8 @@ typedef struct _board_s {
 	bool gameover;		// stop the game completely on next tick
 	bool success;		// was it good?
 	enum mtype status;	// where to return after game over
+	int time_limit;		// remaining time (-1 is unlimited)
+	int rising_speed;	// speed at which we add lines
 	/* current level */
 	int objective_type;
 	char *next_level;
@@ -397,6 +410,7 @@ enum mtype	 board_update(Board *, uint32_t);
 void		 board_toggle_pause(Board *);
 enum mtype	 board_gameover(Board *);
 void		 board_prepopulate(Board *, int);
+void		 board_add_line(Board *);
 /* Board functions (cube related) */
 void		 board_add_cube(Board *);
 void		 board_trash_cube(Board *, Cube *);
@@ -421,7 +435,7 @@ void		 board_change_next_block(Board *);
 void		 board_move_current_block_left(Board *);
 void		 board_move_current_block_right(Board *);
 byte		 board_move_check(Board *, Block *, Sint8, Sint8);
-void		 board_rotate_cw(Board *);
+void		 board_rotate_cw(Board *, Block *);
 void		 board_update_map(Board *);
 void		 board_dump_block_map(Board *);
 void		 board_cube_bomb(Board *, Cube *);

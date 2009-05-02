@@ -52,6 +52,20 @@ lvl_var_maxblocksallowed(Level *level, char *value)
 	level->max_blocks = atoi(value);
 }
 
+/* $TimeLimit */
+void
+lvl_var_timelimit(Level *level, char *value)
+{
+	level->time_limit = atoi(value);
+}
+
+/* $RisingSpeed */
+void
+lvl_var_risingspeed(Level *level, char *value)
+{
+	level->rising_speed = atoi(value);
+}
+
 
 /**
  * Copy the next line of *buf in *lbuf, assuming it has enough space and
@@ -101,6 +115,10 @@ lvl_splitvar(Level *level, byte *lbuf, size_t len)
 		lvl_var_allowdynamite(level, c);
 	else if (strcmp("MaxBlocksAllowed", l) == 0)
 		lvl_var_maxblocksallowed(level, c);
+	else if (strcmp("TimeLimit", l) == 0)
+		lvl_var_timelimit(level, c);
+	else if (strcmp("RisingSpeed", l) == 0)
+		lvl_var_risingspeed(level, c);
 	else
 		fatal("Syntax error: unknown variable: \"%s\".", l);
 }
@@ -120,6 +138,8 @@ lvl_new()
 	level->queue = NULL;
 	level->queue_len = 0;
 	level->allow_dynamite = true;
+	level->rising_speed = -1;
+	level->time_limit = -1;
 	level->cmap = malloc(sizeof(byte) * BOARD_WIDTH * BOARD_HEIGHT);
 
 	return level;
@@ -254,7 +274,7 @@ lvl_dump(Level *level)
 	printf("ALLOW_DYNAMITE: %d\n", level->allow_dynamite);
 
 	for (i = 0; i < level->queue_len; i++) {
-		printf(" - type=%d, pos=%d, cubes(%d)=",
+		printf(" - type=%d, pos=%d, cubes(%zu)=",
 				level->queue[i]->type,
 				level->queue[i]->pos,
 				level->queue[i]->cmap_len);
@@ -273,5 +293,6 @@ lvl_kill(Level *level)
 {
 	r_free(level->name);
 	free(level->description);
+	r_free(level);
 }
 

@@ -21,7 +21,7 @@ block_new(byte size)
 
 	block->size = size;
 
-	block->falling = 1;
+	block->falling = true;
 	block->tick = 0;
 
 	/* Prepare positions space. */
@@ -32,6 +32,7 @@ block_new(byte size)
 	}
 
 	block->cubes = NULL;
+	block->existing_cubes = false;
 
 	block->x = 0;
 	block->y = 0;
