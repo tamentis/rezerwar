@@ -1,9 +1,7 @@
+ - have some form of high light to show what block you are hovering.
  - add mouse interfacing in-game to allow Maemo and iPhone to work.
     - don't let block move behind cubes... (can_move type thing)
  - allow *ANY* block to move around.
- - add a following cursor (start with a white ball)
- - hide the system cursor.
- - create a nice hand cursor.
  - when a network is complete, gray it out for a second before destroying it,
    then destroy it faster (timed?).
 

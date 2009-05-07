@@ -45,6 +45,7 @@ conf_init()
 	conf->difficulty = DIFF_EASIEST;
 	conf->next_level = NULL;
 	conf->sound = true;
+	conf->fullscreen = false;
 }
 
 
@@ -191,6 +192,7 @@ main(int ac, char **av)
 	screen = SDL_SetVideoMode(640, 480, 32, sdl_flags);
 	key = SDL_MapRGB(screen->format, 0, 255, 255);
 	SDL_WM_SetCaption("rezerwar", NULL);
+	SDL_ShowCursor(false);
 	sprites = SDL_LoadBMP("gfx/sprites.bmp");
 	SDL_SetColorKey(sprites, SDL_SRCCOLORKEY|SDL_RLEACCEL, key);
 

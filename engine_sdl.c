@@ -6,6 +6,7 @@
 
 
 extern SDL_Surface *screen;
+extern SDL_Surface *sprites;
 extern Uint32 key;
 
 
@@ -289,6 +290,22 @@ surface_fadein(SDL_Surface *surf, int speed)
 	SDL_FreeSurface(org);
 
 	return r;
+}
+
+void
+blit_cursor(int style, int x, int y)
+{
+	SDL_Rect src, dest;
+
+	src.w = src.h = dest.w = dest.h = 24;
+
+	src.x = 270 + 24 * style;
+	src.y = 174;
+
+	dest.x = x - 12;
+	dest.y = y - 2;
+
+	SDL_BlitSurface(sprites, &src, screen, &dest);
 }
 
 /**

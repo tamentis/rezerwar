@@ -7,7 +7,8 @@
 
 enum toggle_types {
 	TOGGLE_DIFFICULTY,
-	TOGGLE_SOUND
+	TOGGLE_SOUND,
+	TOGGLE_FULLSCREEN
 };
 
 extern Configuration *conf;
@@ -29,6 +30,8 @@ typedef struct _menu_item {
 typedef struct _menu {
 	int x;
 	int y;
+	int cursor_x;
+	int cursor_y;
 	char *bg_image;
 	SDL_Surface *bg_surface;
 	bool modal;
@@ -130,6 +133,15 @@ menu_item_set_sound(MenuItem *item)
 	text_set_value(item->text, sound_t[conf->sound]);
 }
 
+void
+menu_item_set_fullscreen(MenuItem *item)
+{
+	char *fullscreen_t[] = {
+		"Fullscreen: Off",
+		"Fullscreen: On" };
+
+	text_set_value(item->text, fullscreen_t[conf->fullscreen]);
+}
 
 /**
  * This function creates a new entry in the menu, it assumes you know
@@ -192,18 +204,20 @@ menu_load_gameover(Menu *menu, bool allow_next_level)
 void
 menu_load_options(Menu *menu)
 {
-	MenuItem *diff_item, *sound_item;
+	MenuItem *diff_item, *sound_item, *fs_item;
 
 	flush_menu_items(menu);
 	diff_item = add_item_to_menu(menu, "difficulty", MTYPE_TOGGLE, 
 			TOGGLE_DIFFICULTY, 0);
 	sound_item = add_item_to_menu(menu, "sound/music", MTYPE_TOGGLE,
 			TOGGLE_SOUND, 0);
-	add_item_to_menu(menu, "set controls", MTYPE_NOP, 0, 0);
+	fs_item = add_item_to_menu(menu, "fullscreen", MTYPE_TOGGLE,
+			TOGGLE_FULLSCREEN, 0);
 	add_item_to_menu(menu, "back to main", MTYPE_SUBMENU, 0, 0);
 
 	menu_item_set_difficulty(diff_item);
 	menu_item_set_sound(sound_item);
+	menu_item_set_fullscreen(fs_item);
 }
 
 
@@ -234,8 +248,13 @@ menu_toggle_item(Menu *menu, MenuItem *item)
 				conf->difficulty = 0;
 			menu_item_set_difficulty(item);
 			break;
+		case TOGGLE_FULLSCREEN:
+			if (SDL_WM_ToggleFullScreen(screen) == 0)
+				fatal("Unable to toggle fullscreen/windowed mode.");
+			conf->fullscreen = !conf->fullscreen;
+			menu_item_set_fullscreen(item);
+			break;
 		case TOGGLE_SOUND:
-			printf("TOGGLE_SOUND!\n");
 			sfx_toggle_mute(conf->sound);
 			conf->sound = !conf->sound;
 			menu_item_set_sound(item);
@@ -302,6 +321,8 @@ menu_refresh(Menu *menu)
 		SDL_BlitSurface(s, NULL, screen, &(item->rect));
 		SDL_FreeSurface(s);
 	}
+
+	blit_cursor(0, menu->cursor_x, menu->cursor_y);
 }
 
 bool
@@ -337,6 +358,8 @@ handle_menu_events(SDL_Event *event, Menu *menu)
 
 	if (event->type == SDL_MOUSEMOTION) {
 		bev = &event->button;
+		menu->cursor_x = bev->x;
+		menu->cursor_y = bev->y;
 		for (i = 0; i < menu->length; i++) {
 			if (menu->current == i)
 				continue;

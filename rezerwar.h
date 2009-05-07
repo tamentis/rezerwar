@@ -336,6 +336,7 @@ typedef struct _configuration {
 	char *next_level;
 	int last_score;
 	bool sound;
+	bool fullscreen;
 } Configuration;
 
 
@@ -369,6 +370,9 @@ typedef struct _board_s {
 	int remains;		// number of blocks to end of level
 	bool launch_next;	// launch the next block at next update tick
 	/* controls */
+	int cursor_style;
+	int cursor_x;
+	int cursor_y;
 	byte moving_left;
 	byte moving_right;
 	unsigned int lateral_tick;

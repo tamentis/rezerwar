@@ -21,12 +21,14 @@ handle_events_mouse_motion(SDL_Event *event)
 {
 	int rx, ry;
 
-	SDL_MouseMotionEvent *mev;
+	SDL_MouseMotionEvent *mev = &event->motion;
+
+	board->cursor_x = mev->x;
+	board->cursor_y = mev->y;
 
 	if (board->dragged_block == NULL)
 		return MTYPE_NOP;
 
-	mev = &event->motion;
 	rx = (mev->x - BOARD_LEFT) / BSIZE;
 	ry = (mev->y - BOARD_TOP) / BSIZE;
 
@@ -52,6 +54,7 @@ handle_events_mouse_down(SDL_Event *event)
 		case 1:
 			mev = &event->button;
 			printf("[rzwar] events.c: attach\n");
+			board->cursor_style = 1;
 //			printf("[rzwar] events.c: mouse 1 down %d %d\n", mev->x, mev->y);
 //			printf("[rzwar] events.c: cube: %p\n", (void*)board_get_cube_absolute(board, mev->x, mev->y));
 			board->dragged_block = board_get_block_absolute(board, 
@@ -78,6 +81,7 @@ handle_events_mouse_up(SDL_Event *event)
 	switch ((int)event->button.button) {
 		case 1:
 			printf("[rzwar] events.c: detach\n");
+			board->cursor_style = 0;
 			if (board->dragged_block != NULL) {
 				board->dragged_block->falling = true;
 				board->dragged_block = NULL;
