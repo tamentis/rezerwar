@@ -92,7 +92,7 @@ block_generate_cubes(Block *block, int n, bool allow_dynamite)
 	int max;
 
 	if (allow_dynamite == true) {
-		max = 5 + (rand() % 10) < 2 ? 1 : 0;
+		max = 5 + ((rand() % 10) < 2 ? 1 : 0);
 	} else {
 		max = 5;
 	}

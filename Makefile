@@ -2,12 +2,12 @@ CC=gcc
 # CC=llvm-gcc
 
 # Standard
-CFLAGS=`sdl-config --cflags` -Wall -O2
-LIBS=`sdl-config --libs` -lSDL_mixer
+# CFLAGS=`sdl-config --cflags` -Wall -O2
+# LIBS=`sdl-config --libs` -lSDL_mixer
 
 # Debug (no optimization)
-# CFLAGS=`sdl-config --cflags` -Wall -ggdb
-# LIBS=`sdl-config --libs` -lSDL_mixer
+CFLAGS=`sdl-config --cflags` -Wall -ggdb
+LIBS=`sdl-config --libs` -lSDL_mixer
 
 # Profiling
 # CFLAGS=`sdl-config --cflags` -Wall -pg -g -Wall

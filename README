@@ -5,6 +5,18 @@ Rezerwar is a puzzle game that could be quickly described as the unlegitimate
 child of a known tetromino game and a pipe game.
 
 
+DISCLAIMER
+-------------------------------------------------------------------------------
+  This is a pet project, not in any way a finished product. As stated in the
+  license, I am not responsible in case of damage.
+
+
+INSTALL
+-------------------------------------------------------------------------------
+  From source, you will need gcc, make, mikmod (musics), inkscape (gfx),
+  oggenc (vorbis-tools), then just type make.
+
+
 SOUNDS
 -------------------------------------------------------------------------------
   sampled from freesound.org with Audacity:
@@ -25,12 +37,6 @@ GRAPHICS
 MUSIC
 -------------------------------------------------------------------------------
   created with ChibiTracker
-
-
-DISCLAIMER
--------------------------------------------------------------------------------
-  This is a pet project, not in any way a finished product. As stated in the
-  license, I am not responsible in case of damage.
 
 
 HOW TO PLAY
