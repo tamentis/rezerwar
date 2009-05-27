@@ -93,6 +93,7 @@ enum mtype {
 	MTYPE_SUBMENU,		// change menu
 	MTYPE_PLAIN,		// start plain board
 	MTYPE_TOGGLE,		// toggle a menu item
+	MTYPE_REPLAY,		// replay current level
 	MTYPE_NEXTLEVEL,	// self explanatory
 	MTYPE_GAMEOVER_WIN,	// win and offer next level
 	MTYPE_GAMEOVER_LOSE,	// replay (tutorial)
@@ -163,6 +164,7 @@ void		 surface_shutter_open();
 void		 surface_shutter_close();
 void		 surface_pixel_open();
 void		 surface_pixel_close();
+void		 surface_greyscale();
 void		 r_setpixel(Uint16, Uint16, byte, byte, byte);
 void		 r_setline(Uint16, Uint16, Uint16, byte, byte, byte);
 SDL_Surface	*loadimage(char *);
@@ -171,8 +173,8 @@ void		 blit_modal(unsigned);
 
 
 /* String related functions from OpenBSD */
-size_t		 strlcpy(char *dst, const char *src, size_t siz);
-char		*strsep(char **, const char *);
+size_t		 strlcpy(char *dst, const char *src, size_t size);
+// char		*strsep(char **, const char *);
 
 
 /* Cube structure */
@@ -333,6 +335,7 @@ void		 block_rotate_ccw(Block *);
 /* Configuration structure (keep data between games) */
 typedef struct _configuration {
 	int difficulty;
+	char *current_level;
 	char *next_level;
 	int last_score;
 	bool sound;
@@ -362,17 +365,12 @@ typedef struct _board_s {
 	int block_speed_factor;
 	Block **blocks;
 	int block_count;
-	Block *dragged_block;
 	Block *current_block;
 	Block *next_block;
 	Block **bqueue;
 	size_t bqueue_len;
 	int remains;		// number of blocks to end of level
 	bool launch_next;	// launch the next block at next update tick
-	/* controls */
-	int cursor_style;
-	int cursor_x;
-	int cursor_y;
 	byte moving_left;
 	byte moving_right;
 	unsigned int lateral_tick;

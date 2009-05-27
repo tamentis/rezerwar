@@ -191,7 +191,7 @@ menu_load_gameover(Menu *menu, bool allow_next_level)
 	flush_menu_items(menu);
 	if (allow_next_level == true)
 		add_item_to_menu(menu, "next level", MTYPE_NEXTLEVEL, 0, 0);
-	add_item_to_menu(menu, "replay level", MTYPE_START, 0, 0);
+	add_item_to_menu(menu, "replay level", MTYPE_REPLAY, 0, 0);
 	add_item_to_menu(menu, "main menu", MTYPE_BREAK, 1, 45);
 	add_item_to_menu(menu, "quit rzwar", MTYPE_QUIT, 0, 65);
 }
@@ -207,15 +207,17 @@ menu_load_options(Menu *menu)
 	MenuItem *diff_item, *sound_item, *fs_item;
 
 	flush_menu_items(menu);
+	/*
 	diff_item = add_item_to_menu(menu, "difficulty", MTYPE_TOGGLE, 
 			TOGGLE_DIFFICULTY, 0);
+	*/
 	sound_item = add_item_to_menu(menu, "sound/music", MTYPE_TOGGLE,
 			TOGGLE_SOUND, 0);
 	fs_item = add_item_to_menu(menu, "fullscreen", MTYPE_TOGGLE,
 			TOGGLE_FULLSCREEN, 0);
 	add_item_to_menu(menu, "back to main", MTYPE_SUBMENU, 0, 0);
 
-	menu_item_set_difficulty(diff_item);
+//	menu_item_set_difficulty(diff_item);
 	menu_item_set_sound(sound_item);
 	menu_item_set_fullscreen(fs_item);
 }
@@ -322,7 +324,7 @@ menu_refresh(Menu *menu)
 		SDL_FreeSurface(s);
 	}
 
-	blit_cursor(0, menu->cursor_x, menu->cursor_y);
+//	blit_cursor(0, menu->cursor_x, menu->cursor_y);
 }
 
 bool

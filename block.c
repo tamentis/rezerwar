@@ -61,10 +61,13 @@ void
 block_generate_cubes(Block *block, int n, bool allow_dynamite)
 {
 	int i;
-	int max = 6;
+	int max;
 
-	if (allow_dynamite == false)
+	if (allow_dynamite == true) {
+		max = 5 + (rand() % 10) < 2 ? 1 : 0;
+	} else {
 		max = 5;
+	}
 
 	block->cube_count = n;
 	block->cubes = malloc(sizeof(Cube*) * n);

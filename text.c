@@ -233,20 +233,21 @@ void
 text_effect_colorize(Text *text, SDL_Surface *s)
 {
 	int i, max = s->w * s->h;
-	byte r, g, b;
 	Uint32 *c;
+	Uint32 col1, col2;
+
+	col1 = SDL_MapRGB(s->format, text->color1_r, text->color1_g,
+			text->color1_b);
+	col2 = SDL_MapRGB(s->format, text->color2_r, text->color2_g,
+			text->color2_b);
 
 	for (i = 0; i < max; i++) {
 		c = s->pixels + i * s->format->BytesPerPixel;
-		SDL_GetRGB(*c, s->format, &r, &g, &b);
 
-		if ((r & g & b) == 255) 
-			*c = SDL_MapRGB(s->format, text->color1_r, 
-					text->color1_g, text->color1_b);
-
-		if ((r | g | b) == 0)
-			*c = SDL_MapRGB(s->format, text->color2_r, 
-					text->color2_g, text->color2_b);
+		if (*c == 0x00FFFFFF)
+			*c = col1;
+		else if (*c == 0)
+			*c = col2;
 	}
 }
 

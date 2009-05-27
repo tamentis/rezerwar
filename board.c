@@ -50,7 +50,6 @@ board_new(int difficulty)
 	b->block_count = 0;
 	b->blocks = NULL;
 	b->current_block = NULL;
-	b->dragged_block = NULL;
 	b->next_block = NULL;
 	b->block_speed = SPEED_NORMAL;
 	b->block_speed_factor = 1;
@@ -69,9 +68,6 @@ board_new(int difficulty)
 	b->moving_right = 0;
 	b->lateral_speed = 100;
 	b->lateral_tick = 0;
-	b->cursor_x = 0;
-	b->cursor_y = 0;
-	b->cursor_style = 0;
 
 	/* Player related */
 	b->score = 0;
@@ -383,12 +379,10 @@ board_refresh_transition(Board *board)
 
 }
 
-void
-board_refresh_cursor(Board *board)
-{
-	blit_cursor(board->cursor_style, board->cursor_x, board->cursor_y);
-}
 
+/**
+ * Main refresh function, actually dump pixels on the screen.
+ */
 void
 board_refresh(Board *board)
 {
@@ -415,9 +409,6 @@ board_refresh(Board *board)
 
 	/* Apply the transition if any */
 	board_refresh_transition(board);
-
-	/* Display the mouse cursor */
-	board_refresh_cursor(board);
 
 	/* Dig up the back buffer. */
 	SDL_Flip(screen);

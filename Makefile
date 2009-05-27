@@ -2,22 +2,22 @@ CC=gcc
 # CC=llvm-gcc
 
 # Standard
-#CFLAGS=`sdl-config --cflags` -Wall -O2
-#LIBS=`sdl-config --libs`
-
-# Debug (no optimization)
-CFLAGS=`sdl-config --cflags` -Wall -ggdb
+CFLAGS=`sdl-config --cflags` -Wall -O2
 LIBS=`sdl-config --libs` -lSDL_mixer
 
+# Debug (no optimization)
+# CFLAGS=`sdl-config --cflags` -Wall -ggdb
+# LIBS=`sdl-config --libs` -lSDL_mixer
+
 # Profiling
-#CFLAGS=`sdl-config --cflags` -pg -ggdb -Wall
-#LIBS=`sdl-config --libs` -pg
+# CFLAGS=`sdl-config --cflags` -Wall -pg -g -Wall
+# LIBS=`sdl-config --libs` -lSDL_mixer -g -pg
 
 PROGRAM=rezerwar
 OBJECTS=main.o menus.o events.o lvlhandler.o hiscore.o \
 	board.o block.o cube.o text.o \
 	memory.o fatal.o sfx.o engine_sdl.o \
-	strlcpy.o strsep.o \
+	strlcpy.o \
 	a_chimneys.o a_sky.o
 
 all: gfx_build music_build $(PROGRAM)

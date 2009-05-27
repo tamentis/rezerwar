@@ -43,6 +43,7 @@ conf_init()
 {
 	conf = r_malloc(sizeof(Configuration));
 	conf->difficulty = DIFF_EASIEST;
+	conf->current_level = NULL;
 	conf->next_level = NULL;
 	conf->sound = true;
 	conf->fullscreen = false;
@@ -77,7 +78,7 @@ game_loop(char *levelname, enum ttype trans)
 		lvl_kill(level);
 	}
 	board->transition = trans;
-	board_add_text(board, (char *)BOT_VER, 5, 455);
+//	board_add_text(board, (char *)BOT_VER, 5, 455);
 	board_load_next_block(board);
 	board_launch_next_block(board);
 
@@ -192,7 +193,7 @@ main(int ac, char **av)
 	screen = SDL_SetVideoMode(640, 480, 32, sdl_flags);
 	key = SDL_MapRGB(screen->format, 0, 255, 255);
 	SDL_WM_SetCaption("rezerwar", NULL);
-	SDL_ShowCursor(false);
+//	SDL_ShowCursor(false);
 	sprites = SDL_LoadBMP("gfx/sprites.bmp");
 	SDL_SetColorKey(sprites, SDL_SRCCOLORKEY|SDL_RLEACCEL, key);
 
@@ -214,7 +215,12 @@ main(int ac, char **av)
 				status = main_menu();
 				break;
 			case MTYPE_NEXTLEVEL:
+				r_free(conf->current_level);
+				conf->current_level = r_strcp(conf->next_level);
 				status = game_loop(conf->next_level, TTYPE_NONE);
+				break;
+			case MTYPE_REPLAY:
+				status = game_loop(conf->current_level, TTYPE_NONE);
 				break;
 			case MTYPE_GAMEOVER_WIN:
 				status = gameover_menu(status);
@@ -242,10 +248,13 @@ main(int ac, char **av)
 				break;
 			case MTYPE_START:
 				surface_shutter_close();
-				if (ac > 1)
-					status = game_loop(av[1], TTYPE_SHUTTER_OPEN);
-				else
-					status = game_loop("tuto_01", TTYPE_SHUTTER_OPEN);
+				r_free(conf->current_level);
+//				if (ac > 1)
+//					conf->current_level = r_strcp(av[1]);
+//				else
+					conf->current_level = r_strcp("tuto_01");
+
+				status = game_loop(conf->current_level, TTYPE_SHUTTER_OPEN);
 				break;
 		}
 	} while (loop);

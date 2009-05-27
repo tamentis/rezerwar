@@ -9,17 +9,30 @@ Don't worry about the rocks.
 R.......R
 R.......R
 R.......R
-R.......R
 .........
-....-....
-...>R<...
+...RRR...
+..F---7..
+..A>R<A..
 ..>RRR<..
 RRRRRRRRR
 
 # Those are defined backward, starts from the bottom
 70-
+70-
+70-
+70-
+70-
+70-
+70-
+70-
+70-
+70-
+70-
+70-
+70-
 
 # Level objective type
 $ObjectiveType: CLEARALL
 $AllowDynamite: FALSE
+$NextLevel: tuto_05
 

@@ -14,89 +14,6 @@ SDL_Surface *screen;
 
 
 /**
- * Mouse events
- */
-enum mtype
-handle_events_mouse_motion(SDL_Event *event)
-{
-	int rx, ry;
-
-	SDL_MouseMotionEvent *mev = &event->motion;
-
-	board->cursor_x = mev->x;
-	board->cursor_y = mev->y;
-
-	if (board->dragged_block == NULL)
-		return MTYPE_NOP;
-
-	rx = (mev->x - BOARD_LEFT) / BSIZE;
-	ry = (mev->y - BOARD_TOP) / BSIZE;
-
-	if (rx < 0) rx = 0;
-	if (rx >= BOARD_WIDTH) rx = BOARD_WIDTH - 1;
-
-	if (ry < 1) ry = 1;
-	if (ry > BOARD_HEIGHT) ry = BOARD_HEIGHT;
-
-	board->dragged_block->x = rx;
-	board->dragged_block->y = ry;
-
-	printf("[rzwar] events.c: moving %dx%d\n", mev->x, mev->y);
-
-	return MTYPE_NOP;
-}
-enum mtype
-handle_events_mouse_down(SDL_Event *event)
-{
-	SDL_MouseButtonEvent *mev;
-
-	switch ((int)event->button.button) {
-		case 1:
-			mev = &event->button;
-			printf("[rzwar] events.c: attach\n");
-			board->cursor_style = 1;
-//			printf("[rzwar] events.c: mouse 1 down %d %d\n", mev->x, mev->y);
-//			printf("[rzwar] events.c: cube: %p\n", (void*)board_get_cube_absolute(board, mev->x, mev->y));
-			board->dragged_block = board_get_block_absolute(board, 
-					mev->x, mev->y);
-			if (board->dragged_block != NULL)
-				board->dragged_block->falling = false;
-			break;
-		case 3:
-			if (board->dragged_block != NULL)
-				board_rotate_cw(board, board->dragged_block);
-			break;
-		case 5: // mousewheel down
-			printf("[rzwar] events.c: mousewheel down\n");
-			break;
-		default:
-			break;
-	}
-
-	return MTYPE_NOP;
-}
-enum mtype
-handle_events_mouse_up(SDL_Event *event)
-{
-	switch ((int)event->button.button) {
-		case 1:
-			printf("[rzwar] events.c: detach\n");
-			board->cursor_style = 0;
-			if (board->dragged_block != NULL) {
-				board->dragged_block->falling = true;
-				board->dragged_block = NULL;
-			}
-//			printf("[rzwar] events.c: mouse 1 up\n");
-			break;
-		default:
-			break;
-	}
-
-	return MTYPE_NOP;
-}
-
-
-/**
  * Keyboard up (stop moving one side or stop accelerating).
  */
 enum mtype
@@ -238,15 +155,6 @@ handle_events(SDL_Event *event)
 			break;
 		case SDL_KEYUP:
 			return handle_events_keyup(event);
-			break;
-		case SDL_MOUSEMOTION:
-			return handle_events_mouse_motion(event);
-			break;
-		case SDL_MOUSEBUTTONDOWN:
-			return handle_events_mouse_down(event);
-			break;
-		case SDL_MOUSEBUTTONUP:
-			return handle_events_mouse_up(event);
 			break;
 		case SDL_QUIT:
 			return MTYPE_QUIT;
