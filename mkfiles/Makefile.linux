@@ -1,3 +1,9 @@
+# $Id$
+#
+# rezerwar Makefile for Linux
+# Copyright (c) 2009 Bertrand Janin
+#
+
 CC=gcc
 # CC=llvm-gcc
 

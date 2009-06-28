@@ -80,4 +80,15 @@ UPDATES, PATCHES, LEVELS, MUSICS, etc.:
   and I'll include your stuff in the next release, if there is any ;)
 
 
+TODO 0.1.1
+-------------------------------------------------------------------------------
+   - upgrade to put all the good stuff at the right place, like $HOME or
+     /var/games, data in /usr/share/, bin in /usr/games. Everything at the 
+     same place in windows.
+   - fix the fullscreen issue in windows.
+   - bundle the compiled data with the source-code, can't expect people to
+     install inkscape to compile that.
+   - push audio buffer to 1024.
+
+
 vim:expandtab ts=2 sw=2:

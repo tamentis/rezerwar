@@ -1,0 +1,50 @@
+#!/bin/sh
+#
+# $Id$
+#
+# Configure script for 'rezerwar'
+# Copyright (c) Bertrand Janin (tamentis@neopulsar.org)
+#
+#
+
+
+OS=$(uname)
+if [ -n "$*" ]; then
+	OS="$*"
+fi
+
+
+#
+# Operating system picker
+#
+case $OS in
+Linux|Unix|POSIX)
+	rm -f Makefile
+	ln -s Makefile.linux Makefile
+	;;
+Wii)
+	if [ -z "$DEVKITPRO" ]; then
+		echo "DevKitPro doesn't seem to be installed (missing DEVKITPRO environment"
+		echo "variable). Please install DevKitPro and re-run ./configure"
+		exit
+	fi
+	rm -f Makefile
+	ln -s Makefile.wii Makefile
+	;;
+*)
+	echo
+	echo "Sorry but '$OS' is currently unsupported, if your OS is POSIX compliant you"
+	echo "can give 'POSIX' a chance as first parameter to ./configure. Here is the list"
+	echo "of supported platforms:"
+	echo
+	echo "  - Linux		Requires SDL"
+	echo "  - Wii		Cross-compiled, requires DevKitPro"
+	echo 
+	echo "Feel free to update ./configure and send it my way!"
+	echo
+	exit
+esac
+
+
+
+echo "'Makefile' generated for '$OS', run 'make' to compile."
