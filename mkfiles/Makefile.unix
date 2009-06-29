@@ -1,0 +1,25 @@
+# $Id$
+#
+# rezerwar Makefile
+# Copyright (c) 2009 Bertrand Janin
+#
+
+
+all: data_build build
+
+build:
+	make -C src
+
+data_build:
+	make -C data/
+
+clean:
+	make -C data/ clean
+	make -C src/ clean
+
+distclean: clean
+	make -C data/ clean
+	make -C src/ clean
+	rm -f Makefile MkConf
+	ln -s mkfiles/Makefile.default Makefile
+	ln -s mkfiles/Makefile.default MkConf

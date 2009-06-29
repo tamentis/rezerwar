@@ -1,3 +1,7 @@
+# $Id$
+#
+# rezerwar Wii Makefile for GNU Make, modified from the default template Makefile
+#
 #---------------------------------------------------------------------------------
 # Clear the implicit built in rules
 #---------------------------------------------------------------------------------
@@ -99,13 +103,18 @@ export OUTPUT	:=	$(CURDIR)/$(TARGET)
 #---------------------------------------------------------------------------------
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
-	@make -C $(BUILD) -f $(CURDIR)/Makefile.wii
+	make -C $(BUILD) -f $(CURDIR)/Makefile
+	mkdir -p wii_final
+	cp $(TARGET).dol wii_final/boot.dol
+	cp -f data/wii/* wii_final/
 
 #---------------------------------------------------------------------------------
 clean:
-	@echo clean ...
-	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
+	rm -rf $(BUILD) $(OUTPUT).elf $(OUTPUT).dol wii_final
 
+#---------------------------------------------------------------------------------
+distclean: clean
+	rm -f Makefile MkConf config.h
 #---------------------------------------------------------------------------------
 run:
 	wiiload $(TARGET).dol

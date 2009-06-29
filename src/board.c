@@ -48,6 +48,7 @@ board_new(int difficulty)
 {
 	Board *b;
 	size_t size = BOARD_WIDTH * BOARD_HEIGHT;
+	char *path;
 	int i;
 
 	b = r_malloc(sizeof(Board));
@@ -130,7 +131,9 @@ board_new(int difficulty)
 	text_set_color2(b->status_t, 56,  8, 8);
 
 	/* Load background. */
-	b->bg = SDL_LoadBMP("gfx/gameback.bmp");
+	path = dpath("gfx/gameback.bmp");
+	b->bg = SDL_LoadBMP(path);
+	r_free(path);
 	SDL_SetColorKey(b->bg, SDL_SRCCOLORKEY|SDL_RLEACCEL, key);
 
 	/* Level stuff */

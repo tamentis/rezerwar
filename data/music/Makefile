@@ -12,5 +12,5 @@ menu.ogg: menu.it
 	oggenc music.wav -o menu.ogg
 	rm -f music.wav
 
-clean:
+distclean:
 	rm -f *.wav *.ogg

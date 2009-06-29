@@ -182,6 +182,7 @@ lvl_load(char *name)
 	Level *level;
 	FILE *fp;
 	char filename[64];
+	char *path;
 	byte buffer[LVL_MAX_SIZE];
 	byte lbuf[81];
 	byte *cursor = buffer;
@@ -190,10 +191,12 @@ lvl_load(char *name)
 	int phase = 0, i, j;
 
 	snprintf(filename, 64, "levels/%s.lvl", name);
+	path = dpath(filename);
 
-	fp = fopen(filename, "r");
+	fp = fopen(path, "r");
 	if (fp == NULL)
 		fatal("Error opening \"%s\"", name);
+	r_free(path);
 
 	len = fread(buffer, 1, LVL_MAX_SIZE, fp);
 	if (len >= LVL_MAX_SIZE)

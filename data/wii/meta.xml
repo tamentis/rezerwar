@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
+<!-- $Id$ -->
+
+<app version="1">
+  <name>Rezerwar</name>
+  <coder>Tamentis</coder>
+  <version>0.1.1</version>
+  <release_date>20090628</release_date>
+  <short_description>Puzzle game mixing falling blocks and water pipes</short_description> 
+  <long_description>Rezerwar is a puzzle game that could be quickly described as the unlegitimate child of a known block game and the average pipe game.</long_description> 
+</app>

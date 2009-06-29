@@ -498,11 +498,11 @@ main_menu()
 	menu = new_menu();
 	menu->x = 224;
 	menu->y = 245;
-	menu->bg_image = r_strcp("gfx/gamemenu.bmp");
+	menu->bg_image = dpath("gfx/gamemenu.bmp");
 
 	menu_load_main(menu);
 
-	sfx_play_music("menu");
+	sfx_play_music("music/menu.ogg");
 	status = menu_runner(menu);
 
 	menu_kill(menu);

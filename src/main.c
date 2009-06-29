@@ -52,12 +52,19 @@ void
 intro_studio(void)
 {
 	SDL_Surface *intro;
+	char *path;
 	int x;
 
-	intro = SDL_LoadBMP("gfx/splash/tdc.bmp");
+	path = dpath("gfx/splash/tdc.bmp");
+	intro = SDL_LoadBMP(path);
+	r_free(path);
+
+	if (intro == NULL)
+		fatal("Unable to load tdc intro image.");
 
 	x = surface_fadein(intro, 4);
-	if (x == 0) x = cancellable_delay(1);
+	if (x == 0)
+		x = cancellable_delay(1);
 
 	SDL_FreeSurface(intro);
 }
@@ -93,7 +100,7 @@ game_loop(char *levelname, enum ttype trans)
 	enum mtype status = 0;
 	SDL_Event event;
 
-	sfx_play_music("level1");
+	sfx_play_music("music/level1.ogg");
 
 	/* Prepare board and load the first block. */
 	if (levelname == NULL) {
@@ -204,6 +211,15 @@ main(int ac, char **av)
 	int status = MTYPE_SUBMENU;
 	uint32_t sdl_flags = 0;
 	bool loop = true;
+	char *path;
+
+	/* Load the sprites first, avoid running init if something is fishy */
+	path = dpath("gfx/sprites.bmp");
+	sprites = SDL_LoadBMP(path);
+	r_free(path);
+
+	if (sprites == NULL)
+		fatal("Unable to load the sprites, did you install rezerwar properly?");
 
 	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO) != 0)
 		fatal("Unable to initialize SDL: %s\n", SDL_GetError());
@@ -222,7 +238,7 @@ main(int ac, char **av)
 	key = SDL_MapRGB(screen->format, 0, 255, 255);
 	SDL_WM_SetCaption("rezerwar", NULL);
 //	SDL_ShowCursor(false);
-	sprites = SDL_LoadBMP("gfx/sprites.bmp");
+
 	SDL_SetColorKey(sprites, SDL_SRCCOLORKEY|SDL_RLEACCEL, key);
 
 	if (need_audio(ac, av))

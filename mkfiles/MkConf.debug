@@ -1,0 +1,13 @@
+# $Id$
+#
+
+CC=gcc
+
+# Debug (no optimization)
+CFLAGS=`sdl-config --cflags` -Wall -ggdb
+LIBS=`sdl-config --libs` -lSDL_mixer
+
+# Profiling
+# CFLAGS=`sdl-config --cflags` -Wall -pg -g -Wall
+# LIBS=`sdl-config --libs` -lSDL_mixer -g -pg
+

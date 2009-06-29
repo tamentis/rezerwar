@@ -1,0 +1,20 @@
+# $Id$
+#
+# rezerwar MkConf
+# Copyright (c) 2009 Bertrand Janin
+#
+
+CC=gcc
+
+# Standard
+CFLAGS=`sdl-config --cflags` -Wall -O2
+LIBS=`sdl-config --libs` -lSDL_mixer
+
+# Debug (no optimization)
+# CFLAGS=`sdl-config --cflags` -Wall -ggdb
+# LIBS=`sdl-config --libs` -lSDL_mixer
+
+# Profiling
+# CFLAGS=`sdl-config --cflags` -Wall -pg -g -Wall
+# LIBS=`sdl-config --libs` -lSDL_mixer -g -pg
+

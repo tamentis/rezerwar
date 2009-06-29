@@ -14,13 +14,30 @@ if [ -n "$*" ]; then
 fi
 
 
+# setup_for routine
+# $1 - Makefile
+# $2 - MkConf
+# $3 - config.h
+setup_for() {
+	rm -f Makefile MkConf config.h
+	ln -s mkfiles/Makefile.$1 Makefile
+	ln -s mkfiles/MkConf.$2 MkConf
+	ln -s mkfiles/config_h_$3 config.h
+}
+
+
 #
 # Operating system picker
 #
 case $OS in
 Linux|Unix|POSIX)
-	rm -f Makefile
-	ln -s Makefile.linux Makefile
+	setup_for unix unix unix
+	;;
+Debug)
+	setup_for unix debug unix
+	;;
+Win32|MINGW32*)
+	setup_for win32 unix unix
 	;;
 Wii)
 	if [ -z "$DEVKITPRO" ]; then
@@ -28,8 +45,7 @@ Wii)
 		echo "variable). Please install DevKitPro and re-run ./configure"
 		exit
 	fi
-	rm -f Makefile
-	ln -s Makefile.wii Makefile
+	setup_for wii unix wii
 	;;
 *)
 	echo
@@ -48,3 +64,4 @@ esac
 
 
 echo "'Makefile' generated for '$OS', run 'make' to compile."
+

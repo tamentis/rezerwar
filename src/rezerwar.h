@@ -498,3 +498,5 @@ void		 sfx_stop_music();
 /* Error control */
 void		 fatal(char *fmt, ...);
 
+/* File I/O */
+char		*dpath(const char *org);

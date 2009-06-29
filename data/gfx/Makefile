@@ -2,6 +2,6 @@ all:
 #	make -C newgaul
 	make -C a_sky
 
-clean:
+distclean:
 #	make -C newgaul clean
 	make -C a_sky clean

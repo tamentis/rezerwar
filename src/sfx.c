@@ -49,7 +49,7 @@ void
 init_audio()
 {
 	/* Open a mixer */
-	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 512) >= 0)
+	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) >= 0)
 		has_sound = true;
 
 	if (has_sound)
@@ -61,8 +61,10 @@ Mix_Chunk*
 sfx_load_sample(char *filename)
 {
 	Mix_Chunk *sample;
+	const char *path = dpath(filename);
 
-	sample = Mix_LoadWAV(filename);
+	sample = Mix_LoadWAV(path);
+
 	if (!sample) {
 		fprintf(stderr, "Mix_LoadWAV: %s\n", Mix_GetError());
 		exit(-1);
@@ -74,7 +76,8 @@ sfx_load_sample(char *filename)
 void
 sfx_unload_library()
 {
-	if (!has_sound) return;
+	if (!has_sound)
+		return;
 
 	Mix_FreeChunk(tick1);
 	Mix_FreeChunk(tack1);
@@ -89,7 +92,8 @@ sfx_unload_library()
 void
 sfx_load_library()
 {
-	if (!has_sound) return;
+	if (!has_sound)
+		return;
 
 	tick1 = sfx_load_sample("sfx/tick1.ogg");
 	tack1 = sfx_load_sample("sfx/tack1.ogg");
@@ -110,22 +114,22 @@ void sfx_play_menunav() { if (has_sound) Mix_PlayChannel(-1, menunav, 0); }
 void sfx_play_menuselect() { if (has_sound) Mix_PlayChannel(-1, menuselect, 0); }
 
 void
-sfx_play_music(char *title)
+sfx_play_music(char *filename)
 {
-	char filename[64];
+	char *path;
 
 	if (!has_sound)
 		return;
-
-	snprintf(filename, 64, "music/%s.ogg", title);
-
+	
 	Mix_FreeMusic(music);
 
+	path = dpath(filename);
 	// load the song
-	if(!(music=Mix_LoadMUS(filename))) {
+	if(!(music=Mix_LoadMUS(path))) {
 		fprintf(stderr, "Mix_LoadMUS error (%s)\n", filename);
 		exit(-1);
 	}
+	r_free(path);
 
 	// set the post mix processor up
 	if (Mix_PlayMusic(music, -1)==-1) {
