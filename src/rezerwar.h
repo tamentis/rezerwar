@@ -50,6 +50,9 @@
 #define SPEED_LESS50K		100
 #define SPEED_MAX		50
 
+/* Controls related */
+#define JOYSTICK_DEAD_ZONE	16384
+
 /* Block types */
 enum btype {
 	BLOCK_TYPE_TEE,		// 0

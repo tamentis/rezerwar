@@ -261,7 +261,8 @@ void
 text_effect_colorize(Text *text, SDL_Surface *s)
 {
 	int i, max = s->w * s->h;
-	Uint32 *c;
+	Uint16 *c16;
+	Uint32 *c32;
 	Uint32 col1, col2;
 
 	col1 = SDL_MapRGB(s->format, text->color1_r, text->color1_g,
@@ -269,14 +270,31 @@ text_effect_colorize(Text *text, SDL_Surface *s)
 	col2 = SDL_MapRGB(s->format, text->color2_r, text->color2_g,
 			text->color2_b);
 
-	for (i = 0; i < max; i++) {
-		c = s->pixels + i * s->format->BytesPerPixel;
+	switch (s->format->BitsPerPixel) {
+	case 16:
+		for (i = 0; i < max; i++) {
+			c16 = s->pixels + i * s->format->BytesPerPixel;
 
-		if (*c == 0x00FFFFFF)
-			*c = col1;
-		else if (*c == 0)
-			*c = col2;
+			if (*c16 == 0xFFFF)
+				*c16 = col1;
+			else if (*c16 == 0)
+				*c16 = col2;
+		}
+		break;
+	case 32:
+		for (i = 0; i < max; i++) {
+			c32 = s->pixels + i * s->format->BytesPerPixel;
+
+			if (*c32 == 0x00FFFFFF)
+				*c32 = col1;
+			else if (*c32 == 0)
+				*c32 = col2;
+		}
+		break;
+	default:
+		break;
 	}
+
 }
 
 

@@ -49,7 +49,8 @@ void
 init_audio()
 {
 	/* Open a mixer */
-	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) >= 0)
+//	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) >= 0)
+	if (Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 4096) >= 0)
 		has_sound = true;
 
 	if (has_sound)
@@ -95,6 +96,14 @@ sfx_load_library()
 	if (!has_sound)
 		return;
 
+	tick1 = sfx_load_sample("sfx/tick1.ogg.wav");
+	tack1 = sfx_load_sample("sfx/tack1.ogg.wav");
+	horn = sfx_load_sample("sfx/horn.ogg.wav");
+	boom = sfx_load_sample("sfx/boom.ogg.wav");
+	lazer = sfx_load_sample("sfx/lazer.ogg.wav");
+	menunav = sfx_load_sample("sfx/menunav.ogg.wav");
+	menuselect = sfx_load_sample("sfx/menuselect.ogg.wav");
+	/*
 	tick1 = sfx_load_sample("sfx/tick1.ogg");
 	tack1 = sfx_load_sample("sfx/tack1.ogg");
 	horn = sfx_load_sample("sfx/horn.ogg");
@@ -102,6 +111,7 @@ sfx_load_library()
 	lazer = sfx_load_sample("sfx/lazer.ogg");
 	menunav = sfx_load_sample("sfx/menunav.ogg");
 	menuselect = sfx_load_sample("sfx/menuselect.ogg");
+	*/
 }
 
 

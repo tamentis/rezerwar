@@ -100,7 +100,8 @@ game_loop(char *levelname, enum ttype trans)
 	enum mtype status = 0;
 	SDL_Event event;
 
-	sfx_play_music("music/level1.ogg");
+//	sfx_play_music("music/level1.ogg");
+	sfx_play_music("music/level1.mp3");
 
 	/* Prepare board and load the first block. */
 	if (levelname == NULL) {
@@ -212,6 +213,7 @@ main(int ac, char **av)
 	uint32_t sdl_flags = 0;
 	bool loop = true;
 	char *path;
+	SDL_Joystick *js;
 
 	/* Load the sprites first, avoid running init if something is fishy */
 	path = dpath("gfx/sprites.bmp");
@@ -221,11 +223,17 @@ main(int ac, char **av)
 	if (sprites == NULL)
 		fatal("Unable to load the sprites, did you install rezerwar properly?");
 
-	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO) != 0)
+	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO|SDL_INIT_JOYSTICK) != 0)
 		fatal("Unable to initialize SDL: %s\n", SDL_GetError());
 
+#ifdef __WII__
+	SDL_JoystickEventState(SDL_ENABLE);
+	js = SDL_JoystickOpen(0);
+#endif
+
 	/* Set the graphic flags */
-	sdl_flags  = SDL_HWSURFACE|SDL_DOUBLEBUF;
+	sdl_flags  = SDL_SWSURFACE;
+//	sdl_flags  = SDL_HWSURFACE|SDL_DOUBLEBUF;
 	sdl_flags |= need_fullscreen(ac, av);
 
 	atexit(SDL_Quit);
@@ -234,7 +242,8 @@ main(int ac, char **av)
 
 	/* Create main window, seed rand, load the sprites and set the alpha. */
 	srand(time(NULL));
-	screen = SDL_SetVideoMode(640, 480, 32, sdl_flags);
+	screen = SDL_SetVideoMode(640, 480, 16, sdl_flags);
+//	screen = SDL_SetVideoMode(640, 480, 32, sdl_flags);
 	key = SDL_MapRGB(screen->format, 0, 255, 255);
 	SDL_WM_SetCaption("rezerwar", NULL);
 //	SDL_ShowCursor(false);

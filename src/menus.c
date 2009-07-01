@@ -232,7 +232,7 @@ menu_load_gameover(Menu *menu, bool allow_next_level)
 void
 menu_load_options(Menu *menu)
 {
-	MenuItem *diff_item, *sound_item, *fs_item;
+	MenuItem /* *diff_item,*/ *sound_item, *fs_item;
 
 	flush_menu_items(menu);
 	/*
@@ -241,13 +241,18 @@ menu_load_options(Menu *menu)
 	*/
 	sound_item = add_item_to_menu(menu, "sound/music", MTYPE_TOGGLE,
 			TOGGLE_SOUND, 0);
+#ifndef __WII__
 	fs_item = add_item_to_menu(menu, "fullscreen", MTYPE_TOGGLE,
 			TOGGLE_FULLSCREEN, 0);
+#endif
 	add_item_to_menu(menu, "back to main", MTYPE_SUBMENU, 0, 0);
 
 //	menu_item_set_difficulty(diff_item);
 	menu_item_set_sound(sound_item);
+
+#ifndef __WII__
 	menu_item_set_fullscreen(fs_item);
+#endif
 }
 
 
@@ -371,6 +376,7 @@ int
 handle_menu_events(SDL_Event *event, Menu *menu)
 {
 	SDL_MouseButtonEvent *bev;
+	enum { up, down, select, escape, nothing } action = nothing;
 	int i;
 
 	if (event->type == SDL_QUIT)
@@ -401,33 +407,63 @@ handle_menu_events(SDL_Event *event, Menu *menu)
 		return 0;
 	}
 
-	if (event->type != SDL_KEYDOWN)
-		return 0;
+	if (event->type == SDL_JOYHATMOTION) {
+		if (event->jhat.value & SDL_HAT_UP)
+			action = up;
+		else if (event->jhat.value & SDL_HAT_DOWN)
+			action = down;
+	}
 
+	if (event->type == SDL_JOYBUTTONDOWN) {
+		if (event->jbutton.button == 2 || event->jbutton.button == 3) {
+			action = select;
+		}
+	}
+	
 
-	switch ((int)event->key.keysym.sym) {
-		case SDLK_j:
-		case SDLK_DOWN:
+	/* Handle keyboard input */
+	if (event->type == SDL_KEYDOWN) {
+		switch ((int)event->key.keysym.sym) {
+			case SDLK_j:
+			case SDLK_DOWN:
+				action = down;
+				break;
+			case SDLK_UP:
+			case SDLK_k:
+				action = up;
+				break;
+			case SDLK_RETURN:
+				action = select;
+				break;
+			case SDLK_ESCAPE:
+			case SDLK_q:
+				action = escape;
+				break;
+			default:
+				break;
+		}
+	}
+
+	/* Act on whatever input was caught */
+	switch (action) {
+		case down:
 			menu->current++;
 			sfx_play_menunav();
 			if (menu->current >= menu->length)
 				menu->current = 0;
 			break;
-		case SDLK_UP:
-		case SDLK_k:
+		case up:
 			menu->current--;
 			sfx_play_menunav();
 			if (menu->current < 0)
 				menu->current = menu->length - 1;
 			break;
-		case SDLK_RETURN:
+		case select:
 			return menu_select(menu);
-		case SDLK_ESCAPE:
-		case SDLK_q:
+		case escape:
 			return 1;
 		default:
 			break;
-
 	}
 
 	return 0;
@@ -437,7 +473,7 @@ handle_menu_events(SDL_Event *event, Menu *menu)
 enum mtype
 menu_runner(Menu *menu)
 {
-	SDL_Surface *intro;
+	SDL_Surface *intro = NULL;
 	uint32_t now, framecount = 0, fps_lastframe = 0;
 	byte running = 0;
 	int elapsed;
@@ -502,7 +538,8 @@ main_menu()
 
 	menu_load_main(menu);
 
-	sfx_play_music("music/menu.ogg");
+	sfx_play_music("music/menu.mp3");
+//	sfx_play_music("music/menu.ogg");
 	status = menu_runner(menu);
 
 	menu_kill(menu);
