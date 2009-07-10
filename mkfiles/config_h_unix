@@ -1,1 +1,1 @@
-#define DATAPATH	"../data"
+#define DATAPATH	"/usr/share/games/rezerwar/data"

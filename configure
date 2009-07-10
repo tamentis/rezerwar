@@ -20,9 +20,9 @@ fi
 # $3 - config.h
 setup_for() {
 	rm -f Makefile MkConf config.h
-	ln -s mkfiles/Makefile.$1 Makefile
-	ln -s mkfiles/MkConf.$2 MkConf
-	ln -s mkfiles/config_h_$3 config.h
+	cp -f mkfiles/Makefile.$1 Makefile
+	cp -f mkfiles/MkConf.$2 MkConf
+	cp -f mkfiles/config_h_$3 config.h
 }
 
 
@@ -34,10 +34,10 @@ Linux|Unix|POSIX)
 	setup_for unix unix unix
 	;;
 Debug)
-	setup_for unix debug unix
+	setup_for unix debug debug
 	;;
 Win32|MINGW32*)
-	setup_for win32 unix unix
+	setup_for win32 win32 win32
 	;;
 Wii)
 	if [ -z "$DEVKITPRO" ]; then

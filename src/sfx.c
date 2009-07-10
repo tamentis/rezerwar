@@ -49,8 +49,8 @@ void
 init_audio()
 {
 	/* Open a mixer */
-//	if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024) >= 0)
-	if (Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 4096) >= 0)
+	if (Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 2048) >= 0)
+//	if (Mix_OpenAudio(48000, AUDIO_S16MSB, 2, 2048) >= 0)
 		has_sound = true;
 
 	if (has_sound)

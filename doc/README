@@ -13,8 +13,36 @@ DISCLAIMER
 
 INSTALL
 -------------------------------------------------------------------------------
-  From source, you will need gcc, make, mikmod (musics), inkscape (gfx),
-  oggenc (vorbis-tools), then just type make.
+  From source, you will need gcc, make and SDL. If you plan on altering the
+  gfx, sfx or musics, you will need mikmod (musics), inkscape (gfx), lame.
+
+  Use ./configure to setup the build environment, with your platform as only
+  parameter. For example:
+
+  ./configure Linux
+  make
+  make install
+
+  The install will put all the data files in /usr/share/games/rezerwar and 
+  the game will be installed in /usr/games. Feel free to edit this in 
+  config.h and Makefile.
+
+
+WINDOWS
+-------------------------------------------------------------------------------
+  On win32 you need to install msys and mingw32 to compile rezerwar. If you
+  feel like creating a Visual Studio project file, go crazy.
+
+  ./configure Win32
+  make
+
+
+NINTENDO WII
+-------------------------------------------------------------------------------
+  You need DevKitPro to build rezerwar on the Wii.
+
+  ./configure Wii
+  make
 
 
 SOUNDS
@@ -80,15 +108,15 @@ UPDATES, PATCHES, LEVELS, MUSICS, etc.:
   and I'll include your stuff in the next release, if there is any ;)
 
 
-TODO 0.1.1
+KNOWN ISSUES / TODO
 -------------------------------------------------------------------------------
-   - upgrade to put all the good stuff at the right place, like $HOME or
-     /var/games, data in /usr/share/, bin in /usr/games. Everything at the 
-     same place in windows.
-   - fix the fullscreen issue in windows.
-   - bundle the compiled data with the source-code, can't expect people to
-     install inkscape to compile that.
-   - push audio buffer to 1024.
+ - wii: bug - the music chirps from time to time, I have no idea why.
+ - wii: bug - no way to enter your name in hiscores, defaults to 'wiiuser'.
+ - wii: bug - no way to accelerate the fall of a block.
+ - wii: add a screen to explain what buttons to use
+ - wii: transitions are slow and buggy
+ - all: add more tutorial levels.
+ - all: complete the musics
 
 
 vim:expandtab ts=2 sw=2:

@@ -7,20 +7,20 @@
 
 include ../MkConf
 
-
-PROGRAM=rezerwar
-
 OBJECTS=main.o menus.o events.o lvlhandler.o hiscore.o \
 	board.o block.o cube.o text.o path.o \
 	memory.o fatal.o sfx.o engine_sdl.o \
 	strlcpy.o a_chimneys.o a_sky.o
+
+
+PROGRAM=rezerwar
 
 all: $(PROGRAM)
 
 $(PROGRAM): $(OBJECTS)
 	$(CC) $(OBJECTS) $(LIBS) -o $(PROGRAM)
 
-$(OBJECTS): %.o: %.c rezerwar.h
+$(OBJECTS): %.o: %.c rezerwar.h ../config.h
 	$(CC) $(CFLAGS) -c $<
 
 clean:
@@ -35,3 +35,7 @@ memwatch:
 valgrind:
 	valgrind --leak-check=full ./$(PROGRAM) >& LOG
 
+win32: icon_dot_o
+	$(CC) $(OBJECTS) ../data/gfx/icons/icons.o $(LIBS) -o $(PROGRAM)
+	strip -s $(PROGRAM).exe
+	upx $(PROGRAM).exe

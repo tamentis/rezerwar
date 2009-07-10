@@ -28,6 +28,9 @@
 
 #include <stdio.h>
 #include <time.h>
+#ifdef __WII__
+#include <fat.h>
+#endif
 
 #include "SDL.h"
 #include "SDL_mixer.h"
@@ -35,7 +38,7 @@
 #include "rezerwar.h"
 
 
-#define BOT_VER "rezerwar alpha 2009-04-06"
+#define BOT_VER "rezerwar 0.1.1"
 
 
 Board *board;
@@ -71,17 +74,38 @@ intro_studio(void)
 
 
 /**
+ * Check for the presence of an cmd line flag.
+ */
+bool
+has_flag(int ac, char **av, char *flag)
+{
+	int i;
+
+	if (ac <= 1)
+		return false;
+
+	for (i = 0; i < ac; i++) {
+		if (strcmp(av[i], flag) == 0)
+			return true;
+	}
+
+	return false;
+}
+
+
+/**
  * Configuration constructor.
  */
 void
-conf_init()
+init_conf(int ac, char **av)
 {
+
 	conf = r_malloc(sizeof(Configuration));
 	conf->difficulty = DIFF_EASIEST;
 	conf->current_level = NULL;
 	conf->next_level = NULL;
 	conf->sound = true;
-	conf->fullscreen = false;
+	conf->fullscreen = has_flag(ac, av, "-fullscreen");
 }
 
 
@@ -166,26 +190,6 @@ game_loop(char *levelname, enum ttype trans)
 
 
 /**
- * Check for the presence of an cmd line flag.
- */
-bool
-has_flag(int ac, char **av, char *flag)
-{
-	int i;
-
-	if (ac <= 1)
-		return false;
-
-	for (i = 0; i < ac; i++) {
-		if (strcmp(av[i], flag) == 0)
-			return true;
-	}
-
-	return false;
-}
-
-
-/**
  * Return whether the user requested sound to run or not.
  */
 bool
@@ -195,22 +199,11 @@ need_audio(int ac, char **av)
 }
 
 
-/**
- * Return the fullscreen bit if needed.
- */
-uint32_t
-need_fullscreen(int ac, char **av)
-{
-	return has_flag(ac, av, "-fullscreen") == true ? SDL_FULLSCREEN : 0;
-}
-
-
 
 int
 main(int ac, char **av)
 {
 	int status = MTYPE_SUBMENU;
-	uint32_t sdl_flags = 0;
 	bool loop = true;
 	char *path;
 	SDL_Joystick *js;
@@ -218,10 +211,11 @@ main(int ac, char **av)
 	/* Load the sprites first, avoid running init if something is fishy */
 	path = dpath("gfx/sprites.bmp");
 	sprites = SDL_LoadBMP(path);
-	r_free(path);
-
 	if (sprites == NULL)
 		fatal("Unable to load the sprites, did you install rezerwar properly?");
+	SDL_SetColorKey(sprites, SDL_SRCCOLORKEY|SDL_RLEACCEL, 
+			SDL_MapRGB(sprites->format, 0, 255, 255));
+	r_free(path);
 
 	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO|SDL_INIT_JOYSTICK) != 0)
 		fatal("Unable to initialize SDL: %s\n", SDL_GetError());
@@ -229,26 +223,23 @@ main(int ac, char **av)
 #ifdef __WII__
 	SDL_JoystickEventState(SDL_ENABLE);
 	js = SDL_JoystickOpen(0);
-#endif
 
-	/* Set the graphic flags */
-	sdl_flags  = SDL_SWSURFACE;
-//	sdl_flags  = SDL_HWSURFACE|SDL_DOUBLEBUF;
-	sdl_flags |= need_fullscreen(ac, av);
+	fatInitDefault();
+#endif
+	SDL_EnableUNICODE(1);
+
+	init_conf(ac, av);
+
+	init_gfx();
 
 	atexit(SDL_Quit);
 
-	SDL_EnableUNICODE(1);
-
-	/* Create main window, seed rand, load the sprites and set the alpha. */
+	/* Seed rand, load the sprites and set the alpha. */
 	srand(time(NULL));
-	screen = SDL_SetVideoMode(640, 480, 16, sdl_flags);
 //	screen = SDL_SetVideoMode(640, 480, 32, sdl_flags);
 	key = SDL_MapRGB(screen->format, 0, 255, 255);
 	SDL_WM_SetCaption("rezerwar", NULL);
 //	SDL_ShowCursor(false);
-
-	SDL_SetColorKey(sprites, SDL_SRCCOLORKEY|SDL_RLEACCEL, key);
 
 	if (need_audio(ac, av))
 		init_audio();
@@ -258,7 +249,6 @@ main(int ac, char **av)
 
 	/* Normal flow... */
 	intro_studio();
-	conf_init();
 
 	/* Loop between game and menu as long as no "quit" was selected. */
 	do {

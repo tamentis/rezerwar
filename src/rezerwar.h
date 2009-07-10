@@ -25,6 +25,10 @@
  * SUCH DAMAGE.
  */
 
+#ifdef __WII__
+#include <gctypes.h>
+#endif
+
 /* Main speed and flow control */
 #define MAXFPS			30
 #define TICK			10
@@ -52,6 +56,18 @@
 
 /* Controls related */
 #define JOYSTICK_DEAD_ZONE	16384
+
+#ifdef __WII__
+enum wii_buttons {
+	WPAD_BUTTON_A,
+	WPAD_BUTTON_B,
+	WPAD_BUTTON_1,
+	WPAD_BUTTON_2,
+	WPAD_BUTTON_MINUS,
+	WPAD_BUTTON_PLUS,
+	WPAD_BUTTON_HOME
+};
+#endif
 
 /* Block types */
 enum btype {
@@ -162,10 +178,12 @@ struct _text_s;
 
 /* Boolean and byte types, easier to read ;) */
 typedef unsigned char byte;
+#ifndef __WII__
 typedef enum {
 	false,
 	true
 } bool;
+#endif
 
 
 /* Memory Management functions */
@@ -183,6 +201,7 @@ bool		 prompt_polling(struct _text_s *);
 
 
 /* Graphic related wrappers */
+void		 init_gfx();
 int		 surface_fadein(SDL_Surface *, int);
 int		 surface_fadeout(SDL_Surface *);
 void		 surface_shutter_open();
@@ -342,7 +361,7 @@ void		 block_kill(Block *);
 SDL_Surface	*block_get_surface(Block *);
 void		 block_get_rectangle(Block *, SDL_Rect *);
 Block		*block_new_one_from_cube(Cube *);
-Block		*block_new_one();
+Block		*block_new_one(bool);
 Block		*block_new_two();
 Block		*block_new_tee();
 Block		*block_new_ell();

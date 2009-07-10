@@ -27,17 +27,18 @@
 
 
 /*
- * This file is about event handling during game play.
+ * Event handling during game play.
  */
+
 
 #include <stdio.h>
 
 #include "SDL.h"
-
 #include "rezerwar.h"
 
 
 extern Board *board;
+extern Configuration *conf;
 SDL_Surface *screen;
 
 
@@ -104,6 +105,10 @@ prompt_polling(Text *prompt)
 	bool done = false;
 
 	while (SDL_PollEvent(&event)) {
+		if (event.type == SDL_JOYBUTTONDOWN) {
+			text_set_value(prompt, "wiiuser");
+			done = true;
+		}
 		if (event.type != SDL_KEYDOWN) continue;
 		done = handle_events_prompt(event.key.keysym, prompt);
 	}
@@ -118,49 +123,133 @@ prompt_polling(Text *prompt)
 enum mtype
 handle_events_keydown(SDL_Event *event)
 {
-	switch ((int)event->key.keysym.sym) {
+	enum { 
+		nothing, 
+		menu,
+		fps,
+		rotate_cw,
+		pause,
+		left,
+		right,
+		leftonce,
+		rightonce,
+		down,
+		center,
+		fullscreen
+	} action = nothing;
+
+	if (event->type == SDL_JOYHATMOTION) {
+		if (event->jhat.value & SDL_HAT_LEFT)
+			action = leftonce;
+		else if (event->jhat.value & SDL_HAT_RIGHT)
+			action = rightonce;
+	}
+
+#ifdef __WII__
+	if (event->type == SDL_JOYBUTTONDOWN) {
+		switch (event->jbutton.button) {
+		case WPAD_BUTTON_HOME:
+			action = menu;
+			break;
+		case WPAD_BUTTON_PLUS:
+		case WPAD_BUTTON_MINUS:
+			action = pause;
+			break;
+		case WPAD_BUTTON_1:
+		case WPAD_BUTTON_2:
+			action = rotate_cw;
+			break;
+		case WPAD_BUTTON_B:
+			action = fps;
+			break;
+		default:
+			break;
+		}
+	}
+#endif
+
+	if (event->type == SDL_KEYDOWN) {
+		switch ((int)event->key.keysym.sym) {
 		case SDLK_ESCAPE:
 		case SDLK_q:
-			return MTYPE_SUBMENU;;
+			action = menu;
+			break;
 		case SDLK_F12:
-			board->show_fps = !board->show_fps;
-			break;
-		case SDLK_F10:
-			board_change_next_block(board);
-			break;
-		case SDLK_F7:
-//			board_add_cube(board);
-			board_dump_cube_map(board);
+			action = fps;
 			break;
 		case SDLK_LEFT:
 		case SDLK_h:
+			action = left;
+			break;
+		case SDLK_RIGHT:
+		case SDLK_l:
+			action = right;
+			break;
+		case SDLK_DOWN:
+		case SDLK_j:
+			action = down;
+			break;
+		case SDLK_a:
+		case SDLK_SPACE:
+			action = rotate_cw;
+			break;
+		case SDLK_p:
+		case SDLK_RETURN:
+			action = pause;
+			break;
+		case SDLK_f:
+			action = fullscreen;
+			break;
+		default:
+			break;
+		}
+	}
+
+	switch (action) {
+		case menu:
+			return MTYPE_SUBMENU;;
+			break;
+		case fps:
+			board->show_fps = !board->show_fps;
+			break;
+		case left:
 			board_move_current_block_left(board);
 			board_refresh(board);
 			board->lateral_tick = 0;
 			board->moving_left = 4;
 			break;
-		case SDLK_RIGHT:
-		case SDLK_l:
+		case right:
 			board_move_current_block_right(board);
 			board_refresh(board);
 			board->lateral_tick = 0;
 			board->moving_right = 4;
 			break;
-		case SDLK_DOWN:
-		case SDLK_j:
+		case leftonce:
+			board_move_current_block_left(board);
+			board_refresh(board);
+			break;
+		case rightonce:
+			board_move_current_block_right(board);
+			board_refresh(board);
+			break;
+		case down:
 			board->block_speed_factor = 10;
 			break;
-		case SDLK_a:
-		case SDLK_SPACE:
+		case rotate_cw:
 			board_rotate_cw(board, NULL);
 			break;
-		case SDLK_p:
-		case SDLK_RETURN:
+		case pause:
 			board_toggle_pause(board);
 			break;
-		case SDLK_f:
+		case fullscreen:
+			/* SDL on win32 is unable to toggle video mode... */
+			conf->fullscreen = !conf->fullscreen;
+#ifdef _WIN32
+			init_gfx();
+#else
 			if (SDL_WM_ToggleFullScreen(screen) == 0)
 				fatal("Unable to toggle fullscreen/windowed mode.");
+#endif
 			break;
 		default:
 			break;
@@ -179,6 +268,8 @@ handle_events(SDL_Event *event)
 {
 	switch (event->type) {
 		case SDL_KEYDOWN:
+		case SDL_JOYBUTTONDOWN:
+		case SDL_JOYHATMOTION:
 			return handle_events_keydown(event);
 			break;
 		case SDL_KEYUP:
@@ -204,6 +295,7 @@ wait_for_keymouse(void)
 		SDL_WaitEvent(&event);
 		switch (event.type) {
 			case SDL_MOUSEBUTTONDOWN:
+			case SDL_JOYBUTTONDOWN:
 			case SDL_KEYDOWN:
 				return;
 				break;

@@ -134,7 +134,8 @@ board_new(int difficulty)
 	path = dpath("gfx/gameback.bmp");
 	b->bg = SDL_LoadBMP(path);
 	r_free(path);
-	SDL_SetColorKey(b->bg, SDL_SRCCOLORKEY|SDL_RLEACCEL, key);
+	SDL_SetColorKey(b->bg, SDL_SRCCOLORKEY|SDL_RLEACCEL, 
+			SDL_MapRGB(b->bg->format, 0, 255, 255));
 
 	/* Level stuff */
 	b->next_level = NULL;

@@ -235,24 +235,25 @@ menu_load_options(Menu *menu)
 	MenuItem /* *diff_item,*/ *sound_item, *fs_item;
 
 	flush_menu_items(menu);
+
 	/*
 	diff_item = add_item_to_menu(menu, "difficulty", MTYPE_TOGGLE, 
 			TOGGLE_DIFFICULTY, 0);
+	menu_item_set_difficulty(diff_item);
 	*/
+
 	sound_item = add_item_to_menu(menu, "sound/music", MTYPE_TOGGLE,
 			TOGGLE_SOUND, 0);
-#ifndef __WII__
-	fs_item = add_item_to_menu(menu, "fullscreen", MTYPE_TOGGLE,
-			TOGGLE_FULLSCREEN, 0);
-#endif
-	add_item_to_menu(menu, "back to main", MTYPE_SUBMENU, 0, 0);
-
-//	menu_item_set_difficulty(diff_item);
 	menu_item_set_sound(sound_item);
 
 #ifndef __WII__
+	fs_item = add_item_to_menu(menu, "fullscreen", MTYPE_TOGGLE,
+			TOGGLE_FULLSCREEN, 0);
 	menu_item_set_fullscreen(fs_item);
 #endif
+
+	menu_item_set_sound(sound_item);
+	add_item_to_menu(menu, "back to main", MTYPE_SUBMENU, 0, 0);
 }
 
 
@@ -284,9 +285,13 @@ menu_toggle_item(Menu *menu, MenuItem *item)
 			menu_item_set_difficulty(item);
 			break;
 		case TOGGLE_FULLSCREEN:
+			conf->fullscreen = !conf->fullscreen;
+#ifdef _WIN32
+			init_gfx();
+#else
 			if (SDL_WM_ToggleFullScreen(screen) == 0)
 				fatal("Unable to toggle fullscreen/windowed mode.");
-			conf->fullscreen = !conf->fullscreen;
+#endif
 			menu_item_set_fullscreen(item);
 			break;
 		case TOGGLE_SOUND:
@@ -414,11 +419,14 @@ handle_menu_events(SDL_Event *event, Menu *menu)
 			action = down;
 	}
 
+#ifdef __WII__
 	if (event->type == SDL_JOYBUTTONDOWN) {
-		if (event->jbutton.button == 2 || event->jbutton.button == 3) {
+		if (event->jbutton.button == WPAD_BUTTON_1 || 
+		    event->jbutton.button == WPAD_BUTTON_2) {
 			action = select;
 		}
 	}
+#endif
 	
 
 	/* Handle keyboard input */

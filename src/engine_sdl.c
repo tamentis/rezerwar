@@ -36,7 +36,18 @@
 extern SDL_Surface *screen;
 extern SDL_Surface *sprites;
 extern Uint32 key;
+extern Configuration *conf;
 
+void
+init_gfx()
+{
+	uint32_t sdl_flags = 0;
+
+	sdl_flags  = SDL_SWSURFACE;
+//	sdl_flags  = SDL_HWSURFACE|SDL_DOUBLEBUF;
+	sdl_flags |= conf->fullscreen == true ? SDL_FULLSCREEN : 0;
+	screen = SDL_SetVideoMode(640, 480, 16, sdl_flags);
+}
 
 void
 r_setpixel(Uint16 x, Uint16 y, Uint8 r, Uint8 g, Uint8 b)
@@ -114,15 +125,27 @@ surface_greyscale(SDL_Surface *s)
 {
 	int i, max = s->w * s->h;
 	byte r, g, b, v;
-	Uint32 *c;
+	Uint32 *c32;
+	Uint16 *c16;
 
-	for (i = 0; i < max; i++) {
-		c = s->pixels + i * s->format->BytesPerPixel;
-		if (*c == key)
-			continue;
-		SDL_GetRGB(*c, s->format, &r, &g, &b);
-		v = (r + g + b) / 3;
-		*c = SDL_MapRGB(s->format, v, v, v);
+	if (s->format->BitsPerPixel == 16) {
+		for (i = 0; i < max; i++) {
+			c16 = s->pixels + i * s->format->BytesPerPixel;
+			if (*c16 == key)
+				continue;
+			SDL_GetRGB(*c16, s->format, &r, &g, &b);
+			v = (r + g + b) / 3;
+			*c16 = SDL_MapRGB(s->format, v, v, v);
+		}
+	} else {
+		for (i = 0; i < max; i++) {
+			c32 = s->pixels + i * s->format->BytesPerPixel;
+			if (*c32 == key)
+				continue;
+			SDL_GetRGB(*c32, s->format, &r, &g, &b);
+			v = (r + g + b) / 3;
+			*c32 = SDL_MapRGB(s->format, v, v, v);
+		}
 	}
 }
 

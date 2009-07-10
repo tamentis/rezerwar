@@ -4,6 +4,8 @@
 # Copyright (c) 2009 Bertrand Janin
 #
 
+TARGET=/usr/share/games/rezerwar
+DATATARGET=${TARGET}/data
 
 all: data_build build
 
@@ -23,3 +25,23 @@ distclean: clean
 	rm -f Makefile MkConf
 	ln -s mkfiles/Makefile.default Makefile
 	ln -s mkfiles/Makefile.default MkConf
+
+install:
+	mkdir -p /usr/games
+	mkdir -p ${DATATARGET}/gfx/a_sky
+	mkdir -p ${DATATARGET}/gfx/splash
+	mkdir -p ${DATATARGET}/music
+	mkdir -p ${DATATARGET}/sfx
+	mkdir -p ${DATATARGET}/levels
+	cp -rf doc ${TARGET}
+	install -m 644 data/gfx/a_sky/sky.bmp ${DATATARGET}/gfx/a_sky/
+	install -m 644 data/gfx/splash/tdc.bmp ${DATATARGET}/gfx/splash/
+	install -m 644 data/gfx/*.bmp ${DATATARGET}/gfx/
+	install -m 644 data/levels/* ${DATATARGET}/levels/
+	install -m 644 data/sfx/*.wav ${DATATARGET}/sfx/
+	install -m 644 data/music/*.mp3 ${DATATARGET}/music/
+	install -m 755 src/rezerwar /usr/games
+
+uninstall:
+	rm -f /usr/games/rezerwar
+	rm -rf ${DATATARGET}

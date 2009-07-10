@@ -257,8 +257,8 @@ cube_get_surface(Cube *cube)
 
 	s = SDL_CreateRGBSurface(0, BSIZE, BSIZE, screen->format->BitsPerPixel,
 			0, 0, 0, 0);
-	SDL_SetColorKey(s, SDL_SRCCOLORKEY|SDL_RLEACCEL, key);
 	SDL_FillRect(s, NULL, key);
+	SDL_SetColorKey(s, SDL_SRCCOLORKEY|SDL_RLEACCEL, key);
 
 	/* If we have a fade_status, we need to crop a smaller area. */
 	if (fs > 0) {
