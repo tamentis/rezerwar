@@ -135,6 +135,7 @@ handle_events_keydown(SDL_Event *event)
 		rightonce,
 		down,
 		center,
+		hold,
 		fullscreen
 	} action = nothing;
 
@@ -160,7 +161,7 @@ handle_events_keydown(SDL_Event *event)
 			action = rotate_cw;
 			break;
 		case WPAD_BUTTON_B:
-			action = fps;
+			action = hold;
 			break;
 		default:
 			break;
@@ -199,6 +200,9 @@ handle_events_keydown(SDL_Event *event)
 			break;
 		case SDLK_f:
 			action = fullscreen;
+			break;
+		case SDLK_TAB:
+			action = hold;
 			break;
 		default:
 			break;
@@ -240,6 +244,9 @@ handle_events_keydown(SDL_Event *event)
 			break;
 		case pause:
 			board_toggle_pause(board);
+			break;
+		case hold:
+			board_hold(board);
 			break;
 		case fullscreen:
 			/* SDL on win32 is unable to toggle video mode... */
