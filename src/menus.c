@@ -208,8 +208,8 @@ menu_load_main(Menu *menu)
 	flush_menu_items(menu);
 	add_item_to_menu(menu, "tutorial", MTYPE_START, 0, 0);
 	add_item_to_menu(menu, "play", MTYPE_PLAIN, 0, 0);
-	add_item_to_menu(menu, "options", MTYPE_SUBMENU, 2, 45);
-	add_item_to_menu(menu, "quit", MTYPE_QUIT, 0, 65);
+	add_item_to_menu(menu, "options", MTYPE_SUBMENU, 2, 0);
+	add_item_to_menu(menu, "quit", MTYPE_QUIT, 0, 0);
 }
 
 
@@ -220,8 +220,8 @@ menu_load_gameover(Menu *menu, bool allow_next_level)
 	if (allow_next_level == true)
 		add_item_to_menu(menu, "next level", MTYPE_NEXTLEVEL, 0, 0);
 	add_item_to_menu(menu, "replay level", MTYPE_REPLAY, 0, 0);
-	add_item_to_menu(menu, "main menu", MTYPE_BREAK, 1, 45);
-	add_item_to_menu(menu, "quit rzwar", MTYPE_QUIT, 0, 65);
+	add_item_to_menu(menu, "main menu", MTYPE_BREAK, 1, 0);
+	add_item_to_menu(menu, "quit rzwar", MTYPE_QUIT, 0, 0);
 }
 
 
@@ -440,6 +440,7 @@ handle_menu_events(SDL_Event *event, Menu *menu)
 			case SDLK_k:
 				action = up;
 				break;
+			case SDLK_l:
 			case SDLK_RETURN:
 				action = select;
 				break;
@@ -540,8 +541,8 @@ main_menu()
 	int status;
 
 	menu = new_menu();
-	menu->x = 224;
-	menu->y = 245;
+	menu->x = -145;
+	menu->y = 155;
 	menu->bg_image = dpath("gfx/gamemenu.bmp");
 
 	menu_load_main(menu);
