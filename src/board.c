@@ -41,7 +41,7 @@ extern Uint32 key;
 
 
 /**
- * Board constructor
+ * @constructor
  */
 Board *
 board_new(int difficulty)
@@ -79,6 +79,7 @@ board_new(int difficulty)
 	b->block_count = 0;
 	b->blocks = NULL;
 	b->current_block = NULL;
+	b->hold = NULL;
 	b->next_block = NULL;
 	b->block_speed = SPEED_NORMAL;
 	b->block_speed_factor = 1;
@@ -427,8 +428,9 @@ board_refresh(Board *board)
 	/* Redraw each blocks. */
 	board_refresh_blocks(board);
 
-	/* Redraw the next block. */
+	/* Redraw the next and hold blocks. */
 	board_refresh_next(board);
+	board_refresh_hold(board);
 
 	/* Redraw all the cubes. */
 	board_refresh_cubes(board);
@@ -634,7 +636,7 @@ board_launch_next_block(Board *board)
 
 	/* If we had 0 remaining blocks... you lost. */
 	if (board->remains == 0) {
-		printf("RAN OUT OF BLOCKS!\n");
+//		printf("RAN OUT OF BLOCKS!\n");
 		board->gameover = true;
 		return;
 	}
@@ -684,6 +686,10 @@ board_refresh_blocks(Board *board)
 		if (block == NULL)
 			continue;
 
+		/* The held block should only be drawn once. */
+		if (block == board->hold)
+			continue;
+
 		s = block_get_surface(block);
 	//	fprintf(stderr, "refreshing block %d %p\n", i, s);
 		block_get_rectangle(block, &r);
@@ -699,7 +705,7 @@ board_refresh_blocks(Board *board)
 
 
 /**
- * Handle the graphic update the of the top right "next" block.
+ * Handle the graphic update the of the top "next" block.
  */
 void
 board_refresh_next(Board *board)
@@ -712,27 +718,36 @@ board_refresh_next(Board *board)
 		block_get_rectangle(board->next_block, &r);
 
 		/* Increment of the position of the preview window. */
-		r.x += board->offset_x + 10;
-		r.y += 20;
-
-		switch (board->next_block->type) {
-			case BLOCK_TYPE_ONE:
-				r.x += BSIZE / 2;
-				r.y += BSIZE / 2;
-				break;
-			case BLOCK_TYPE_TWO:
-				r.y -= BSIZE / 2;
-				break;
-			case BLOCK_TYPE_THREE:
-				r.x -= BSIZE / 2;
-				r.y -= BSIZE / 2;
-		}
+		r.x = 166 + BSIZE / 2;
+		r.y = 32 + BSIZE / 2;
 
 		SDL_BlitSurface(s, NULL, screen, &r);
 		SDL_FreeSurface(s);
 	}
 }
 
+
+/**
+ * Handle the graphic update the of the top "hold" block.
+ */
+void
+board_refresh_hold(Board *board)
+{
+	SDL_Surface *s;
+	SDL_Rect r;
+
+	if (board->hold != NULL) {
+		s = block_get_surface(board->hold);
+		block_get_rectangle(board->hold, &r);
+
+		/* Increment of the position of the preview window. */
+		r.x = 60 + BSIZE / 2;
+		r.y = 222 + BSIZE / 2;
+
+		SDL_BlitSurface(s, NULL, screen, &r);
+		SDL_FreeSurface(s);
+	}
+}
 
 /**
  * Transfer all the cubes from a block to the board. This is anticipating the
@@ -849,6 +864,10 @@ board_update_blocks(Board *board, uint32_t now)
 		if (board->blocks[i] == NULL)
 			continue;
 
+		/* The held block doesn't need update */
+		if (board->blocks[i] == board->hold)
+			continue;
+
 		board_update_single_block(board, now, i);
 
 		if (board->gameover == true)
@@ -882,7 +901,7 @@ board_update_single_block(Board *board, uint32_t now, int i) {
 					sfx_play_tack1();
 					board->launch_next = true;
 				} else {
-					printf("NOT ENOUGH SPACE!\n");
+//					printf("NOT ENOUGH SPACE!\n");
 					board->gameover = true;
 					return;
 				}
@@ -1516,3 +1535,28 @@ board_prepopulate(Board *board, int lines)
 	}
 }
 
+
+/**
+ * Keep the current block aside. If a block is currenly held, replace with
+ * the current one.
+ */
+void
+board_hold(Board *board)
+{
+	Block *block;
+
+	if (board->hold == NULL) {
+		board->hold = board->current_block;
+		board->hold->falling = false;
+		board->launch_next = true;
+	} else {
+		board->hold->x = board->current_block->x;
+		board->hold->y = board->current_block->y;
+		board->hold->prev_y = board->current_block->prev_y;
+		board->hold->tick = board->current_block->tick;
+		board->hold->falling = true;
+		block = board->hold;
+		board->hold = board->current_block;
+		board->current_block = block;
+	}
+}
