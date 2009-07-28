@@ -118,7 +118,7 @@ board_new(int difficulty)
 	b->timeleft_t = board_add_text(b, "", 10, 30);
 
 	/* Status message */
-	b->status_t = board_add_text(b, "", 260, 240);
+	b->status_t = board_add_text(b, "", 0, 240);
 	b->status_t->effect = EFFECT_SHAKE;
 	b->status_t->centered = true;
 	text_set_color1(b->status_t, 225, 186, 0);
@@ -502,10 +502,16 @@ board_update(Board *board, uint32_t now)
 	if (board->gameover == true)
 		return board_gameover(board);
 
-	/* We need a new line! */
+	/* We need a new line! Also move the current block up. */
 	if (board->rising_speed > -1 && board->next_line <= now) {
-		if (board->next_line != 1)
+		if (board->next_line != 1) {
 			board_add_line(board);
+			if (board->current_block->y > 0) {
+				board->current_block->y--;
+				board->current_block->prev_y--;
+				board->current_block->tick = now;
+			}
+		}
 		board->next_line = now + board->rising_speed * 1000;
 	}
 
@@ -910,7 +916,8 @@ board_update_single_block(Board *board, uint32_t now, int i) {
 }	
 
 
-/* move_check() - 
+/**
+ * move_check() - 
  * 	bside is the value telling if the cube is on the left of the whole
  * 		block (1) or on the right side (2).
  *
