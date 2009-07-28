@@ -42,6 +42,9 @@ extern Uint32 key;
 int text_wave_offsets[] = { 0, 1, 2, 1, 0, -1, -2, -1 };
 
 
+/**
+ * Returns the height of the current font for 'text'
+ */
 int
 get_font_height(Text *text) {
 	if (text->font == 0)
@@ -50,6 +53,10 @@ get_font_height(Text *text) {
 	return FONT1_HEIGHT;
 }
 
+
+/**
+ * Return the Rect for a specific character for font0
+ */
 void
 font0_get_glyph_rect(char c, SDL_Rect *l)
 {
@@ -108,6 +115,10 @@ font0_get_glyph_rect(char c, SDL_Rect *l)
 	l->y += 128;
 }
 
+
+/**
+ * Return the Rect for a specific character of font1
+ */
 void
 font1_get_glyph_rect(char c, SDL_Rect *l)
 {
@@ -167,6 +178,10 @@ font1_get_glyph_rect(char c, SDL_Rect *l)
 	l->y += 202;
 }
 
+
+/**
+ * Wrapper around font specific calls to fetch a Rect for a given character.
+ */
 void
 font_get_glyph_rect(int font, char c, SDL_Rect *l)
 {
@@ -179,8 +194,7 @@ font_get_glyph_rect(int font, char c, SDL_Rect *l)
 
 
 /**
- * This function prints a single letter on screen and return x+width of the 
- * char
+ * Prints a single letter on screen and return x+width of the char
  */
 int
 text_render_glyph(Text *text, SDL_Surface *s, char c, int x, int y)
@@ -200,7 +214,7 @@ text_render_glyph(Text *text, SDL_Surface *s, char c, int x, int y)
 
 
 /**
- * This effect will return a different offset for x and y for each letters.
+ * Pre-render effect returning a random offset for x and y for each letters.
  */
 void
 text_effect_shake(Text *text, int *rx, int *ry)
@@ -211,6 +225,10 @@ text_effect_shake(Text *text, int *rx, int *ry)
 	*ry = (rand() % 50 > 40 ? (rand() % (force + 1)) : 0);
 }
 
+
+/**
+ * Pre-render effect returning a wavy offset for y
+ */
 void
 text_effect_wave(Text *text, int count, int *ry)
 {
@@ -402,6 +420,9 @@ text_calculate_size(Text *text)
 }
 
 
+/**
+ * @constructor
+ */
 Text *
 text_new(char *value)
 {
@@ -438,6 +459,7 @@ text_new(char *value)
 	return text;
 }
 
+
 /**
  * Set the value (text) for this Text entity. If the text is currently empty
  * and we are trying to set another empty value, just return.
@@ -456,6 +478,10 @@ text_set_value(Text *text, char *value)
 	text_calculate_size(text);
 }
 
+
+/**
+ * Add only one char to the value/text of this text.
+ */
 void
 text_add_char(Text *text, char ch)
 {
@@ -476,6 +502,10 @@ text_add_char(Text *text, char ch)
 	text_calculate_size(text);
 }
 
+
+/**
+ * Remove the last character
+ */
 void
 text_del_last_char(Text *text)
 {
@@ -487,6 +517,10 @@ text_del_last_char(Text *text)
 
 }
 
+
+/**
+ * @destructor
+ */
 void
 text_kill(Text *text)
 {
@@ -495,6 +529,9 @@ text_kill(Text *text)
 }
 
 
+/**
+ * Render the given text on the given surface
+ */
 void
 text_blit(Text *text, SDL_Surface *dest)
 {
@@ -508,9 +545,11 @@ text_blit(Text *text, SDL_Surface *dest)
 		return;
 
 	text_get_rectangle(text, &r);
+
 	SDL_BlitSurface(rendered, NULL, dest, &r);
 	SDL_FreeSurface(rendered);
 }
+
 
 /**
  * Return an SDL Surface of the rendered text, at this point in time.
@@ -563,7 +602,7 @@ text_get_rectangle(Text *text, SDL_Rect *r)
 	r->h = fheight;
 	r->y = y;
 	if (text->centered == true)
-		r->x = (screen->w - text->width) / 2;
+		r->x = (screen->w - text->width) / 2 + text->x;
 	else
 		r->x = text->x;
 }
