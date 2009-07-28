@@ -36,7 +36,7 @@
 
 /* Board constants */
 #define BOARD_LEFT		176
-#define BOARD_TOP		90
+#define BOARD_TOP		109
 #define BOARD_WIDTH		9
 #define BOARD_HEIGHT		10
 
@@ -411,6 +411,7 @@ typedef struct _board_s {
 	int block_count;
 	Block *current_block;
 	Block *next_block;
+	Block *hold;
 	Block **bqueue;
 	size_t bqueue_len;
 	int remains;		// number of blocks to end of level
@@ -472,6 +473,7 @@ int		 board_get_area_type(Board *, int, int);
 /* Board functions (block related) */
 void		 board_refresh_blocks(Board *);
 void		 board_refresh_next(Board *);
+void		 board_refresh_hold(Board *);
 void		 board_update_blocks(Board *, uint32_t);
 void		 board_update_single_block(Board *, uint32_t, int);
 void		 board_add_block(Board *, Block *);
@@ -485,6 +487,7 @@ void		 board_rotate_cw(Board *, Block *);
 void		 board_update_map(Board *);
 void		 board_dump_block_map(Board *);
 void		 board_cube_bomb(Board *, Cube *);
+void		 board_hold(Board *);
 /* Board functions (text related) */
 Text		*board_add_text(Board *, char *, int, int);
 
