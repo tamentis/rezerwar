@@ -1,0 +1,39 @@
+#!/bin/ksh
+#
+# Script to convert an XCF to PNG using GIMP's Script-Fu and ksh
+# (c) 2008 Bertrand Janin (tamentis@neopulsar.org)
+#
+
+
+if [ $# -lt 2 ]; then
+	print "Usage: xcf2png <input> <output>"
+	exit 1
+fi
+
+
+GIMP=`which gimp`
+if [ -z "$GIMP" ]; then
+	print "Error: You need GIMP to use $0."
+	exit 1
+fi
+
+
+if [ ! -r $1 ]; then
+	print "Error: Unable to find input file \"$1\"."
+	exit 1
+fi
+
+
+cat << EOF | $GIMP -i -b -
+
+   (let* (
+       (image (car (gimp-file-load RUN-NONINTERACTIVE "$1" "$1")))
+       (drawable (car (gimp-image-merge-visible-layers image CLIP-TO-IMAGE)))
+       )
+     (gimp-file-save RUN-NONINTERACTIVE image drawable "$2" "$2")
+     (gimp-image-delete image)
+   )
+
+   (gimp-quit 0)
+
+EOF
