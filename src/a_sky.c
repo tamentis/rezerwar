@@ -64,7 +64,7 @@ a_sky_refresh(Board *board)
 	SDL_Rect src, dst;
 	char *path;
 
-	path = dpath("gfx/a_sky/sky.bmp");
+	path = dpath("gfx/sky.bmp");
 
 	if (skytex == NULL)
 		skytex = SDL_LoadBMP(path);

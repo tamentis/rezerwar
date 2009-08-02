@@ -38,7 +38,7 @@
 #include "rezerwar.h"
 
 
-#define BOT_VER "rezerwar 0.1.1"
+#define VERSION "rezerwar 0.3"
 
 
 Board *board;
@@ -58,7 +58,7 @@ intro_studio(void)
 	char *path;
 	int x;
 
-	path = dpath("gfx/splash/tdc.bmp");
+	path = dpath("gfx/tdc.bmp");
 	intro = SDL_LoadBMP(path);
 	r_free(path);
 
@@ -238,7 +238,7 @@ main(int ac, char **av)
 	srand(time(NULL));
 //	screen = SDL_SetVideoMode(640, 480, 32, sdl_flags);
 	key = SDL_MapRGB(screen->format, 0, 255, 255);
-	SDL_WM_SetCaption("rezerwar", NULL);
+	SDL_WM_SetCaption(VERSION, NULL);
 //	SDL_ShowCursor(false);
 
 	if (need_audio(ac, av))

@@ -134,6 +134,8 @@ board_new(int difficulty)
 	/* Load background. */
 	path = dpath("gfx/gameback.bmp");
 	b->bg = SDL_LoadBMP(path);
+	if (b->bg == NULL)
+		fatal("Unable to load game background.");
 	r_free(path);
 	SDL_SetColorKey(b->bg, SDL_SRCCOLORKEY|SDL_RLEACCEL, 
 			SDL_MapRGB(b->bg->format, 0, 255, 255));
@@ -1559,4 +1561,23 @@ board_hold(Board *board)
 		board->hold = board->current_block;
 		board->current_block = block;
 	}
+}
+
+
+/**
+ * Move the current block as low as possible and trigger the block transfer to
+ * avoid the player to move it.
+ */
+void
+board_block_fall(Board *board)
+{
+	int offset = 0;
+	Block *block = board->current_block;
+
+	while (board_move_check(board, block, 0, offset) == 0)
+		offset++;
+
+	block->y += offset - 1;
+	block->prev_y = block->y;
+	block->tick += board->block_speed * 2;
 }

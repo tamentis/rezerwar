@@ -488,6 +488,7 @@ void		 board_update_map(Board *);
 void		 board_dump_block_map(Board *);
 void		 board_cube_bomb(Board *, Cube *);
 void		 board_hold(Board *);
+void		 board_block_fall(Board *);
 /* Board functions (text related) */
 Text		*board_add_text(Board *, char *, int, int);
 

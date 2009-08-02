@@ -136,6 +136,7 @@ handle_events_keydown(SDL_Event *event)
 		down,
 		center,
 		hold,
+		fall,
 		fullscreen
 	} action = nothing;
 
@@ -144,6 +145,8 @@ handle_events_keydown(SDL_Event *event)
 			action = leftonce;
 		else if (event->jhat.value & SDL_HAT_RIGHT)
 			action = rightonce;
+		else if (event->jhat.value & SDL_HAT_UP)
+			action = fall;
 	}
 
 #ifdef __WII__
@@ -185,6 +188,10 @@ handle_events_keydown(SDL_Event *event)
 		case SDLK_RIGHT:
 		case SDLK_l:
 			action = right;
+			break;
+		case SDLK_UP:
+		case SDLK_k:
+			action = fall;
 			break;
 		case SDLK_DOWN:
 		case SDLK_j:
@@ -238,6 +245,9 @@ handle_events_keydown(SDL_Event *event)
 			break;
 		case down:
 			board->block_speed_factor = 10;
+			break;
+		case fall:
+			board_block_fall(board);
 			break;
 		case rotate_cw:
 			board_rotate_cw(board, NULL);
