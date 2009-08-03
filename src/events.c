@@ -181,6 +181,11 @@ handle_events_keydown(SDL_Event *event)
 		case SDLK_F12:
 			action = fps;
 			break;
+		// XXX: remove after debug
+		case SDLK_F11:
+			board->current_block->falling = false;
+			board_spawn_mole(board);
+			break;
 		case SDLK_LEFT:
 		case SDLK_h:
 			action = left;
@@ -225,23 +230,23 @@ handle_events_keydown(SDL_Event *event)
 			break;
 		case left:
 			board_move_current_block_left(board);
-			board_refresh(board);
+			board_render(board);
 			board->lateral_tick = 0;
 			board->moving_left = 4;
 			break;
 		case right:
 			board_move_current_block_right(board);
-			board_refresh(board);
+			board_render(board);
 			board->lateral_tick = 0;
 			board->moving_right = 4;
 			break;
 		case leftonce:
 			board_move_current_block_left(board);
-			board_refresh(board);
+			board_render(board);
 			break;
 		case rightonce:
 			board_move_current_block_right(board);
-			board_refresh(board);
+			board_render(board);
 			break;
 		case down:
 			board->block_speed_factor = 10;

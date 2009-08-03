@@ -173,7 +173,7 @@ game_loop(char *levelname, enum ttype trans)
 		if (fps_lastframe < (now - (1000/MAXFPS))) {
 			framecount++;
 			fps_lastframe = now;
-			board_refresh(board);
+			board_render(board);
 		}
 
 		elapsed = SDL_GetTicks() - now;

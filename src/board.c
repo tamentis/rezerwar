@@ -89,6 +89,17 @@ board_new(int difficulty)
 	b->rising_speed = NEXTLINE;
 	b->time_limit = -1;
 
+	/* Pipe status */
+	for (i = 0; i < BOARD_HEIGHT; i++) {
+		b->pipe_status_left[i] = -1;
+		b->pipe_status_right[i] = -1;
+	}
+
+	/* Mole related members */
+	b->last_mole = -1;
+	for (i = 0; i < MAX_MOLES; i++)
+		b->moles[i] = NULL;
+
 	/* Texts (future OSD) related members */
 	b->texts = NULL;
 	b->text_count = 0;
@@ -299,7 +310,7 @@ board_add_text(Board *board, char *value, int x, int y)
 
 
 void
-board_refresh_texts(Board *board)
+board_render_texts(Board *board)
 {
 	int i;
 	Text *t;
@@ -397,7 +408,7 @@ board_toggle_pause(Board *board)
  * Apply a mask on top of all the rendered shit
  */
 void
-board_refresh_transition(Board *board)
+board_render_transition(Board *board)
 {
 	switch (board->transition) {
 		case TTYPE_SHUTTER_OPEN:
@@ -416,35 +427,87 @@ board_refresh_transition(Board *board)
 
 
 /**
- * Main refresh function, actually dump pixels on the screen.
+ * Render the moles.
  */
 void
-board_refresh(Board *board)
+board_render_moles(Board *board)
+{
+	int i;
+
+	for (i = 0; i < MAX_MOLES; i++) {
+		if (board->moles[i] == NULL)
+			continue;
+
+		mole_render_trail(board->moles[i]);
+	}
+
+	for (i = 0; i < MAX_MOLES; i++) {
+		if (board->moles[i] == NULL)
+			continue;
+
+		mole_render(board->moles[i]);
+	}
+}
+
+
+/**
+ * Render the pipe statuses
+ */
+void
+board_render_pipes(Board *board)
+{
+	int i;
+	SDL_Rect src;
+
+	src.x = 162;
+	src.y = 298;
+	src.w = 40;
+	src.y = 40;
+
+	for (i = 0; i < BOARD_HEIGHT; i++) {
+		if (board->pipe_status_left[i] != -1) {
+		}
+		if (board->pipe_status_right[i] != -1) {
+		}
+	}
+}
+
+/**
+ * Main render function, actually dump pixels on the screen.
+ */
+void
+board_render(Board *board)
 {
 	/* Redraw the sky. */
-	a_sky_refresh(board);
+	sky_render(board);
 
 	/* Redraw the background. */
 	SDL_BlitSurface(board->bg, NULL, screen, NULL);
 
 	/* Redraw each blocks. */
-	board_refresh_blocks(board);
+	board_render_blocks(board);
 
 	/* Redraw the next and hold blocks. */
-	board_refresh_next(board);
-	board_refresh_hold(board);
+	board_render_next(board);
+	board_render_hold(board);
 
 	/* Redraw all the cubes. */
-	board_refresh_cubes(board);
+	board_render_cubes(board);
+
+	/* Moles */
+	board_render_moles(board);
+
+	/* Pipe statuses */
+	board_render_pipes(board);
 
 	/* Animations */
-	a_chimneys_refresh(board);
+	chimneys_render(board);
 
 	/* Draw texts elements (meant to replace OSD), and modal */
-	board_refresh_texts(board);
+	board_render_texts(board);
 
 	/* Apply the transition if any */
-	board_refresh_transition(board);
+	board_render_transition(board);
 
 	/* Dig up the back buffer. */
 	SDL_Flip(screen);
@@ -501,6 +564,7 @@ board_update(Board *board, uint32_t now)
 	board_update_blocks(board, now);
 	board_update_cubes(board, now);
 	board_update_water(board, now);
+	board_update_moles(board, now);
 
 	/* Stop here, something in the 'update' caused a gameover */
 	if (board->gameover == true)
@@ -526,8 +590,8 @@ board_update(Board *board, uint32_t now)
 	}
 
 	/* Animations */
-	a_chimneys_update(board, now);
-	a_sky_update(board, now);
+	chimneys_update(board, now);
+	sky_update(board, now);
 
 	return MTYPE_NOP;
 }
@@ -676,7 +740,7 @@ board_change_next_block(Board *board)
  * Handle the graphic update of the blocks.
  */
 void
-board_refresh_blocks(Board *board)
+board_render_blocks(Board *board)
 {
 	byte i;
 	SDL_Rect r;
@@ -693,7 +757,6 @@ board_refresh_blocks(Board *board)
 			continue;
 
 		s = block_get_surface(block);
-	//	fprintf(stderr, "refreshing block %d %p\n", i, s);
 		block_get_rectangle(block, &r);
 
 		r.x += board->offset_x;
@@ -710,7 +773,7 @@ board_refresh_blocks(Board *board)
  * Handle the graphic update the of the top "next" block.
  */
 void
-board_refresh_next(Board *board)
+board_render_next(Board *board)
 {
 	SDL_Surface *s;
 	SDL_Rect r;
@@ -733,7 +796,7 @@ board_refresh_next(Board *board)
  * Handle the graphic update the of the top "hold" block.
  */
 void
-board_refresh_hold(Board *board)
+board_render_hold(Board *board)
 {
 	SDL_Surface *s;
 	SDL_Rect r;
@@ -832,6 +895,20 @@ board_cube_bomb(Board *board, Cube *cube)
 		board_kill_column(board, cube->x);
 
 	sfx_play_boom();
+}
+
+
+void
+board_update_moles(Board *board, uint32_t now)
+{
+	int i;
+
+	for (i = 0; i < MAX_MOLES; i++) {
+		if (board->moles[i] == NULL)
+			continue;
+
+		mole_update(board->moles[i], now);
+	}
 }
 
 
@@ -1137,11 +1214,11 @@ board_update_cubes(Board *board, uint32_t now)
 
 
 /**
- * Refreshing the cubes is actually handling the graphic part, i.e. blitting
+ * Rendering the cubes is actually handling the graphic part, i.e. blitting
  * the textures at the right place.
  */
 void
-board_refresh_cubes(Board *board)
+board_render_cubes(Board *board)
 {
 	int i;
 	SDL_Rect r;
@@ -1581,3 +1658,23 @@ board_block_fall(Board *board)
 	block->prev_y = block->y;
 	block->tick += board->block_speed * 2;
 }
+
+
+void
+board_spawn_mole(Board *board)
+{
+	int idx = board->last_mole;
+
+	if (idx >= MAX_MOLES)
+		idx = board->last_mole = 0;
+	else
+		idx++;
+
+	board->last_mole = idx;
+
+	if (board->moles[idx] != NULL)
+		mole_kill(board->moles[idx]);
+
+	board->moles[idx] = mole_new();
+}
+

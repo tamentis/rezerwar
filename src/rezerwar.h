@@ -45,6 +45,8 @@
 #define FONT0_HEIGHT		19
 #define FONT1_HEIGHT		17
 #define LVL_MAX_SIZE		4096
+#define MAX_MOLES		8
+#define MOLE_TRAIL		48
 
 /* Speed relative to difficulty */
 #define SPEED_NORMAL		1000
@@ -376,6 +378,27 @@ void		 block_rotate_cw(Block *);
 void		 block_rotate_ccw(Block *);
 
 
+/*
+ * Mole stuff
+ */
+typedef struct _mole_s {
+	unsigned int id;
+	uint32_t drill_tick;
+	uint32_t move_tick;
+	int trail_x[MOLE_TRAIL];
+	int trail_y[MOLE_TRAIL];
+	int trail_cur;
+	int direction;
+	int drill_anim;
+	int x;
+	int y;
+	bool flooded;
+} Mole;
+
+Mole		*mole_new();
+void		 mole_kill(Mole *);
+
+
 /* Configuration structure (keep data between games) */
 typedef struct _configuration {
 	int difficulty;
@@ -420,6 +443,12 @@ typedef struct _board_s {
 	byte moving_right;
 	unsigned int lateral_tick;
 	int lateral_speed;
+	/* moles */
+	Mole *moles[MAX_MOLES];
+	int last_mole;
+	/* pipes */
+	int pipe_status_left[BOARD_HEIGHT];
+	int pipe_status_right[BOARD_HEIGHT];
 	/* texts */
 	bool modal;
 	struct _text_s **texts;
@@ -452,7 +481,7 @@ Board		*board_new(int);
 Board		*board_new_from_level(Level *);
 void		 board_kill(Board *);
 void		 board_loadbg(Board *, char *);
-void		 board_refresh(Board *);
+void		 board_render(Board *);
 enum mtype	 board_update(Board *, uint32_t);
 void		 board_toggle_pause(Board *);
 enum mtype	 board_gameover(Board *);
@@ -461,7 +490,7 @@ void		 board_add_line(Board *);
 /* Board functions (cube related) */
 void		 board_add_cube(Board *);
 void		 board_trash_cube(Board *, Cube *);
-void		 board_refresh_cubes(Board *);
+void		 board_render_cubes(Board *);
 void		 board_dump_cube_map(Board *);
 void		 board_spread_water(Board *, Cube *, Cube *, int);
 void		 board_update_water(Board *, uint32_t);
@@ -471,9 +500,9 @@ void		 board_run_avalanche(Board *, Cube *);
 void		 board_run_avalanche_column(Board *, Cube *);
 int		 board_get_area_type(Board *, int, int);
 /* Board functions (block related) */
-void		 board_refresh_blocks(Board *);
-void		 board_refresh_next(Board *);
-void		 board_refresh_hold(Board *);
+void		 board_render_blocks(Board *);
+void		 board_render_next(Board *);
+void		 board_render_hold(Board *);
 void		 board_update_blocks(Board *, uint32_t);
 void		 board_update_single_block(Board *, uint32_t, int);
 void		 board_add_block(Board *, Block *);
@@ -499,8 +528,8 @@ int		 gameover_menu();
 
 
 /* Animations */
-void		 a_sky_refresh(Board *);
-void		 a_chimneys_refresh(Board *);
+void		 sky_render(Board *);
+void		 chimneys_render(Board *);
 void		 a_sky_update(Board *, uint32_t);
 void		 a_chimneys_update(Board *, uint32_t);
 

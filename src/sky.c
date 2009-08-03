@@ -36,45 +36,51 @@
 
 extern SDL_Surface *screen;
 extern SDL_Surface *sprites;
+extern Uint32 key;
 
-#define A_CHIMNEY_SIZE 56
-#define A_CHIMNEY_SPEED 250
+#define SKY_SPEED	150
 
-int a_chimneys_offsets[] = { 0, 1, 2, 1 };
-int a_chimneys_status = 0;
-uint32_t a_chimneys_last = 0;
+SDL_Surface *skytex = NULL;
+uint32_t sky_offset = 0;
+uint32_t sky_last = 0;
 
 
-/**
- * Internal update at every tick.
- */
 void
-a_chimneys_update(Board *board, uint32_t now)
+sky_update(Board *board, uint32_t now)
 {
-	if (now < (a_chimneys_last + A_CHIMNEY_SPEED))
-		return;
+	if ((sky_last + SKY_SPEED) < now) {
+		sky_offset++;
+		sky_last = now;
+	}
 
-	a_chimneys_last = now;
-	a_chimneys_status++;
-	if (a_chimneys_status > 3)
-		a_chimneys_status = 0;
+	if (skytex && sky_offset >= skytex->w)
+		sky_offset = 0;
 }
 
 
-/**
- * Draw for each frame.
- */
 void
-a_chimneys_refresh(Board *board)
+sky_render(Board *board)
 {
-	SDL_Rect dst, src;
-	dst.w = src.w = A_CHIMNEY_SIZE;
-	dst.h = src.h = A_CHIMNEY_SIZE;
-	dst.x = 313;
-	dst.y = 18;
+	SDL_Rect src, dst;
+	char *path;
 
-	src.x = 160 + a_chimneys_offsets[a_chimneys_status] * A_CHIMNEY_SIZE;
-	src.y = 241;
+	path = dpath("gfx/sky.bmp");
 
-	SDL_BlitSurface(sprites, &src, screen, &dst);
+	if (skytex == NULL)
+		skytex = SDL_LoadBMP(path);
+	r_free(path);
+
+	src.w = screen->w;
+	src.h = screen->h;
+	src.x = sky_offset;
+	src.y = 0;
+
+	SDL_BlitSurface(skytex, &src, screen, NULL);
+	if (sky_offset + screen->w > skytex->w) {
+		dst.w = screen->w;
+		dst.h = screen->h;
+		dst.x = skytex->w - sky_offset;
+		dst.y = 0;
+		SDL_BlitSurface(skytex, NULL, screen, &dst);
+	}
 }

@@ -333,7 +333,7 @@ menu_select(Menu *menu)
 
 
 void
-menu_refresh(Menu *menu)
+menu_render(Menu *menu)
 {
 	int i;
 	MenuItem *item;
@@ -518,7 +518,7 @@ menu_runner(Menu *menu)
 			if (menu->modal == true)
 				blit_modal(160);
 
-			menu_refresh(menu);
+			menu_render(menu);
 			SDL_Flip(screen);
 		}
 
