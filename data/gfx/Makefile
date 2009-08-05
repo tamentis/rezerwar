@@ -1,4 +1,4 @@
-all: sky.bmp tdc.bmp sprites.bmp gameback.bmp
+all: sky.bmp tdc.bmp sprites.bmp gameback.bmp molemask.bmp
 
 
 # Splash image
@@ -20,6 +20,14 @@ sky.bmp: main.svg
 	inkscape -i longSky -e sky.png main.svg
 	convert sky.png -type truecolor sky.bmp
 	rm -f sky.png
+
+
+# Mole Mask
+molemask.bmp: main.svg
+	inkscape -i MoleMask -e molemask.png main.svg
+	convert molemask.png -type Bilevel molemask.bmp
+	rm -f molemask.png
+
 
 # Sprites
 sprites.bmp: sprites.xcf

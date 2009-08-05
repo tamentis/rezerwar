@@ -162,6 +162,31 @@ cube_network_taint(Cube *cube)
 	}
 }
 
+
+/**
+ * Core function for generating cubes. It takes an argument to know the
+ * maximum type to allow in the pick.
+ */
+Cube *
+cube_new_random_mask(unsigned int mask)
+{
+	Cube *cube;
+	int r;
+
+	/* Start at a random position. */
+	r = rand();
+	cube = cube_new(r % 4);
+
+	/* Random type, according to the mask */
+	do {
+		r = rand() % CTYPE_MAX;
+	} while ((mask & 1 << r) == 0);
+
+	cube->type = r;
+
+	return cube;
+}
+
 /**
  * Core function for generating cubes. It takes an argument to know the
  * maximum type to allow in the pick.

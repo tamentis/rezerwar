@@ -1,0 +1,9 @@
+Changes in 0.3:
+===============
+ - added 'l' as a validate key in menus (vi-key). 
+ - cooler main menu.
+ - fixed bug when added lines would merge with current block
+   when too low.
+ - added support for Hold (t*tris-style) with Tab on PC and B on Wii.
+ - added version number in title
+ - added support for direct fall (t*tris-style) with Up.

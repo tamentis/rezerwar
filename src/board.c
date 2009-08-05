@@ -94,6 +94,7 @@ board_new(int difficulty)
 		b->pipe_status_left[i] = -1;
 		b->pipe_status_right[i] = -1;
 	}
+	b->pipe_tick = 0;
 
 	/* Mole related members */
 	b->last_mole = -1;
@@ -457,17 +458,27 @@ void
 board_render_pipes(Board *board)
 {
 	int i;
-	SDL_Rect src;
+	int offsets[] = { 0, 40, 80, 40 };
+	SDL_Rect src, dest;
 
-	src.x = 162;
+	/* Hard coded positions in the sprites file */
+	src.x = 161;
 	src.y = 298;
-	src.w = 40;
-	src.y = 40;
+	src.w = dest.w = 40;
+	src.h = dest.h = 40;
 
-	for (i = 0; i < BOARD_HEIGHT; i++) {
+	for (i = 1; i < BOARD_HEIGHT; i++) {
 		if (board->pipe_status_left[i] != -1) {
+			src.x = 161 + offsets[board->pipe_status_left[i]];
+			dest.x = BOARD_LEFT - BSIZE;
+			dest.y = BOARD_TOP + i * BSIZE - 4;
+			SDL_BlitSurface(sprites, &src, screen, &dest);
 		}
 		if (board->pipe_status_right[i] != -1) {
+			src.x = 161 + offsets[board->pipe_status_right[i]];
+			dest.x = BOARD_LEFT + BSIZE * BOARD_WIDTH - 4;
+			dest.y = BOARD_TOP + i * BSIZE - 4;
+			SDL_BlitSurface(sprites, &src, screen, &dest);
 		}
 	}
 }
@@ -540,6 +551,42 @@ board_gameover(Board *board)
 }
 
 
+void
+board_update_pipes(Board *board, uint32_t now)
+{
+	int *k, i;
+
+	if (board->pipe_tick + 100 > now)
+		return;
+
+	for (i = 1; i < BOARD_HEIGHT; i++) {
+		k = &board->pipe_status_left[i];
+		if (*k != -1) {
+			if (*k < 10) { // b0rked pipe
+				if (*k >= 3)
+					*k = 0;
+				else {
+					(*k)++;
+				}
+			}
+		}
+
+
+		k = &board->pipe_status_right[i];
+		if (*k != -1) {
+			if (*k < 10) { // b0rked pipe
+				if (*k >= 3)
+					*k = 0;
+				else
+					(*k)++;
+			}
+		}
+	}
+
+	board->pipe_tick = now;
+}
+
+
 /**
  * This function handles all the elements at ticking point, if anything
  * pushed the board to a game over, let the caller know with an mtype.
@@ -565,6 +612,7 @@ board_update(Board *board, uint32_t now)
 	board_update_cubes(board, now);
 	board_update_water(board, now);
 	board_update_moles(board, now);
+	board_update_pipes(board, now);
 
 	/* Stop here, something in the 'update' caused a gameover */
 	if (board->gameover == true)
@@ -852,6 +900,11 @@ board_transfer_cubes(Board *board, Block *block)
 			switch (cube->type) {
 				case CTYPE_BOMB:
 					board_cube_bomb(board, cube);
+					break;
+				case CTYPE_MEDIC:
+					board_cube_medic(board, cube);
+					break;
+				default:
 					break;
 			}
 		}
@@ -1304,7 +1357,11 @@ board_update_water(Board *board, uint32_t now)
 	/* Scan the left side... */
 	for (i = 0; i < board->height; i++) {
 		cube = board->cubes[i * board->width];
-		if (cube == NULL) continue;
+		if (cube == NULL)
+			continue;
+
+		if (board->pipe_status_left[i] != -1)
+			continue;
 
 		if (cube_plug_match(cube, PLUG_WEST))
 			board_spread_water(board, cube, NULL, 1);
@@ -1314,7 +1371,11 @@ board_update_water(Board *board, uint32_t now)
 	 * the way through, in this case, taint the network. */
 	for (i = 0; i < board->height; i++) {
 		cube = board->cubes[(i + 1) * board->width - 1];
-		if (cube == NULL) continue;
+		if (cube == NULL)
+			continue;
+
+		if (board->pipe_status_right[i] != -1)
+			continue;
 
 		if (cube_plug_match(cube, PLUG_EAST)) {
 			if (cube->water == 1) {
@@ -1660,13 +1721,16 @@ board_block_fall(Board *board)
 }
 
 
+/**
+ * Generate a new mole. If reaching MAX, just remove the oldest.
+ */
 void
 board_spawn_mole(Board *board)
 {
 	int idx = board->last_mole;
 
-	if (idx >= MAX_MOLES)
-		idx = board->last_mole = 0;
+	if (idx >= MAX_MOLES - 1)
+		idx = 0;
 	else
 		idx++;
 
@@ -1676,5 +1740,20 @@ board_spawn_mole(Board *board)
 		mole_kill(board->moles[idx]);
 
 	board->moles[idx] = mole_new();
+	board->moles[idx]->board = board;
 }
 
+
+void
+board_hit_right_pipe_at_height(Board *board, int height)
+{
+	int index = (height - BOARD_TOP) / BSIZE;
+	board->pipe_status_right[index] = 0;
+}
+
+void
+board_hit_left_pipe_at_height(Board *board, int height)
+{
+	int index = (height - BOARD_TOP) / BSIZE;
+	board->pipe_status_left[index] = 0;
+}

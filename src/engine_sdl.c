@@ -228,7 +228,7 @@ surface_subsample(SDL_Surface *org, int factor)
 
 	bpp = org->format->BytesPerPixel;
 
-	for (i = 0; i < ssize; i += factor) {
+	for (i = 0; i < ssize - factor; i += factor) {
 		v = org->pixels + i * bpp;
 		SDL_GetRGB(*v, org->format, &r, &g, &b);
 		for (j = 0; j < factor; j++) {

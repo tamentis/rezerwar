@@ -35,7 +35,7 @@
 #define NEXTLINE		30	// nb of seconds between new lines
 
 /* Board constants */
-#define BOARD_LEFT		176
+#define BOARD_LEFT		175
 #define BOARD_TOP		109
 #define BOARD_WIDTH		9
 #define BOARD_HEIGHT		10
@@ -95,7 +95,9 @@ enum ctype {
 	CTYPE_KNOB,
 	CTYPE_ALL,		// 5
 	CTYPE_BOMB,
-	CTYPE_ROCK
+	CTYPE_MEDIC,
+	CTYPE_ROCK,
+	CTYPE_MAX
 };
 
 /* Transition types */
@@ -382,6 +384,7 @@ void		 block_rotate_ccw(Block *);
  * Mole stuff
  */
 typedef struct _mole_s {
+	struct _board_s *board;
 	unsigned int id;
 	uint32_t drill_tick;
 	uint32_t move_tick;
@@ -449,6 +452,7 @@ typedef struct _board_s {
 	/* pipes */
 	int pipe_status_left[BOARD_HEIGHT];
 	int pipe_status_right[BOARD_HEIGHT];
+	uint32_t pipe_tick;
 	/* texts */
 	bool modal;
 	struct _text_s **texts;

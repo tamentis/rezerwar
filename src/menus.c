@@ -589,7 +589,7 @@ gameover_menu(enum mtype status)
 
 	/* Actually run the menu */
 	menu = new_menu();
-	menu->x = 200;
+	menu->x = 0;
 	menu->y = 285;
 	menu_load_gameover(menu, allow_next_level);
 	status = menu_runner(menu);

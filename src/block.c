@@ -89,19 +89,22 @@ void
 block_generate_cubes(Block *block, int n, bool allow_dynamite)
 {
 	int i;
-	int max;
+	int max = 5;
+	unsigned int mask = 0xFFFFFFFF;
 
-	if (allow_dynamite == true) {
-		max = 5 + ((rand() % 10) < 2 ? 1 : 0);
-	} else {
-		max = 5;
+	if (allow_dynamite != true) {
+		mask ^= 1 << CTYPE_BOMB;
 	}
+
+	/* No auto-rocks, no empties */
+	mask ^= 1 << CTYPE_EMPTY;
+	mask ^= 1 << CTYPE_ROCK;
 
 	block->cube_count = n;
 	block->cubes = malloc(sizeof(Cube*) * n);
 
 	for (i = 0; i < n; i++) {
-		block->cubes[i] = cube_new_random_max(max);
+		block->cubes[i] = cube_new_random_mask(mask);
 	}
 }
 

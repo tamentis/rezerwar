@@ -183,7 +183,7 @@ handle_events_keydown(SDL_Event *event)
 			break;
 		// XXX: remove after debug
 		case SDLK_F11:
-			board->current_block->falling = false;
+//			board->current_block->falling = false;
 			board_spawn_mole(board);
 			break;
 		case SDLK_LEFT:
