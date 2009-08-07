@@ -10,7 +10,7 @@ include ../MkConf
 OBJECTS=main.o menus.o events.o lvlhandler.o hiscore.o \
 	board.o block.o cube.o text.o path.o \
 	memory.o fatal.o sfx.o engine_sdl.o \
-	strlcpy.o chimneys.o sky.o mole.o
+	strlcpy.o chimneys.o sky.o mole.o pipe.o
 
 
 PROGRAM=rezerwar

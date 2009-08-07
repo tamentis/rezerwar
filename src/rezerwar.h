@@ -56,6 +56,12 @@
 #define SPEED_LESS50K		100
 #define SPEED_MAX		50
 
+/* Points for specific actions */
+#define POINTS_FIX_PIPE		500
+#define POINTS_NO_HOLD		500
+#define POINTS_AVALANCHE	1000
+#define POINTS_NETWORK_FACTOR	16
+
 /* Controls related */
 #define JOYSTICK_DEAD_ZONE	16384
 
@@ -226,7 +232,7 @@ size_t		 strlcpy(char *dst, const char *src, size_t size);
 
 
 /* Cube structure */
-typedef struct _cube {
+typedef struct _cube_s {
 	int current_position;
 	int x;
 	int y;
@@ -236,8 +242,8 @@ typedef struct _cube {
 	int network_size;
 	int fade_status;
 	bool trashed;
-	struct _cube **network;
-	struct _cube *root;
+	struct _cube_s **network;
+	struct _cube_s *root;
 } Cube;
 
 /* Cube functions */
@@ -247,6 +253,7 @@ Cube		*cube_new_from_char(char);
 void		 cube_kill(Cube *);
 Cube		*cube_new_random();
 Cube		*cube_new_random_max(int);
+Cube		*cube_new_random_mask(unsigned int);
 void		 cube_init_texture();
 SDL_Surface	*cube_get_surface(Cube *);
 void		 cube_get_rectangle(Cube *, SDL_Rect *);
@@ -396,10 +403,28 @@ typedef struct _mole_s {
 	int x;
 	int y;
 	bool flooded;
+	bool trashed;
 } Mole;
 
 Mole		*mole_new();
 void		 mole_kill(Mole *);
+void		 mole_render_trail(Mole *); 
+void		 mole_render(Mole *); 
+void		 mole_update(Mole *, uint32_t);
+void		 mole_destroys_left_pipe(Mole *);
+void		 mole_destroys_right_pipe(Mole *);
+
+
+/*
+ * Pipe stuff
+ */
+typedef struct _pipe_s {
+	uint32_t tick;
+	int status;
+	Mole *mole;
+} Pipe;
+
+Pipe		*pipe_new();
 
 
 /* Configuration structure (keep data between games) */
@@ -413,7 +438,9 @@ typedef struct _configuration {
 } Configuration;
 
 
-/* Board structure */
+/*
+ * Board stuff
+ */
 typedef struct _board_s {
 	/* main characteristics */
 	byte width;
@@ -450,9 +477,7 @@ typedef struct _board_s {
 	Mole *moles[MAX_MOLES];
 	int last_mole;
 	/* pipes */
-	int pipe_status_left[BOARD_HEIGHT];
-	int pipe_status_right[BOARD_HEIGHT];
-	uint32_t pipe_tick;
+	Pipe *pipes[BOARD_HEIGHT*2];
 	/* texts */
 	bool modal;
 	struct _text_s **texts;
@@ -480,7 +505,6 @@ typedef struct _board_s {
 	char *next_level;
 } Board;
 
-/* Board functions */
 Board		*board_new(int);
 Board		*board_new_from_level(Level *);
 void		 board_kill(Board *);
@@ -491,7 +515,7 @@ void		 board_toggle_pause(Board *);
 enum mtype	 board_gameover(Board *);
 void		 board_prepopulate(Board *, int);
 void		 board_add_line(Board *);
-/* Board functions (cube related) */
+/* board/cube funcs */
 void		 board_add_cube(Board *);
 void		 board_trash_cube(Board *, Cube *);
 void		 board_render_cubes(Board *);
@@ -503,7 +527,7 @@ Cube		*board_get_cube(Board *, int, int);
 void		 board_run_avalanche(Board *, Cube *);
 void		 board_run_avalanche_column(Board *, Cube *);
 int		 board_get_area_type(Board *, int, int);
-/* Board functions (block related) */
+/* board/block funcs */
 void		 board_render_blocks(Board *);
 void		 board_render_next(Board *);
 void		 board_render_hold(Board *);
@@ -520,10 +544,16 @@ void		 board_rotate_cw(Board *, Block *);
 void		 board_update_map(Board *);
 void		 board_dump_block_map(Board *);
 void		 board_cube_bomb(Board *, Cube *);
+void		 board_cube_medic(Board *, Cube *);
 void		 board_hold(Board *);
 void		 board_block_fall(Board *);
-/* Board functions (text related) */
+/* board/text funcs */
 Text		*board_add_text(Board *, char *, int, int);
+/* board/mole funcs */
+void		 board_update_moles(Board *, uint32_t);
+void		 board_spawn_mole(Board *);
+/* board/pipe funcs */
+void		 board_render_pipes(Board *);
 
 
 /* Main menu */
@@ -534,8 +564,8 @@ int		 gameover_menu();
 /* Animations */
 void		 sky_render(Board *);
 void		 chimneys_render(Board *);
-void		 a_sky_update(Board *, uint32_t);
-void		 a_chimneys_update(Board *, uint32_t);
+void		 sky_update(Board *, uint32_t);
+void		 chimneys_update(Board *, uint32_t);
 
 
 /* Audio functions */

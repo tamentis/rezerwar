@@ -91,6 +91,7 @@ mole_new()
 	}
 
 	mole->flooded = false;
+	mole->trashed = false;
 
 	mole->board = NULL;
 
@@ -157,7 +158,6 @@ mole_move_check(Mole *mole)
 	char *v1, *v2;
 	int index;
 	int x, y;
-	bool invalid = true;
 
 	mole_load_mask();
 
@@ -185,8 +185,6 @@ mole_update_position(Mole *mole, uint32_t now)
 {
 	int cursor;
 	int change_direction = false;
-	int mask;
-	int direction;
 
 	/* Flooded moles do not move */
 	if (mole->flooded == true)
@@ -220,16 +218,12 @@ mole_update_position(Mole *mole, uint32_t now)
 	/* If the mole is reaching a pipe, boom, flood */
 	if (mole->y < 418) {
 		/* Right side */
-		if (HEADING_LEFT && mole->x > (screen->w/2) && mole->x <= 486) {
-			board_hit_right_pipe_at_height(mole->board, mole->y);
-			mole->flooded = true;
-		}
+		if (HEADING_LEFT && mole->x > (screen->w/2) && mole->x <= 486)
+			mole_destroys_right_pipe(mole);
 
 		/* Left side */
-		if (HEADING_RIGHT && mole->x < (screen->w/2) && mole->x >= 135) {
-			board_hit_left_pipe_at_height(mole->board, mole->y);
-			mole->flooded = true;
-		}
+		if (HEADING_RIGHT && mole->x < (screen->w/2) && mole->x >= 135)
+			mole_destroys_left_pipe(mole);
 	}
 
 
@@ -396,3 +390,27 @@ mole_load_mask()
 		mask_max = mole_mask->w * mole_mask->h;
 	}
 }
+
+
+/**
+ * Called when a mole hits a pipe by the left side.
+ */
+void
+mole_destroys_left_pipe(Mole *mole)
+{
+	int index = (mole->y - BOARD_TOP) / BSIZE;
+	mole->board->pipes[index]->status = 0;
+	mole->board->pipes[index]->mole = mole;
+	mole->flooded = true;
+}
+
+
+void
+mole_destroys_right_pipe(Mole *mole)
+{
+	int index = (mole->y - BOARD_TOP) / BSIZE;
+	mole->board->pipes[BOARD_HEIGHT+index]->status = 0;
+	mole->board->pipes[BOARD_HEIGHT+index]->mole = mole;
+	mole->flooded = true;
+}
+

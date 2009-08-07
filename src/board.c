@@ -90,11 +90,8 @@ board_new(int difficulty)
 	b->time_limit = -1;
 
 	/* Pipe status */
-	for (i = 0; i < BOARD_HEIGHT; i++) {
-		b->pipe_status_left[i] = -1;
-		b->pipe_status_right[i] = -1;
-	}
-	b->pipe_tick = 0;
+	for (i = 0; i < BOARD_HEIGHT * 2; i++)
+		b->pipes[i] = pipe_new();
 
 	/* Mole related members */
 	b->last_mole = -1;
@@ -452,38 +449,6 @@ board_render_moles(Board *board)
 
 
 /**
- * Render the pipe statuses
- */
-void
-board_render_pipes(Board *board)
-{
-	int i;
-	int offsets[] = { 0, 40, 80, 40 };
-	SDL_Rect src, dest;
-
-	/* Hard coded positions in the sprites file */
-	src.x = 161;
-	src.y = 298;
-	src.w = dest.w = 40;
-	src.h = dest.h = 40;
-
-	for (i = 1; i < BOARD_HEIGHT; i++) {
-		if (board->pipe_status_left[i] != -1) {
-			src.x = 161 + offsets[board->pipe_status_left[i]];
-			dest.x = BOARD_LEFT - BSIZE;
-			dest.y = BOARD_TOP + i * BSIZE - 4;
-			SDL_BlitSurface(sprites, &src, screen, &dest);
-		}
-		if (board->pipe_status_right[i] != -1) {
-			src.x = 161 + offsets[board->pipe_status_right[i]];
-			dest.x = BOARD_LEFT + BSIZE * BOARD_WIDTH - 4;
-			dest.y = BOARD_TOP + i * BSIZE - 4;
-			SDL_BlitSurface(sprites, &src, screen, &dest);
-		}
-	}
-}
-
-/**
  * Main render function, actually dump pixels on the screen.
  */
 void
@@ -540,6 +505,10 @@ board_gameover(Board *board)
 		return MTYPE_GAMEOVER_WIN;
 	}
 
+	/* The player made it without using hold, extra pts! */
+	if (board->hold == NULL)
+		board->score += POINTS_NO_HOLD;
+
 	/* The player made a hiscore! */
 	if (hiscore_check(board->score) == true) {
 		conf->last_score = board->score;
@@ -554,36 +523,28 @@ board_gameover(Board *board)
 void
 board_update_pipes(Board *board, uint32_t now)
 {
-	int *k, i;
+	Pipe *pipe;
+	int i;
 
-	if (board->pipe_tick + 100 > now)
-		return;
+#define PIPE_ANIM_SPEED	100
 
-	for (i = 1; i < BOARD_HEIGHT; i++) {
-		k = &board->pipe_status_left[i];
-		if (*k != -1) {
-			if (*k < 10) { // b0rked pipe
-				if (*k >= 3)
-					*k = 0;
+	for (i = 1; i < BOARD_HEIGHT * 2; i++) {
+		pipe = board->pipes[i];
+
+		if (pipe->tick + PIPE_ANIM_SPEED > now)
+			continue;
+
+		if (pipe->status != -1) {
+			if (pipe->status < 10) { // b0rked pipe
+				if (pipe->status >= 3)
+					pipe->status = 0;
 				else {
-					(*k)++;
+					pipe->status++;
 				}
 			}
 		}
-
-
-		k = &board->pipe_status_right[i];
-		if (*k != -1) {
-			if (*k < 10) { // b0rked pipe
-				if (*k >= 3)
-					*k = 0;
-				else
-					(*k)++;
-			}
-		}
+		pipe->tick = now;
 	}
-
-	board->pipe_tick = now;
 }
 
 
@@ -951,18 +912,29 @@ board_cube_bomb(Board *board, Cube *cube)
 }
 
 
+/**
+ * A Cube Medic just dropped! If a broken pipe is around, fix it, else just
+ * disappear!
+ */
 void
-board_update_moles(Board *board, uint32_t now)
+board_cube_medic(Board *board, Cube *cube)
 {
-	int i;
-
-	for (i = 0; i < MAX_MOLES; i++) {
-		if (board->moles[i] == NULL)
-			continue;
-
-		mole_update(board->moles[i], now);
+	Pipe *left_pipe = board->pipes[cube->y];
+	Pipe *right_pipe = board->pipes[cube->y + BOARD_HEIGHT];
+	
+	if (cube->x == 0 && left_pipe->status != -1) {
+		left_pipe->mole->trashed = true;
+		left_pipe->status = -1;
+		board->score += POINTS_FIX_PIPE;
+	} else if (cube->x == (BOARD_WIDTH - 1) && right_pipe->status != -1) {
+		right_pipe->mole->trashed = true;
+		right_pipe->status = -1;
+		board->score += POINTS_FIX_PIPE;
 	}
+
+	cube->trashed = true;
 }
+
 
 
 /**
@@ -977,13 +949,13 @@ board_update_blocks(Board *board, uint32_t now)
 
 	if (board->score < 1000)
 		board->block_speed = SPEED_NORMAL;
-	else if (board->score < 5000)
+	else if (board->score < 2000)
 		board->block_speed = SPEED_LESS5K;
-	else if (board->score < 10000)
+	else if (board->score < 5000)
 		board->block_speed = SPEED_LESS10K;
-	else if (board->score < 25000)
+	else if (board->score < 10000)
 		board->block_speed = SPEED_LESS25K;
-	else if (board->score < 50000)
+	else if (board->score < 20000)
 		board->block_speed = SPEED_LESS50K;
 	else
 		board->block_speed = SPEED_MAX;
@@ -1360,7 +1332,7 @@ board_update_water(Board *board, uint32_t now)
 		if (cube == NULL)
 			continue;
 
-		if (board->pipe_status_left[i] != -1)
+		if (board->pipes[i]->status != -1)
 			continue;
 
 		if (cube_plug_match(cube, PLUG_WEST))
@@ -1374,7 +1346,7 @@ board_update_water(Board *board, uint32_t now)
 		if (cube == NULL)
 			continue;
 
-		if (board->pipe_status_right[i] != -1)
+		if (board->pipes[BOARD_HEIGHT+i]->status != -1)
 			continue;
 
 		if (cube_plug_match(cube, PLUG_EAST)) {
@@ -1424,7 +1396,7 @@ board_run_avalanche(Board *board, Cube *cube)
 	text_set_color2(avtxt, 80, 0, 0);
 	avtxt->effect |= EFFECT_SHAKE|EFFECT_FADEOUT;
 
-	board->score += 200;
+	board->score += POINTS_AVALANCHE;
 
 	/* Run each columns individually */
 	board_run_avalanche_column(board, cube);
@@ -1603,7 +1575,7 @@ board_destroy_network(Board *board, Cube *cube)
 		board_trash_cube(board, cube->network[i]);
 
 	board_trash_cube(board, cube);
-	board->score += (cube->network_size + 1) * 8;
+	board->score += (cube->network_size + 1) * POINTS_NETWORK_FACTOR;
 
 	sfx_play_lazer();
 }
@@ -1743,17 +1715,22 @@ board_spawn_mole(Board *board)
 	board->moles[idx]->board = board;
 }
 
-
 void
-board_hit_right_pipe_at_height(Board *board, int height)
+board_update_moles(Board *board, uint32_t now)
 {
-	int index = (height - BOARD_TOP) / BSIZE;
-	board->pipe_status_right[index] = 0;
+	int i;
+
+	for (i = 0; i < MAX_MOLES; i++) {
+		if (board->moles[i] == NULL)
+			continue;
+
+		if (board->moles[i]->trashed == true) {
+			mole_kill(board->moles[i]);
+			board->moles[i] = NULL;
+			continue;
+		}
+
+		mole_update(board->moles[i], now);
+	}
 }
 
-void
-board_hit_left_pipe_at_height(Board *board, int height)
-{
-	int index = (height - BOARD_TOP) / BSIZE;
-	board->pipe_status_left[index] = 0;
-}

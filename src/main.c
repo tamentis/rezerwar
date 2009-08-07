@@ -124,13 +124,14 @@ game_loop(char *levelname, enum ttype trans)
 	enum mtype status = 0;
 	SDL_Event event;
 
-//	sfx_play_music("music/level1.ogg");
 	sfx_play_music("music/level1.mp3");
 
 	/* Prepare board and load the first block. */
 	if (levelname == NULL) {
 		board = board_new(conf->difficulty);
 		board_prepopulate(board, 4);
+		board_spawn_mole(board);
+		board_spawn_mole(board);
 	} else {
 		level = lvl_load(levelname);
 		board = board_new_from_level(level);
@@ -138,12 +139,13 @@ game_loop(char *levelname, enum ttype trans)
 		lvl_kill(level);
 	}
 	board->transition = trans;
-//	board_add_text(board, (char *)BOT_VER, 5, 455);
 	board_load_next_block(board);
 	board_launch_next_block(board);
 
-	/* Main loop, every loop is separated by a TICK (~10ms). 
-	 * The board is refreshed every 1/MAXFPS seconds. */
+	/*
+	 * Main loop, every loop is separated by a TICK (~10ms). 
+	 * The board is refreshed every 1/MAXFPS seconds.
+	 */
 	start = SDL_GetTicks();
 	while (status == MTYPE_NOP) {
 		while (SDL_PollEvent(&event)) {
@@ -220,10 +222,10 @@ main(int ac, char **av)
 	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO|SDL_INIT_JOYSTICK) != 0)
 		fatal("Unable to initialize SDL: %s\n", SDL_GetError());
 
-#ifdef __WII__
 	SDL_JoystickEventState(SDL_ENABLE);
 	js = SDL_JoystickOpen(0);
 
+#ifdef __WII__
 	fatInitDefault();
 #endif
 	SDL_EnableUNICODE(1);
@@ -292,10 +294,7 @@ main(int ac, char **av)
 			case MTYPE_START:
 				surface_shutter_close();
 				r_free(conf->current_level);
-//				if (ac > 1)
-//					conf->current_level = r_strcp(av[1]);
-//				else
-					conf->current_level = r_strcp("tuto_01");
+				conf->current_level = r_strcp("tuto_01");
 
 				status = game_loop(conf->current_level, TTYPE_SHUTTER_OPEN);
 				break;

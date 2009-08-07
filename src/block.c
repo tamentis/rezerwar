@@ -89,7 +89,6 @@ void
 block_generate_cubes(Block *block, int n, bool allow_dynamite)
 {
 	int i;
-	int max = 5;
 	unsigned int mask = 0xFFFFFFFF;
 
 	if (allow_dynamite != true) {
