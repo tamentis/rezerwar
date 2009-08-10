@@ -1373,7 +1373,7 @@ board_update_water(Board *board, uint32_t now)
 	/* Scan the left side... */
 	for (i = 0; i < board->height; i++) {
 		cube = board->cubes[i * board->width];
-		if (cube == NULL)
+		if (cube == NULL || cube->type == CTYPE_ROCK)
 			continue;
 
 		if (board->pipes[i]->status != -1)
@@ -1387,7 +1387,7 @@ board_update_water(Board *board, uint32_t now)
 	 * the way through, in this case, taint the network. */
 	for (i = 0; i < board->height; i++) {
 		cube = board->cubes[(i + 1) * board->width - 1];
-		if (cube == NULL)
+		if (cube == NULL || cube->type == CTYPE_ROCK)
 			continue;
 
 		if (board->pipes[BOARD_HEIGHT+i]->status != -1)
