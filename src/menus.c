@@ -330,8 +330,6 @@ menu_select(Menu *menu)
 }
 
 
-
-
 void
 menu_render(Menu *menu)
 {
@@ -346,11 +344,9 @@ menu_render(Menu *menu)
 		item->text->y = menu->y + i * 30;
 		if (i == menu->current) {
 			item->text->colorized = true;
-//			item->text->effect |= EFFECT_SHAKE;
 			item->text->effect |= EFFECT_WAVE;
 		} else {
 			item->text->colorized = false;
-//			item->text->effect &= ~EFFECT_SHAKE;
 			item->text->effect &= ~EFFECT_WAVE;
 		}
 		s = text_get_surface(item->text);
@@ -361,9 +357,8 @@ menu_render(Menu *menu)
 		SDL_BlitSurface(s, NULL, screen, &(item->rect));
 		SDL_FreeSurface(s);
 	}
-
-//	blit_cursor(0, menu->cursor_x, menu->cursor_y);
 }
+
 
 bool
 hover_menu_items(MenuItem *item, SDL_MouseButtonEvent *bev) 
@@ -493,8 +488,9 @@ menu_runner(Menu *menu)
 			running = handle_menu_events(&event, menu);
 		}
 
+		/* Load the initial image and fade into it, this only happen
+		 * once */
 		if (menu->bg_refresh == true) {
-			/* Load the initial image and fade into it. */
 			if (menu->bg_image != NULL) {
 				intro = SDL_LoadBMP(menu->bg_image);
 				surface_fadein(intro, 16);

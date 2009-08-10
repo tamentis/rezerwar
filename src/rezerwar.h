@@ -29,6 +29,15 @@
 #include <gctypes.h>
 #endif
 
+/* OS stuff */
+#ifndef MAXPATHLEN
+# ifdef PATH_MAX
+#  define MAXPATHLEN PATH_MAX
+# else /* PATH_MAX */
+#  define MAXPATHLEN 64
+# endif /* PATH_MAX */
+#endif /* MAXPATHLEN */
+
 /* Main speed and flow control */
 #define MAXFPS			30
 #define TICK			10
@@ -47,6 +56,7 @@
 #define LVL_MAX_SIZE		4096
 #define MAX_MOLES		8
 #define MOLE_TRAIL		48
+#define MAX_SCORETAGS		8
 
 /* Speed relative to difficulty */
 #define SPEED_NORMAL		1000
@@ -159,7 +169,8 @@ enum {
 	EFFECT_NONE    = 0,
 	EFFECT_SHAKE   = 1 << 0,
 	EFFECT_WAVE    = 1 << 1,
-	EFFECT_FADEOUT = 1 << 2
+	EFFECT_FADEOUT = 1 << 2,
+	EFFECT_FLOAT   = 1 << 3
 };
 
 /* Area types. */
@@ -231,7 +242,9 @@ size_t		 strlcpy(char *dst, const char *src, size_t size);
 // char		*strsep(char **, const char *);
 
 
-/* Cube structure */
+/*
+ * Cube
+ */
 typedef struct _cube_s {
 	int current_position;
 	int x;
@@ -246,7 +259,7 @@ typedef struct _cube_s {
 	struct _cube_s *root;
 } Cube;
 
-/* Cube functions */
+void		 cube_init_rmap();
 Cube		*cube_new(byte);
 Cube		*cube_new_type(byte, int);
 Cube		*cube_new_from_char(char);
@@ -265,9 +278,13 @@ int		 cube_get_plug_status(Cube *, byte, Cube *, byte);
 void		 cube_network_add(Cube *, Cube *);
 void		 cube_network_flush(Cube *);
 void		 cube_network_taint(Cube *);
+int		 cube_get_abs_x(Cube *);
+int		 cube_get_abs_y(Cube *);
 
 
-/* Text structure */
+/*
+ * Text
+ */
 typedef struct _text_s {
 	int x;			// position on the screen
 	int y;
@@ -283,6 +300,7 @@ typedef struct _text_s {
 	int effect;		// bit map of effects
 	int fx_fade_data;	// fade value
 	int fx_wave_data;	// sinus value
+	int fx_float_data;	// float value
 	char *value;		// actual c-string text
 	int length;		// num of chars in the value
 	int max_length;		// max num of chars
@@ -293,7 +311,6 @@ typedef struct _text_s {
 	int font;		// font idx
 } Text;
 
-/* Text functions */
 Text		*text_new(char *);
 void		 text_kill(Text *);
 SDL_Surface	*text_get_surface(Text *);
@@ -515,6 +532,8 @@ void		 board_toggle_pause(Board *);
 enum mtype	 board_gameover(Board *);
 void		 board_prepopulate(Board *, int);
 void		 board_add_line(Board *);
+void		 board_add_points_from_cube(Board *, int, Cube *);
+void		 board_add_points(Board *, int, int, int);
 /* board/cube funcs */
 void		 board_add_cube(Board *);
 void		 board_trash_cube(Board *, Cube *);
@@ -578,6 +597,7 @@ void		 sfx_play_horn();
 void		 sfx_play_menunav();
 void		 sfx_play_menuselect();
 void		 sfx_play_lazer();
+void		 sfx_play_splash();
 void		 sfx_load_library();
 void		 sfx_unload_library();
 void		 sfx_play_music(char *);
@@ -589,3 +609,4 @@ void		 fatal(char *fmt, ...);
 
 /* File I/O */
 char		*dpath(const char *org);
+char		*cpath(const char *org);

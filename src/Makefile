@@ -32,6 +32,12 @@ tags:
 memwatch:
 	top -d 0.1 -p `pidof rezerwar`
 
+cpuwatch:
+	top -d 1.0 -p `pidof rezerwar`
+
+profiler:
+	valgrind --tool=callgrind ./${PROGRAM}
+
 valgrind:
 	valgrind --leak-check=full ./$(PROGRAM) >& LOG
 

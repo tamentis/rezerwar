@@ -26,6 +26,8 @@
  */
 
 
+#include <sys/stat.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,6 +35,8 @@
 
 #include "rezerwar.h"
 #include "../config.h"
+
+
 
 
 /**
@@ -50,4 +54,33 @@ dpath(const char *org)
 
 	return output;
 }
+
+
+char *
+cpath(const char *org)
+{
+	char *output;
+	size_t len;
+	struct stat st;
+
+#ifdef CFGPATH
+	/* Create the cfg folder if needed */
+	char cfgdir[MAXPATHLEN];
+	snprintf(cfgdir, MAXPATHLEN, "%s/" CFGPATH, getenv("HOME"));
+	if (stat(cfgdir, &st) < 0) {
+		if (mkdir(cfgdir, 0755) != 0)
+			fatal("Unable to create " CFGPATH);
+	}
+	len = strlen(cfgdir) + strlen(org) + 2;
+	output = r_malloc(len);
+	snprintf(output, len, "%s/%s", cfgdir, org);
+#else
+	len = strlen(org) + 1;
+	output = r_malloc(len);
+	snprintf(output, len, "%s", org);
+#endif
+
+	return output;
+}
+
 

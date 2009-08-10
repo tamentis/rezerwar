@@ -134,6 +134,8 @@ block_new_one_from_cube(Cube *cube)
 	block->cubes = malloc(sizeof(Cube*));
 	block->cubes[0] = cube;
 
+	cube->water = false;
+
 	return block;
 }
 

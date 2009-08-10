@@ -41,6 +41,51 @@ extern Uint32 key;
 
 int text_wave_offsets[] = { 0, 1, 2, 1, 0, -1, -2, -1 };
 
+#define FLOAT_MAX	25
+int text_float_offsets[FLOAT_MAX] = { 0, 2, 4, 6, 8, 9, 9, 9, 9, 7, 5, 3, 1,
+			-1, -3, -5, -7, -8, -9, -9, -9, -8, -7, -5, -2 };
+
+
+/**
+ * @constructor
+ */
+Text *
+text_new(char *value)
+{
+	Text *text;
+
+	text = r_malloc(sizeof(Text));
+
+	text->x = 0;
+	text->y = 0;
+	text->width = 0;
+	text->height = FONT0_HEIGHT;
+	text->effect = 0;
+	text->fx_fade_data = -255;
+	text->fx_wave_data = 0;
+	text->fx_float_data = -1;
+	text->value = NULL;
+	text->length = -1;
+	text->max_length = 4096;
+	text->line_spacing = 2;
+
+	text->trashed = false;
+	text->colorized = false;
+
+	text->color1_r = 0xFF;
+	text->color1_g = 0xFF;
+	text->color1_b = 0xFF;
+
+	text->font = 1;
+	text->temp = false;
+
+	text->centered = false;
+	
+	text_set_value(text, value);
+
+	return text;
+}
+
 
 /**
  * Returns the height of the current font for 'text'
@@ -317,6 +362,23 @@ text_effect_colorize(Text *text, SDL_Surface *s)
 
 
 /**
+ * Update x and y to make the text seem to float up like a bubble
+ */
+void
+text_effect_float(Text *text, SDL_Rect *r)
+{
+	/* This ensures that we can start any where in the sin() */
+	if (text->fx_float_data == -1)
+		text->fx_float_data = rand() % FLOAT_MAX;
+	else
+		text->fx_float_data++;
+
+	r->x += text_float_offsets[text->fx_float_data % FLOAT_MAX];
+	r->y -= text->fx_float_data;
+}
+
+
+/**
  * This function will simply print the 'text' at the given coordinate.
  */
 void
@@ -417,46 +479,6 @@ text_calculate_size(Text *text)
 			text->height += fheight + text->line_spacing;
 		c++;
 	}
-}
-
-
-/**
- * @constructor
- */
-Text *
-text_new(char *value)
-{
-	Text *text;
-
-	text = r_malloc(sizeof(Text));
-
-	text->x = 0;
-	text->y = 0;
-	text->width = 0;
-	text->height = FONT0_HEIGHT;
-	text->effect = 0;
-	text->fx_fade_data = -255;
-	text->fx_wave_data = 0;
-	text->value = NULL;
-	text->length = -1;
-	text->max_length = 4096;
-	text->line_spacing = 2;
-
-	text->trashed = false;
-	text->colorized = false;
-
-	text->color1_r = 0xFF;
-	text->color1_g = 0xFF;
-	text->color1_b = 0xFF;
-
-	text->font = 1;
-	text->temp = false;
-
-	text->centered = false;
-	
-	text_set_value(text, value);
-
-	return text;
 }
 
 
@@ -605,5 +627,9 @@ text_get_rectangle(Text *text, SDL_Rect *r)
 		r->x = (screen->w - text->width) / 2 + text->x;
 	else
 		r->x = text->x;
+
+	/* Float effect makes the text go up slowly... */
+	if (text->effect & EFFECT_FLOAT)
+		text_effect_float(text, r);
 }
 

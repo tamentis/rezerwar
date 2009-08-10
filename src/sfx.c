@@ -44,13 +44,13 @@ Mix_Chunk *boom;
 Mix_Chunk *lazer;
 Mix_Chunk *menunav;
 Mix_Chunk *menuselect;
+Mix_Chunk *splash;
 
 void
 init_audio()
 {
 	/* Open a mixer */
 	if (Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 2048) >= 0)
-//	if (Mix_OpenAudio(48000, AUDIO_S16MSB, 2, 2048) >= 0)
 		has_sound = true;
 
 	if (has_sound)
@@ -87,6 +87,7 @@ sfx_unload_library()
 	Mix_FreeChunk(lazer);
 	Mix_FreeChunk(menunav);
 	Mix_FreeChunk(menuselect);
+	Mix_FreeChunk(splash);
 }
 
 
@@ -96,22 +97,14 @@ sfx_load_library()
 	if (!has_sound)
 		return;
 
-	tick1 = sfx_load_sample("sfx/tick1.ogg.wav");
-	tack1 = sfx_load_sample("sfx/tack1.ogg.wav");
-	horn = sfx_load_sample("sfx/horn.ogg.wav");
-	boom = sfx_load_sample("sfx/boom.ogg.wav");
-	lazer = sfx_load_sample("sfx/lazer.ogg.wav");
-	menunav = sfx_load_sample("sfx/menunav.ogg.wav");
-	menuselect = sfx_load_sample("sfx/menuselect.ogg.wav");
-	/*
-	tick1 = sfx_load_sample("sfx/tick1.ogg");
-	tack1 = sfx_load_sample("sfx/tack1.ogg");
-	horn = sfx_load_sample("sfx/horn.ogg");
-	boom = sfx_load_sample("sfx/boom.ogg");
-	lazer = sfx_load_sample("sfx/lazer.ogg");
-	menunav = sfx_load_sample("sfx/menunav.ogg");
-	menuselect = sfx_load_sample("sfx/menuselect.ogg");
-	*/
+	tick1 = sfx_load_sample("sfx/tick1.wav");
+	tack1 = sfx_load_sample("sfx/tack1.wav");
+	horn = sfx_load_sample("sfx/horn.wav");
+	boom = sfx_load_sample("sfx/boom.wav");
+	lazer = sfx_load_sample("sfx/lazer.wav");
+	menunav = sfx_load_sample("sfx/menunav.wav");
+	menuselect = sfx_load_sample("sfx/menuselect.wav");
+	menuselect = sfx_load_sample("sfx/splash.wav");
 }
 
 
@@ -122,6 +115,7 @@ void sfx_play_boom() { if (has_sound) Mix_PlayChannel(-1, boom, 0); }
 void sfx_play_lazer() { if (has_sound) Mix_PlayChannel(-1, lazer, 0); }
 void sfx_play_menunav() { if (has_sound) Mix_PlayChannel(-1, menunav, 0); }
 void sfx_play_menuselect() { if (has_sound) Mix_PlayChannel(-1, menuselect, 0); }
+void sfx_play_splash() { if (has_sound) Mix_PlayChannel(-1, menuselect, 0); }
 
 void
 sfx_play_music(char *filename)

@@ -39,6 +39,59 @@ extern SDL_Surface *sprites;
 extern Uint32 key;
 
 
+int *crm;
+int crm_len;
+int crm_def[] = {
+	0,	// empty
+	10,	// angle
+	10,	// tee
+	10,	// flat
+	8,	// knob
+	7,	// all
+	2,	// bomb
+	2,	// medic
+	-1	// NUL
+};
+
+
+/**
+ * Initialize the Cube Random map from the above defines.
+ */
+void
+cube_init_rmap()
+{
+	int i = 0;
+	int len = 0;	// number of ctypes
+	int j = 0;
+	int k = 0;
+
+	/* First, count what we have to alloc properly the map */
+	for (;; i++) {
+		if (crm_def[i] == -1) break;
+		crm_len += crm_def[i];
+		len++;
+	}
+
+	crm = r_malloc(crm_len);
+
+	for (i = 0; i < len; i++) {
+		for (k = 0; k < crm_def[i]; k++) {
+			crm[j] = i;
+			j++;
+		}
+
+	}
+
+	/*
+	printf("Initialized:\n");
+	for (i = 0; i < crm_len; i++) {
+		printf("%d \n", crm[i]);
+	}
+	*/
+}
+
+
+
 /* The following defines the plugs (opened pipe) on the specific cube styles
  * as defined in the block.png file. It is represented as 4 bits as follow:
  *
@@ -179,7 +232,7 @@ cube_new_random_mask(unsigned int mask)
 
 	/* Random type, according to the mask */
 	do {
-		r = rand() % CTYPE_MAX;
+		r = crm[rand() % crm_len];
 	} while ((mask & 1 << r) == 0);
 
 	cube->type = r;
@@ -384,3 +437,14 @@ cube_get_plug_status(Cube *cube1, byte plug1, Cube *cube2, byte plug2) {
 }
 
 
+int
+cube_get_abs_x(Cube *cube)
+{
+	return BOARD_LEFT + cube->x * BSIZE;
+}
+
+int
+cube_get_abs_y(Cube *cube)
+{
+	return BOARD_TOP + cube->y * BSIZE;
+}

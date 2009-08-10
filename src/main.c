@@ -36,6 +36,7 @@
 #include "SDL_mixer.h"
 
 #include "rezerwar.h"
+#include "../config.h"
 
 
 #define VERSION "rezerwar 0.3"
@@ -234,6 +235,8 @@ main(int ac, char **av)
 
 	init_gfx();
 
+	cube_init_rmap();
+
 	atexit(SDL_Quit);
 
 	/* Seed rand, load the sprites and set the alpha. */
@@ -250,7 +253,7 @@ main(int ac, char **av)
 	sfx_play_horn();
 
 	/* Normal flow... */
-	intro_studio();
+//	intro_studio();
 
 	/* Loop between game and menu as long as no "quit" was selected. */
 	do {

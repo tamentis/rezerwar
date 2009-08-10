@@ -50,6 +50,7 @@ hiscore_load()
 	FILE *fp;
 	char *buffer;
 	char *c;
+	char *path;
 
 	if (hs == NULL) {
 		hs = malloc(sizeof(HiScore*) * 10);
@@ -61,7 +62,9 @@ hiscore_load()
 			hs[i]->date = 0;
 		}
 
-		fp = fopen("hiscore.dat", "r");
+		path = cpath("hiscore.dat");
+		fp = fopen(path, "r");
+		r_free(path);
 		if (fp == NULL)
 			return;
 
@@ -178,11 +181,13 @@ hiscore_save()
 {
 	int i;
 	FILE *fp;
+	char *path;
 
-	fp = fopen("hiscore.dat", "w");
-	if (fp == NULL) {
+	path = cpath("hiscore.dat");
+	fp = fopen(path, "w");
+	r_free(path);
+	if (fp == NULL)
 		return;
-	}
 
 	for (i = 0; i < 10; i++) {
 		fprintf(fp, "%d:%u:%s\n", hs[i]->score, 

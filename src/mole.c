@@ -402,6 +402,7 @@ mole_destroys_left_pipe(Mole *mole)
 	mole->board->pipes[index]->status = 0;
 	mole->board->pipes[index]->mole = mole;
 	mole->flooded = true;
+	sfx_play_splash();
 }
 
 
@@ -412,5 +413,6 @@ mole_destroys_right_pipe(Mole *mole)
 	mole->board->pipes[BOARD_HEIGHT+index]->status = 0;
 	mole->board->pipes[BOARD_HEIGHT+index]->mole = mole;
 	mole->flooded = true;
+	sfx_play_splash();
 }
 

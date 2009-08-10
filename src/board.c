@@ -89,14 +89,14 @@ board_new(int difficulty)
 	b->rising_speed = NEXTLINE;
 	b->time_limit = -1;
 
-	/* Pipe status */
-	for (i = 0; i < BOARD_HEIGHT * 2; i++)
-		b->pipes[i] = pipe_new();
-
 	/* Mole related members */
 	b->last_mole = -1;
 	for (i = 0; i < MAX_MOLES; i++)
 		b->moles[i] = NULL;
+
+	/* Pipe status */
+	for (i = 0; i < BOARD_HEIGHT * 2; i++)
+		b->pipes[i] = pipe_new();
 
 	/* Texts (future OSD) related members */
 	b->texts = NULL;
@@ -913,6 +913,35 @@ board_cube_bomb(Board *board, Cube *cube)
 
 
 /**
+ * Easy wrapper to pass directly a cube.
+ */
+void
+board_add_points_from_cube(Board *board, int points, Cube *cube)
+{
+	board_add_points(board, points, cube_get_abs_x(cube) + 2,
+			cube_get_abs_y(cube) + BSIZE / 2);
+}
+
+
+/**
+ * Add new points to the score, displaying that on screen.
+ */
+void
+board_add_points(Board *board, int points, int x, int y)
+{
+	Text *tag;
+	char value[16];
+
+	board->score += points;
+
+	snprintf(value, 16, "%d", points);
+
+	tag = board_add_text(board, value, x, y);
+	tag->effect |= EFFECT_FADEOUT | EFFECT_FLOAT;
+}
+
+
+/**
  * A Cube Medic just dropped! If a broken pipe is around, fix it, else just
  * disappear!
  */
@@ -925,11 +954,13 @@ board_cube_medic(Board *board, Cube *cube)
 	if (cube->x == 0 && left_pipe->status != -1) {
 		left_pipe->mole->trashed = true;
 		left_pipe->status = -1;
-		board->score += POINTS_FIX_PIPE;
+		board_add_points(board, POINTS_FIX_PIPE, left_pipe->mole->x, 
+				left_pipe->mole->y);
 	} else if (cube->x == (BOARD_WIDTH - 1) && right_pipe->status != -1) {
 		right_pipe->mole->trashed = true;
 		right_pipe->status = -1;
-		board->score += POINTS_FIX_PIPE;
+		board_add_points(board, POINTS_FIX_PIPE, right_pipe->mole->x,
+				right_pipe->mole->y);
 	}
 
 	cube->trashed = true;
@@ -1394,9 +1425,9 @@ board_run_avalanche(Board *board, Cube *cube)
 	avtxt->temp = true;
 	text_set_color1(avtxt, 255, 0, 0);
 	text_set_color2(avtxt, 80, 0, 0);
-	avtxt->effect |= EFFECT_SHAKE|EFFECT_FADEOUT;
+	avtxt->effect |= EFFECT_SHAKE | EFFECT_FADEOUT;
 
-	board->score += POINTS_AVALANCHE;
+	board_add_points_from_cube(board, POINTS_AVALANCHE, cube);
 
 	/* Run each columns individually */
 	board_run_avalanche_column(board, cube);
@@ -1417,12 +1448,14 @@ board_run_avalanche_column(Board *board, Cube *cube)
 
 	for (y = cube->y; y < board->height; y++) {
 		target = board_get_cube(board, cube->x, y);
-		/* Spare the rocks */
+
 		if (target->type == CTYPE_ROCK)
 			continue;
+
 		if (target != NULL && target->trashed == false) {
 			board_trash_cube(board, target);
-			board->score += 20;
+			board_add_points_from_cube(board, POINTS_NETWORK_FACTOR,
+					target);
 		}
 	}
 }
@@ -1575,7 +1608,9 @@ board_destroy_network(Board *board, Cube *cube)
 		board_trash_cube(board, cube->network[i]);
 
 	board_trash_cube(board, cube);
-	board->score += (cube->network_size + 1) * POINTS_NETWORK_FACTOR;
+	board_add_points_from_cube(board, 
+			(cube->network_size + 1) * POINTS_NETWORK_FACTOR,
+			cube);
 
 	sfx_play_lazer();
 }
