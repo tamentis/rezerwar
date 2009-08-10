@@ -253,7 +253,7 @@ main(int ac, char **av)
 	sfx_play_horn();
 
 	/* Normal flow... */
-//	intro_studio();
+	intro_studio();
 
 	/* Loop between game and menu as long as no "quit" was selected. */
 	do {
@@ -305,6 +305,7 @@ main(int ac, char **av)
 	} while (loop);
 
 	/* Death */
+	SDL_FreeSurface(sprites);
 	sfx_unload_library();
 	Mix_CloseAudio();
 	hiscore_free();

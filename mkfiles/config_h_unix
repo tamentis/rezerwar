@@ -1,1 +1,2 @@
 #define DATAPATH	"/usr/share/games/rezerwar/data"
+#define CFGPATH		".rezerwar"

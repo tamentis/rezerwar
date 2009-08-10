@@ -1,20 +1,26 @@
 Rezerwar - a big mess of networked blocks and pipes 
 Copyright (C) Bertrand Janin (tamentis@neopulsar.org)
 
-Rezerwar is a puzzle game that could be quickly described as the unlegitimate
-child of a known tetromino game and a pipe game.
+WTF?
+-------------------------------------------------------------------------------
+  Rezerwar is a puzzle game that could be quickly described as the illegitimate
+  child of a known tetromino game and a pipe game. This child was ditched out
+  of the house early and enjoyed a wanderer life stealing toys from other kids.
 
 
 DISCLAIMER
 -------------------------------------------------------------------------------
-  This is a pet project, not in any way a finished product. As stated in the
-  license, I am not responsible in case of damage.
+  This is not a finished game, it could be renamed "My never-ending 2d puzzle
+  pet project game". The game might evolve radically or not change for 10
+  years. But it's OpenSource, so feel free to destroy/construct with me. I am
+  not responsible in case of damage, material or psychological.
 
 
 INSTALL
 -------------------------------------------------------------------------------
   From source, you will need gcc, make and SDL. If you plan on altering the
-  gfx, sfx or musics, you will need mikmod (musics), inkscape (gfx), lame.
+  gfx, sfx or musics, you will need mikmod (musics), inkscape (gfx), lame and
+  the gimp.
 
   Use ./configure to setup the build environment, with your platform as only
   parameter. For example:
@@ -47,37 +53,37 @@ NINTENDO WII
 
 SOUNDS
 -------------------------------------------------------------------------------
-  sampled from freesound.org with Audacity:
-    - Start Horn by Vann Westfold (freesound.org)
-    - Rotating sound "Clock Ticking" by jackstrebor (freesound.org)
-    - Falling block "deepkickclean" by johnnypanic (freesound.org)
-    - Bomb block "Boom" by DJ Chronos (freesound.org)
-    - Network boom "possiblelazer" aust_paul (freesound.org)
-    - Menu nav "Menu Nav 3" by DJ Chronos (freesound.org)
-    - Menu Select "f3-sfx-menu-select.wav" by broumbroum (freesound.org)
+  Edited/resampled with Audacity from sounds on freesound.org:
+    - Start Horn by Vann Westfold
+    - Rotating sound "Clock Ticking" by jackstrebor
+    - Falling block "deepkickclean" by johnnypanic
+    - Bomb block "Boom" by DJ Chronos
+    - Network boom "possiblelazer" aust_paul
+    - Menu nav "Menu Nav 3" by DJ Chronos
+    - Menu Select "f3-sfx-menu-select.wav" by broumbroum
+    - Drowning mole "ELEMENTS_WATER_02_Phasin-bubbles.wav" by suonho
 
 
 GRAPHICS
 -------------------------------------------------------------------------------
-  created with Inkscape and The Gimp
+  Created with Inkscape and The Gimp by myself.
 
 
 MUSIC
 -------------------------------------------------------------------------------
-  created with ChibiTracker
+  Created with ChibiTracker by myself too.
 
 
 HOW TO PLAY
 -------------------------------------------------------------------------------
   You have to position falling blocks to align their pipes and let water
   "flow" to create "networks". You get points by closing networks, the
-  bigger the network, the more points you get.
+  bigger the network, the more points you get. From time to time you will
+  get a Dynamite, this will help you clear your path.
 
-
-"NETWORK"
--------------------------------------------------------------------------------
-  A network is the name of a set of pipe-connected cubes. When a network is
-  closed with water, it gets destroyed.
+  You also might get annoyed by the moles digging around your board. If they
+  blow a pipe, this pipe won't be able to give water until you fix it with
+  a medic cube.
 
 
 AVALANCHE
@@ -106,6 +112,9 @@ UPDATES, PATCHES, LEVELS, MUSICS, etc.:
 -------------------------------------------------------------------------------
   I do accept all contributions, just drop me a mail at tamentis@neopulsar.org
   and I'll include your stuff in the next release, if there is any ;)
+
+  One good start is to checkout the SVN to get the real full source dump and
+  ./configure Debug.
 
 
 KNOWN ISSUES / TODO

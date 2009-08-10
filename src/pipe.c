@@ -87,7 +87,7 @@ board_render_pipes(Board *board)
 }
 
 void
-pipe_kill(Mole *pipe)
+pipe_kill(Pipe *pipe)
 {
 	r_free(pipe);
 }

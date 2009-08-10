@@ -62,9 +62,11 @@ Mix_Chunk*
 sfx_load_sample(char *filename)
 {
 	Mix_Chunk *sample;
-	const char *path = dpath(filename);
-
+	char *path;
+	
+	path = dpath(filename);
 	sample = Mix_LoadWAV(path);
+	r_free(path);
 
 	if (!sample) {
 		fprintf(stderr, "Mix_LoadWAV: %s\n", Mix_GetError());
@@ -104,7 +106,7 @@ sfx_load_library()
 	lazer = sfx_load_sample("sfx/lazer.wav");
 	menunav = sfx_load_sample("sfx/menunav.wav");
 	menuselect = sfx_load_sample("sfx/menuselect.wav");
-	menuselect = sfx_load_sample("sfx/splash.wav");
+	splash = sfx_load_sample("sfx/splash.wav");
 }
 
 

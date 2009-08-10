@@ -1,9 +1,13 @@
 Changes in 0.3:
 ===============
- - added 'l' as a validate key in menus (vi-key). 
+ - added moles crawling around the rezerwar that could damage the pipes
+ - added 'medic' cubes to fix the pipes after mole damage
  - cooler main menu.
+ - added support for direct fall (t*tris-style) with Up
+ - added support for Hold (t*tris-style) with Tab on PC and B on Wii.
+ - every scored points is now showed on the board and float/disappears.
  - fixed bug when added lines would merge with current block
    when too low.
- - added support for Hold (t*tris-style) with Tab on PC and B on Wii.
+ - fixing a pipe gives 500pts.
+ - added 'l' as a validate key in menus (vi-key). 
  - added version number in title
- - added support for direct fall (t*tris-style) with Up.

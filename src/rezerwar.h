@@ -442,6 +442,7 @@ typedef struct _pipe_s {
 } Pipe;
 
 Pipe		*pipe_new();
+void		 pipe_kill(Pipe *);
 
 
 /* Configuration structure (keep data between games) */

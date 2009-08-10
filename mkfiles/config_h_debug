@@ -1,1 +1,2 @@
 #define DATAPATH	"../data"
+#define CFGPATH		".rezerwar"

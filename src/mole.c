@@ -364,7 +364,7 @@ mole_generate_valid_position(int *x, int *y)
 	mole_load_mask();
 
 	while (invalid) {
-		index = rand() % mask_max;
+		index = (rand() * 10) % mask_max;
 		v1 = mole_mask->pixels + index;
 		v2 = mole_mask->pixels + index + MOLE_WIDTH;
 		if (*v1 == 0 && *v2 == 0)

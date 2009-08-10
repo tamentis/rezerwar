@@ -280,6 +280,19 @@ board_kill(Board *board)
 	board->bqueue = NULL;
 	board->bqueue_len = 0;
 
+	/* Mole cleanup */
+	for (i = 0; i < MAX_MOLES; i++) {
+		if (board->moles[i] == NULL)
+			continue;
+
+		mole_kill(board->moles[i]);
+	}
+
+	/* Pipe cleanup */
+	for (i = 0; i < BOARD_HEIGHT * 2; i++) {
+		pipe_kill(board->pipes[i]);
+	}
+
 	/* Level stuff */
 	r_free(board->next_level);
 

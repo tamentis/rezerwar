@@ -1,14 +1,10 @@
- - don't even bother drawing water if no block underneath.
- - Better music.
+ - more tutorials
+ - better music.
+ - 'Text' items should cache their surface, even with effects, for one frame
+   to the next.
+ - when destroying networks in a row, add combo effects to pts
  - create a boom sprite for the dynamite block.
- - make sure the score gets saved in a folder that makes sense. /var/games for
-   example.
- - Add flying birds.
- - Add digging moles.
- - Moles can attack the pipes, if a pipe is dead, you need to repair it with
-   a repair kit.
- - Build a tower on the right with little guys moving up and down stair cases
-   to fix the pipes?
- - What about a close-up of the factory as main menu?
+ - Add a plane passing with random messages.
  - Keep the list of all the updated rect and only update those.
- - Not using HOLD gives you extra points.
+ - go through the XXX/TODOs, move magic numbers as constants...
+ - make sure the original few lines are not self-triggering.

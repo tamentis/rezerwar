@@ -7,35 +7,32 @@
 TARGET=/usr/share/games/rezerwar
 DATATARGET=${TARGET}/data
 
-all: data_build build
+all: build
 
 build:
-	make -C src
+	${MAKE} -C src
 
 data_build:
-	make -C data/
+	${MAKE} -C data/
 
 clean:
-	make -C data/ clean
-	make -C src/ clean
+	${MAKE} -C data/ clean
+	${MAKE} -C src/ clean
 
 distclean: clean
-	make -C data/ clean
-	make -C src/ clean
+	${MAKE} -C data/ clean
+	${MAKE} -C src/ clean
 	rm -f Makefile MkConf
 	ln -s mkfiles/Makefile.default Makefile
 	ln -s mkfiles/Makefile.default MkConf
 
 install:
 	mkdir -p /usr/games
-	mkdir -p ${DATATARGET}/gfx/a_sky
-	mkdir -p ${DATATARGET}/gfx/splash
+	mkdir -p ${DATATARGET}/gfx
 	mkdir -p ${DATATARGET}/music
 	mkdir -p ${DATATARGET}/sfx
 	mkdir -p ${DATATARGET}/levels
 	cp -rf doc ${TARGET}
-	install -m 644 data/gfx/a_sky/sky.bmp ${DATATARGET}/gfx/a_sky/
-	install -m 644 data/gfx/splash/tdc.bmp ${DATATARGET}/gfx/splash/
 	install -m 644 data/gfx/*.bmp ${DATATARGET}/gfx/
 	install -m 644 data/levels/* ${DATATARGET}/levels/
 	install -m 644 data/sfx/*.wav ${DATATARGET}/sfx/

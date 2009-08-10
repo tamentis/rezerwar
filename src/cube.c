@@ -39,8 +39,9 @@ extern SDL_Surface *sprites;
 extern Uint32 key;
 
 
-int *crm;
-int crm_len;
+#define CRM_LEN	49
+int crm[CRM_LEN];
+int crm_len = CRM_LEN;
 int crm_def[] = {
 	0,	// empty
 	10,	// angle
@@ -50,7 +51,7 @@ int crm_def[] = {
 	7,	// all
 	2,	// bomb
 	2,	// medic
-	-1	// NUL
+	0	// rock
 };
 
 
@@ -61,33 +62,15 @@ void
 cube_init_rmap()
 {
 	int i = 0;
-	int len = 0;	// number of ctypes
 	int j = 0;
 	int k = 0;
 
-	/* First, count what we have to alloc properly the map */
-	for (;; i++) {
-		if (crm_def[i] == -1) break;
-		crm_len += crm_def[i];
-		len++;
-	}
-
-	crm = r_malloc(crm_len);
-
-	for (i = 0; i < len; i++) {
+	for (i = 0; i < CTYPE_MAX; i++) {
 		for (k = 0; k < crm_def[i]; k++) {
 			crm[j] = i;
 			j++;
 		}
-
 	}
-
-	/*
-	printf("Initialized:\n");
-	for (i = 0; i < crm_len; i++) {
-		printf("%d \n", crm[i]);
-	}
-	*/
 }
 
 
