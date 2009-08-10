@@ -1,3 +1,5 @@
+ - remove the check for CTYPE_ROCK on :1376 and :1390 and find out why the
+   rocks are getting water...
  - more tutorials
  - better music.
  - 'Text' items should cache their surface, even with effects, for one frame

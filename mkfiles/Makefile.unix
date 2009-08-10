@@ -19,12 +19,26 @@ clean:
 	${MAKE} -C data/ clean
 	${MAKE} -C src/ clean
 
-distclean: clean
+distclean: clean restore
 	${MAKE} -C data/ clean
 	${MAKE} -C src/ clean
-	rm -f Makefile MkConf
+
+restore:
+	rm -f Makefile MkConf config.h
 	ln -s mkfiles/Makefile.default Makefile
 	ln -s mkfiles/Makefile.default MkConf
+
+dist: restore
+	find . -name ".svn" -exec rm -rf {} \;
+	rm -f data/Makefile
+	rm -f data/gfx/Makefile
+	rm -rf data/wii/
+	rm -f data/gfx/*.xcf
+	rm -f data/gfx/*.svg
+	rm -rf data/gfx/tools/
+	rm -rf data/gfx/icons/
+	rm -f data/music/*.it
+	rm -f doc/DOWNLOADS
 
 install:
 	mkdir -p /usr/games

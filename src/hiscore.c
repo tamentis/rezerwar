@@ -72,7 +72,6 @@ hiscore_load()
 		len = fread(buffer, 1, 512, fp);
 		buffer[len] = 0;
 		fclose(fp);
-		printf("size:%d\n", (unsigned)len);
 
 		i = 0;
 		while ((c = strsep(&buffer, "\n")) != NULL && i < 10) {
