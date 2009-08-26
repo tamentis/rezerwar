@@ -36,7 +36,7 @@
 #include "SDL_mixer.h"
 
 #include "rezerwar.h"
-#include "../config.h"
+#include "config.h"
 
 
 #define VERSION "rezerwar 0.3"

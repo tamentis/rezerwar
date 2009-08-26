@@ -1,17 +1,10 @@
-# $Id$
-#
-# rezerwar Makefile for Linux
-# Copyright (c) 2009 Bertrand Janin
-#
+# $Id: Makefile 389 2009-08-10 05:19:30Z tamentis $
 
-
-include ../MkConf
 
 OBJECTS+=main.o menus.o events.o lvlhandler.o hiscore.o \
 	board.o block.o cube.o text.o path.o \
 	memory.o fatal.o sfx.o engine_sdl.o \
 	strlcpy.o chimneys.o sky.o mole.o pipe.o
-
 
 PROGRAM=rezerwar
 
@@ -20,7 +13,7 @@ all: $(PROGRAM)
 $(PROGRAM): $(OBJECTS)
 	$(CC) $(OBJECTS) $(LIBS) -o $(PROGRAM)
 
-$(OBJECTS): %.o: %.c rezerwar.h ../config.h
+$(OBJECTS): %.o: %.c rezerwar.h config.h
 	$(CC) $(CFLAGS) -c $<
 
 clean:

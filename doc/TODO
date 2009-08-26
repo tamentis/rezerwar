@@ -1,3 +1,4 @@
+ - rewrite the configure/make madness to fit mostly in the configure script.
  - remove the check for CTYPE_ROCK on :1376 and :1390 and find out why the
    rocks are getting water...
  - more tutorials

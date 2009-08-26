@@ -1,0 +1,43 @@
+# $Id: Makefile.unix 391 2009-08-10 12:59:28Z tamentis $
+
+all: build
+
+build: ${EXTRA_BUILD}
+	${MAKE} -C src
+
+build_win32:
+	${MAKE} -C data/gfx/icons/
+	${MAKE} -C src win32
+
+clean:
+	${MAKE} -C src/ clean
+
+distclean: clean restore
+	${MAKE} -C src/ clean
+
+dist: restore
+	find . -name ".svn" -exec rm -rf {} \;
+	rm -f data/Makefile
+	rm -f data/gfx/Makefile
+	rm -rf data/wii/
+	rm -f data/gfx/*.xcf
+	rm -f data/gfx/*.svg
+	rm -rf data/gfx/tools/
+	rm -rf data/gfx/icons/
+	rm -f data/music/*.it
+	rm -f doc/DOWNLOADS
+
+install:
+	mkdir -p ${TARGET_BIN} ${TARGET_DOC} ${TARGET_DATA}
+	mkdir -p ${TARGET_DATA}/gfx
+	mkdir -p ${TARGET_DATA}/music
+	mkdir -p ${TARGET_DATA}/sfx
+	mkdir -p ${TARGET_DATA}/levels
+	mkdir -p ${TARGET_DOC}
+	install -m 644 doc/* ${TARGET_DOC}/
+	install -m 644 data/gfx/*.bmp ${TARGET_DATA}/gfx/
+	install -m 644 data/levels/* ${TARGET_DATA}/levels/
+	install -m 644 data/sfx/*.wav ${TARGET_DATA}/sfx/
+	install -m 644 data/music/*.mp3 ${TARGET_DATA}/music/
+	install -m 755 src/rezerwar ${TARGET_BIN}/
+

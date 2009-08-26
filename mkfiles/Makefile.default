@@ -1,7 +1,0 @@
-# $Id$
-#
-# Dummy Makefile before ./configure has run
-# 
-
-all:
-	@echo "Please run ./configure first"

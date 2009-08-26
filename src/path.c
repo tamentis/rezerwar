@@ -34,7 +34,7 @@
 #include <SDL.h>
 
 #include "rezerwar.h"
-#include "../config.h"
+#include "config.h"
 
 
 
