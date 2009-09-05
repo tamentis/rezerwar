@@ -39,6 +39,20 @@ extern SDL_Surface *screen;
 extern SDL_Surface *sprites;
 extern Uint32 key;
 
+/* Colors of the text when displaying "4x combo!" */
+int combo_colors[(MAX_COMBO - 1) * 6] = {
+	/* foreground		border */
+	255, 255,   0,		120, 120,   0,	// 2x
+	255, 120,   0,		120,  60,   0,
+	255,   0,   0,		120,   0,   0,
+	255,   0, 120,		120,   0,  60,	// 5x
+	255,   0, 255,		120,   0, 120,
+	255, 120, 255,		120,  60, 120,
+	255, 255, 255,		120, 120, 120,
+	120, 255, 120,		 60, 120,  60,
+	  0, 255,   0,		  0, 120,   0,	// 10x
+};
+
 
 /**
  * @constructor
@@ -81,13 +95,14 @@ board_new(int difficulty)
 	b->current_block = NULL;
 	b->hold = NULL;
 	b->next_block = NULL;
-	b->block_speed = SPEED_NORMAL;
 	b->block_speed_factor = 1;
 	b->remains = -1;
 	b->launch_next = false;
 	b->next_line = 1;
 	b->rising_speed = NEXTLINE;
 	b->time_limit = -1;
+
+	board_set_difficulty_from_score(b);
 
 	/* Mole related members */
 	b->last_mole = -1;
@@ -110,6 +125,8 @@ board_new(int difficulty)
 
 	/* Player related */
 	b->score = 0;
+	b->settled = false;
+	b->combo = 0;
 	b->status = MTYPE_NOP;
 	b->paused = false;
 	b->gameover = false;
@@ -568,20 +585,35 @@ board_update_pipes(Board *board, uint32_t now)
 enum mtype
 board_update(Board *board, uint32_t now)
 {
+	/*
+	 * The game is in pause, this means no internal logic runs, nothing
+	 * is happening, not even teh 'elapsed' time flows.
+	 */
 	if (board->paused == true)
 		return MTYPE_NOP;
 
+	/*
+	 * Every seconds elapsed, decrement the amount of second left from
+	 * the time limit.
+	 */
 	board->elapsed += TICK;
 	if (board->elapsed > 1000) {
 		board->elapsed = 0;
 		board->time_limit--;
 	}
 
+	/*
+	 * If a time limit is set on this level and we've reached it, return
+	 * with an MTYPE stating so.
+	 */
 	if (board->time_limit == 0) {
 		board->gameover = true;
 		return MTYPE_GAMEOVER_TIMEOUT;
 	}
 
+	/*
+	 * Update all the game logic components
+	 */
 	board_update_blocks(board, now);
 	board_update_cubes(board, now);
 	board_update_water(board, now);
@@ -682,30 +714,30 @@ board_load_next_block(Board *board)
 	}
 
 	switch (board->difficulty) {
-		/* Only one cube blocks */
-		case DIFF_EASIEST:
-			board->next_block = block_new_one(board->allow_dynamite);
-			break;
-		/* One and two cubes blocks */
-		case DIFF_EASY:
-			r = rand() % 2 + 7;
-			board->next_block = block_new_of_type(r);
-			break;
-		/* One, two and three cubes blocks */
-		case DIFF_MEDIUM:
-			r = rand() % 4 + 7;
-			board->next_block = block_new_of_type(r);
-			break;
-		/* All the block types */
-		case DIFF_HARD:
-		default:
-			board->next_block = block_new_random();
-			break;
-		/* Only the tetrominoes */
-		case DIFF_ULTRA:
-			r = rand() % 7;
-			board->next_block = block_new_of_type(r);
-			break;
+	/* Only one cube blocks */
+	case DIFF_EASIEST:
+		board->next_block = block_new_one(board->allow_dynamite);
+		break;
+	/* One and two cubes blocks */
+	case DIFF_EASY:
+		r = rand() % 2 + 7;
+		board->next_block = block_new_of_type(r);
+		break;
+	/* One, two and three cubes blocks */
+	case DIFF_MEDIUM:
+		r = rand() % 4 + 7;
+		board->next_block = block_new_of_type(r);
+		break;
+	/* All the block types */
+	case DIFF_HARD:
+	default:
+		board->next_block = block_new_random();
+		break;
+	/* Only the tetrominoes */
+	case DIFF_ULTRA:
+		r = rand() % 7;
+		board->next_block = block_new_of_type(r);
+		break;
 	}
 }
 
@@ -848,6 +880,13 @@ board_transfer_cubes(Board *board, Block *block)
 	byte *pos = block->positions[block->current_position];
 	Cube *cube;
 
+	/*
+	 * This will let other functions in this loop know that a block
+	 * reach its final destination, it is reset to false at every
+	 * new loops.
+	 */
+	board->settled = true;
+
 	for (y = 0; y < block->size; y++) {
 		for (x = 0; x < block->size; x++) {
 			i = (y + block->y) * board->width + (x + block->x);
@@ -872,14 +911,14 @@ board_transfer_cubes(Board *board, Block *block)
 
 			/* If one of the cube is a bomb, trigger it! */
 			switch (cube->type) {
-				case CTYPE_BOMB:
-					board_cube_bomb(board, cube);
-					break;
-				case CTYPE_MEDIC:
-					board_cube_medic(board, cube);
-					break;
-				default:
-					break;
+			case CTYPE_BOMB:
+				board_cube_bomb(board, cube);
+				break;
+			case CTYPE_MEDIC:
+				board_cube_medic(board, cube);
+				break;
+			default:
+				break;
 			}
 		}
 	}
@@ -893,9 +932,11 @@ board_kill_row(Board *board, int row)
 {
 	int i;
 
-	for (i = board->width * row; i < board->width * (row + 1); i++)
-		if (board->cubes[i] != NULL)
-			board_trash_cube(board, board->cubes[i]);
+	for (i = board->width * row; i < board->width * (row + 1); i++) {
+		if (board->cubes[i] == NULL)
+			continue;
+		board_trash_cube(board, board->cubes[i]);
+	}
 }
 
 
@@ -904,9 +945,11 @@ board_kill_column(Board *board, int col)
 {
 	int i;
 
-	for (i = col; i < board->width * board->height; i += board->width)
-		if (board->cubes[i] != NULL)
-			board_trash_cube(board, board->cubes[i]);
+	for (i = col; i < board->width * board->height; i += board->width) {
+		if (board->cubes[i] == NULL)
+			continue;
+		board_trash_cube(board, board->cubes[i]);
+	}
 }
 
 
@@ -942,43 +985,131 @@ board_add_points_from_cube(Board *board, int points, Cube *cube)
 void
 board_add_points(Board *board, int points, int x, int y)
 {
-	Text *tag;
-	char value[16];
+	Text	*text;
+	char	 value[16];
+	int	 xpts = points * (board->combo + 1);
 
-	board->score += points;
+	board->score += xpts;
 
-	snprintf(value, 16, "%d", points);
+	snprintf(value, 16, "%d", xpts);
 
-	tag = board_add_text(board, value, x, y);
-	tag->effect |= EFFECT_FADEOUT | EFFECT_FLOAT;
+	text = board_add_text(board, value, x, y);
+	text->effect |= EFFECT_FADEOUT | EFFECT_FLOAT;
 }
 
 
 /**
- * A Cube Medic just dropped! If a broken pipe is around, fix it, else just
- * disappear!
+ * Load the combo color according to the array up there.
  */
+void
+board_get_combo_colors(Board *board, int *fr, int *fg, int *fb, int *br, int *bg, int *bb)
+{
+	int m = (board->combo - 2) * 6;
+
+	*fr = combo_colors[m + 0];
+	*fg = combo_colors[m + 1];
+	*fb = combo_colors[m + 2];
+	*br = combo_colors[m + 3];
+	*bg = combo_colors[m + 4];
+	*bb = combo_colors[m + 5];
+}
+
+/**
+ * Show combos on screen as they get added.
+ */
+void
+board_show_combo(Board *board)
+{
+	Text	*text;
+	char	 buf[16];
+	int	 fr, fg, fb,	// foreground color
+		 br, bg, bb;	// border color
+
+	if (board->combo < 2)
+		return;
+
+	board_get_combo_colors(board, &fr, &fg, &fb, &br, &bg, &bb);
+
+	snprintf(buf, 16, "%dx combo!", board->combo);
+	text = board_add_text(board, buf, 0, 200);
+	text->centered = true;
+	text->effect |= EFFECT_FADEOUT | EFFECT_SHAKE;
+	text_set_color1(text, fr, fg, fb);
+	text_set_color2(text, br, bg, bb);
+}
+
+
+/**
+ * A Cube Medic just dropped! If a broken pipe is around, fix it. In any case,
+ * it makes sure all the surrounding cubes are opened.
+ */
+#define MAKE_SIDE_CUBE_ALL(RX, RY) \
+	side_cube = board_get_cube(board, cube->x + RX, cube->y + RY); \
+	if (side_cube) side_cube->type = CTYPE_ALL;
 void
 board_cube_medic(Board *board, Cube *cube)
 {
-	Pipe *left_pipe = board->pipes[cube->y];
-	Pipe *right_pipe = board->pipes[cube->y + BOARD_HEIGHT];
+	Pipe	*left_pipe = board->pipes[cube->y];
+	Pipe	*right_pipe = board->pipes[cube->y + BOARD_HEIGHT];
+	Cube	*side_cube;
 	
+	/* In front of a broken pipe on the left */
 	if (cube->x == 0 && left_pipe->status != -1) {
 		left_pipe->mole->trashed = true;
 		left_pipe->status = -1;
 		board_add_points(board, POINTS_FIX_PIPE, left_pipe->mole->x, 
 				left_pipe->mole->y);
+
+	/* In front of a broken pipe on the right */
 	} else if (cube->x == (BOARD_WIDTH - 1) && right_pipe->status != -1) {
 		right_pipe->mole->trashed = true;
 		right_pipe->status = -1;
 		board_add_points(board, POINTS_FIX_PIPE, right_pipe->mole->x,
 				right_pipe->mole->y);
+
+	/*
+	 * Find adjacent cubes and convert them so that they all have an 
+	 * opening toward this new cube. For now, convert all of them into
+	 * 'all' cubes, TODO: make it smarter and convert to better cubes.
+	 */
+	} else {
+		/* Sides */
+		MAKE_SIDE_CUBE_ALL( 0,  1);
+		MAKE_SIDE_CUBE_ALL(-1,  0);
+		MAKE_SIDE_CUBE_ALL( 0, -1);
+		MAKE_SIDE_CUBE_ALL( 1,  0);
 	}
 
 	cube->trashed = true;
 }
 
+
+/**
+ * Set the speed of blocks, the number of moles, relative to the score.
+ */
+void
+board_set_difficulty_from_score(Board *board)
+{
+	if (board->score < 5000) {
+		board->block_speed = 1000;
+		board->max_moles = 2;
+	} else if (board->score < 10000) {
+		board->block_speed = 850;
+		board->max_moles = 3;
+	} else if (board->score < 15000) {
+		board->block_speed = 800;
+		board->max_moles = 4;
+	} else if (board->score < 20000) {
+		board->block_speed = 750;
+		board->max_moles = 5;
+	} else if (board->score < 25000) {
+		board->block_speed = 700;
+		board->max_moles = 6;
+	} else {
+		board->block_speed = 650;
+		board->max_moles = 7;
+	}
+}
 
 
 /**
@@ -991,18 +1122,9 @@ board_update_blocks(Board *board, uint32_t now)
 {
 	int i;
 
-	if (board->score < 1000)
-		board->block_speed = SPEED_NORMAL;
-	else if (board->score < 2000)
-		board->block_speed = SPEED_LESS5K;
-	else if (board->score < 5000)
-		board->block_speed = SPEED_LESS10K;
-	else if (board->score < 10000)
-		board->block_speed = SPEED_LESS25K;
-	else if (board->score < 20000)
-		board->block_speed = SPEED_LESS50K;
-	else
-		board->block_speed = SPEED_MAX;
+	board->settled = false;
+
+	board_set_difficulty_from_score(board);
 
 	if (board->block_speed_factor > 1) {
 		board->block_speed /= board->block_speed_factor;
@@ -1331,7 +1453,6 @@ board_dump_cube_map(Board *board)
 		}
 		printf("\n");
 	}
-
 }
 
 
@@ -1365,15 +1486,16 @@ board_remove_water(Board *board)
 void
 board_update_water(Board *board, uint32_t now)
 {
-	int i;
-	Cube *cube;
+	int	i,			// loop helper
+		combo = board->combo;	// backup the combo
+	Cube	*cube;			// current cube during the loops
 
 	board_remove_water(board);
 
 	/* Scan the left side... */
 	for (i = 0; i < board->height; i++) {
 		cube = board->cubes[i * board->width];
-		if (cube == NULL || cube->type == CTYPE_ROCK)
+		if (cube == NULL)
 			continue;
 
 		if (board->pipes[i]->status != -1)
@@ -1383,11 +1505,13 @@ board_update_water(Board *board, uint32_t now)
 			board_spread_water(board, cube, NULL, 1);
 	}
 
-	/* Now while scanning the right side, also check if water made it all
-	 * the way through, in this case, taint the network. */
+	/* 
+	 * Now while scanning the right side, also check if water made it all
+	 * the way through, in this case, taint the network.
+	 */
 	for (i = 0; i < board->height; i++) {
 		cube = board->cubes[(i + 1) * board->width - 1];
-		if (cube == NULL || cube->type == CTYPE_ROCK)
+		if (cube == NULL)
 			continue;
 
 		if (board->pipes[BOARD_HEIGHT+i]->status != -1)
@@ -1406,9 +1530,11 @@ board_update_water(Board *board, uint32_t now)
 		}
 	}
 
-	/* Now we know what networks are tainted, go through the left side
+	/*
+	 * Now we know what networks are tainted, go through the left side
 	 * again and look for a root cube (net length > 1), with red water (3),
-	 * and a network_integrity preserved. Toggle an avalanche if found. */
+	 * and a network_integrity preserved. Toggle an avalanche if found.
+	 */
 	for (i = 0; i < board->height; i++) {
 		cube = board->cubes[i * board->width];
 		if (cube == NULL) continue;
@@ -1417,6 +1543,21 @@ board_update_water(Board *board, uint32_t now)
 				cube->network_integrity == 1) {
 			if (cube->fade_status > 0) continue;
 			board_run_avalanche(board, cube);
+		}
+	}
+
+	/*
+	 * If we are in a loop with a newly settled block (reach its final
+	 * destination), check if the user has completed a new network (if
+	 * board->combo has changed). If no, reset it to zero.
+	 */
+	if (board->settled == true) {
+		if (combo == board->combo) {
+			board->combo = 0;
+		} else {
+			if (board->combo > MAX_COMBO)
+				board->combo = MAX_COMBO;
+			board_show_combo(board);
 		}
 	}
 }
@@ -1429,16 +1570,16 @@ board_update_water(Board *board, uint32_t now)
 void
 board_run_avalanche(Board *board, Cube *cube)
 {
-	int i;
-	Text *avtxt;
+	int	 i;
+	Text	*text;
 
 	/* Start a fading text... */
-	avtxt = board_add_text(board, "Excellent!", 240, 200);
-	avtxt->centered = true;
-	avtxt->temp = true;
-	text_set_color1(avtxt, 255, 0, 0);
-	text_set_color2(avtxt, 80, 0, 0);
-	avtxt->effect |= EFFECT_SHAKE | EFFECT_FADEOUT;
+	text = board_add_text(board, "Excellent!", 240, 200);
+	text->centered = true;
+	text->temp = true;
+	text_set_color1(text, 255, 0, 0);
+	text_set_color2(text, 80, 0, 0);
+	text->effect |= EFFECT_SHAKE | EFFECT_FADEOUT;
 
 	board_add_points_from_cube(board, POINTS_AVALANCHE, cube);
 
@@ -1617,8 +1758,13 @@ board_destroy_network(Board *board, Cube *cube)
 	if (cube->trashed == true)
 		return;
 
-	for (i = 0; i < cube->network_size; i++)
+	for (i = 0; i < cube->network_size; i++) {
 		board_trash_cube(board, cube->network[i]);
+	}
+
+	/* Only count combos for networks with more than one cubes. */
+	if (cube->network_size > 0)
+		board->combo++;
 
 	board_trash_cube(board, cube);
 	board_add_points_from_cube(board, 
@@ -1666,17 +1812,14 @@ board_spread_water(Board *board, Cube *cube, Cube *root, int water_type)
 	board_spread_attempt(board, cube, root,  0,  1, PLUG_SOUTH, PLUG_NORTH);
 	board_spread_attempt(board, cube, root, -1,  0, PLUG_WEST,  PLUG_EAST);
 
-	if (root == cube) {
-		if (cube->network_integrity == 1) {
-			board_destroy_network(board, cube);
-		}
+	if (root == cube && cube->network_integrity == 1) {
+		board_destroy_network(board, cube);
 	}
 }
 
 
 /**
  * Prepopulate a number of lines at the bottom of the board.
- * (Keywords: generate, line, fill)
  */
 void
 board_prepopulate(Board *board, int lines)
@@ -1766,7 +1909,9 @@ board_spawn_mole(Board *board)
 void
 board_update_moles(Board *board, uint32_t now)
 {
-	int i;
+	int	i,			// loop variable
+		alive_moles = 0;	// number of moles currently active
+
 
 	for (i = 0; i < MAX_MOLES; i++) {
 		if (board->moles[i] == NULL)
@@ -1778,7 +1923,13 @@ board_update_moles(Board *board, uint32_t now)
 			continue;
 		}
 
+		alive_moles++;
 		mole_update(board->moles[i], now);
+	}
+
+	/* Ensure we always have enough moles on screen. */
+	for (i = alive_moles; i < board->max_moles; i++) {
+		board_spawn_mole(board);
 	}
 }
 

@@ -1,3 +1,12 @@
+Changes in 0.4:
+===============
+ - improved in-game music
+ - record hiscores even when quitting
+ - added combo system (when completing networks in a row)
+ - medic cubes will also serve as cube converter if not used
+   against a broken side-pipe.
+ - regulated speed and number of moles from score.
+
 Changes in 0.3:
 ===============
  - added moles crawling around the rezerwar that could damage the pipes

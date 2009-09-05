@@ -176,16 +176,17 @@ handle_events_keydown(SDL_Event *event)
 		switch ((int)event->key.keysym.sym) {
 		case SDLK_ESCAPE:
 		case SDLK_q:
-			action = menu;
+			board->gameover = true;
+//			action = menu;
 			break;
 		case SDLK_F12:
 			action = fps;
 			break;
-		// XXX: remove after debug
+		/*
 		case SDLK_F11:
-//			board->current_block->falling = false;
 			board_spawn_mole(board);
 			break;
+		*/
 		case SDLK_LEFT:
 		case SDLK_h:
 			action = left;

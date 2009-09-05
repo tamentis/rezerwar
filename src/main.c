@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include <time.h>
 #ifdef __WII__
-#include <fat.h>
+#  include <fat.h>
 #endif
 
 #include "SDL.h"
@@ -39,7 +39,7 @@
 #include "config.h"
 
 
-#define VERSION "rezerwar 0.3"
+#define VERSION "rezerwar 0.4"
 
 
 Board *board;
@@ -106,7 +106,7 @@ init_conf(int ac, char **av)
 	conf->current_level = NULL;
 	conf->next_level = NULL;
 	conf->sound = true;
-	conf->fullscreen = has_flag(ac, av, "-fullscreen");
+	conf->fullscreen = has_flag(ac, av, "-f");
 }
 
 
@@ -118,21 +118,27 @@ int
 game_loop(char *levelname, enum ttype trans)
 {
 	Level *level;
-	uint32_t start, now, framecount = 0, fps_lastframe = 0,
-		  fps_lastframedisplay = 0;
-	int elapsed;
-	char fpsbuf[16];
-	enum mtype status = 0;
-	SDL_Event event;
+	uint32_t	start,		// when the game loop starts
+			now,		// time at the start of each loops
+			framecount = 0,	// nr of frame drawn in this TICK
+			lastframe = 0,	// whenever the last frame was drawn
+		  	lastfps = 0;	// whenever the last fps was drawn
+	int		elapsed;	// how long did the loop take
+	char		fpsbuf[16];	// temp char* for the fps
+	enum mtype	status = 0;	// current mode (menu, game, etc..)
+	SDL_Event	event;		// last loop event
 
 	sfx_play_music("music/level1.mp3");
 
-	/* Prepare board and load the first block. */
+	/*
+	 * Without explicit level name, start the board with 4 lines of blocks
+	 * and two moles.
+	 */
 	if (levelname == NULL) {
 		board = board_new(conf->difficulty);
 		board_prepopulate(board, 4);
-		board_spawn_mole(board);
-		board_spawn_mole(board);
+
+	/* With a level name, load everything from the level. */
 	} else {
 		level = lvl_load(levelname);
 		board = board_new_from_level(level);
@@ -144,8 +150,11 @@ game_loop(char *levelname, enum ttype trans)
 	board_launch_next_block(board);
 
 	/*
-	 * Main loop, every loop is separated by a TICK (~10ms). 
-	 * The board is refreshed every 1/MAXFPS seconds.
+	 * Main loop, every TICK (~10ms)
+	 *  - poll events and handle them, updating the game internals if needed.
+	 *  - go through the normal internal updates (not event-related).
+	 *  - draw the screen according to MAXFPS
+	 *  - wait whatever is left to get to a 10ms TICK.
 	 */
 	start = SDL_GetTicks();
 	while (status == MTYPE_NOP) {
@@ -153,29 +162,29 @@ game_loop(char *levelname, enum ttype trans)
 			status = handle_events(&event);
 		}
 
-		/* Exit the loop prematurely if we need to leave */
+		/* If a user event triggered a loop exit, do it now */
 		if (status != MTYPE_NOP)
 			break;
 
 		now = SDL_GetTicks();
 		status = board_update(board, now);
 
-		/* Print Frame Per Second. */
-		if (now - fps_lastframedisplay > 1000) {
+		/* Print FPS... every seconds. */
+		if (now - lastfps > 1000) {
 			if (board->show_fps) {
 				snprintf(fpsbuf, 16, "FPS: %u\n", framecount);
 				text_set_value(board->fps_t, fpsbuf);
 			} else {
 				text_set_value(board->fps_t, "");
 			}
-			fps_lastframedisplay = now;
+			lastfps = now;
 			framecount = 0;
 		}
 
 		/* Every 1.0 / MAXFPS seconds, refresh the screen. */
-		if (fps_lastframe < (now - (1000/MAXFPS))) {
+		if (lastframe < (now - (1000/MAXFPS))) {
 			framecount++;
-			fps_lastframe = now;
+			lastframe = now;
 			board_render(board);
 		}
 
@@ -198,11 +207,27 @@ game_loop(char *levelname, enum ttype trans)
 bool
 need_audio(int ac, char **av)
 {
-	return !has_flag(ac, av, "-nosound");
+	return !has_flag(ac, av, "-q");
 }
 
 
+/**
+ * Run when the user instanciate the executable with -h.
+ */
+void
+help(const char *progname)
+{
+	printf("usage: %s [-hvqf] levelfile\n", progname);
+	printf("    -h     This help screen\n");
+	printf("    -v     Just version number\n");
+	printf("    -q     Quiet, no sound\n");
+	printf("    -f     Fullscreen\n");
+}
 
+
+/**
+ * Big bang.
+ */
 int
 main(int ac, char **av)
 {
@@ -210,6 +235,19 @@ main(int ac, char **av)
 	bool loop = true;
 	char *path;
 	SDL_Joystick *js;
+
+	/* Version number only */
+	if (has_flag(ac, av, "-v")) {
+		printf("%s\n", VERSION);
+		return 0;
+	}
+
+	/* Help request */
+	if (has_flag(ac, av, "-h") || has_flag(ac, av, "--help") ||
+			has_flag(ac, av, "-help")) {
+		help(av[0]);
+		return 0;
+	}
 
 	/* Load the sprites first, avoid running init if something is fishy */
 	path = dpath("gfx/sprites.bmp");
@@ -235,16 +273,15 @@ main(int ac, char **av)
 
 	init_gfx();
 
+	/* Initialize the cube randomizer */
 	cube_init_rmap();
 
 	atexit(SDL_Quit);
 
 	/* Seed rand, load the sprites and set the alpha. */
 	srand(time(NULL));
-//	screen = SDL_SetVideoMode(640, 480, 32, sdl_flags);
 	key = SDL_MapRGB(screen->format, 0, 255, 255);
 	SDL_WM_SetCaption(VERSION, NULL);
-//	SDL_ShowCursor(false);
 
 	if (need_audio(ac, av))
 		init_audio();
@@ -258,53 +295,53 @@ main(int ac, char **av)
 	/* Loop between game and menu as long as no "quit" was selected. */
 	do {
 		switch (status) {
-			case MTYPE_BREAK:
-			case MTYPE_SUBMENU:
-				status = main_menu();
-				break;
-			case MTYPE_NEXTLEVEL:
-				r_free(conf->current_level);
-				conf->current_level = r_strcp(conf->next_level);
-				status = game_loop(conf->next_level, TTYPE_NONE);
-				break;
-			case MTYPE_REPLAY:
-				status = game_loop(conf->current_level, TTYPE_NONE);
-				break;
-			case MTYPE_GAMEOVER_WIN:
-				status = gameover_menu(status);
-				break;
-			case MTYPE_GAMEOVER_LOSE:
-				status = gameover_menu(status);
-				break;
-			case MTYPE_GAMEOVER_TIMEOUT:
-				status = gameover_menu(status);
-				break;
-			case MTYPE_GAMEOVER_HISCORE:
-				status = hiscore_prompt();
-				break;
-			case MTYPE_HISCORES:
-				status = MTYPE_SUBMENU;
-				hiscore_show();
-				break;
-			case MTYPE_QUIT:
-				loop = false;
-				break;
-			case MTYPE_PLAIN:
-				surface_pixel_close();
-//				surface_shutter_close();
-				status = game_loop(NULL, TTYPE_PIXEL_OPEN);
-				break;
-			case MTYPE_START:
-				surface_shutter_close();
-				r_free(conf->current_level);
-				conf->current_level = r_strcp("tuto_01");
+		case MTYPE_BREAK:
+		case MTYPE_SUBMENU:
+			status = main_menu();
+			break;
+		case MTYPE_NEXTLEVEL:
+			r_free(conf->current_level);
+			conf->current_level = r_strcp(conf->next_level);
+			status = game_loop(conf->next_level, TTYPE_NONE);
+			break;
+		case MTYPE_REPLAY:
+			status = game_loop(conf->current_level, TTYPE_NONE);
+			break;
+		case MTYPE_GAMEOVER_WIN:
+			status = gameover_menu(status);
+			break;
+		case MTYPE_GAMEOVER_LOSE:
+			status = gameover_menu(status);
+			break;
+		case MTYPE_GAMEOVER_TIMEOUT:
+			status = gameover_menu(status);
+			break;
+		case MTYPE_GAMEOVER_HISCORE:
+			status = hiscore_prompt();
+			break;
+		case MTYPE_HISCORES:
+			status = MTYPE_SUBMENU;
+			hiscore_show();
+			break;
+		case MTYPE_QUIT:
+			loop = false;
+			break;
+		case MTYPE_PLAIN:
+			surface_pixel_close();
+//			surface_shutter_close();
+			status = game_loop(NULL, TTYPE_PIXEL_OPEN);
+			break;
+		case MTYPE_START:
+			surface_shutter_close();
+			r_free(conf->current_level);
+			conf->current_level = r_strcp("tuto_01");
 
-				status = game_loop(conf->current_level, TTYPE_SHUTTER_OPEN);
-				break;
+			status = game_loop(conf->current_level, TTYPE_SHUTTER_OPEN);
+			break;
 		}
 	} while (loop);
 
-	/* Death */
+	/* Death and cleanup */
 	SDL_FreeSurface(sprites);
 	sfx_unload_library();
 	Mix_CloseAudio();
@@ -315,5 +352,3 @@ main(int ac, char **av)
 
 	return 0;
 }
-
-

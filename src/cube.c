@@ -85,11 +85,12 @@ cube_init_rmap()
  *     4
  */
 
-byte cube_plugs[] = {
-	0,  9, 11, 10,  8, 15, 0,
-	0,  3,  7,  5,  1, 15, 0,
-	0,  6, 14, 10,  2, 15, 0,
-	0, 12, 13,  5,  4, 15, 0
+#define PLUG_MAX 9
+byte cube_plugs[PLUG_MAX * 4] = {
+	0,  9, 11, 10,  8, 15, 0, 0, 0,
+	0,  3,  7,  5,  1, 15, 0, 0, 0,
+	0,  6, 14, 10,  2, 15, 0, 0, 0,
+	0, 12, 13,  5,  4, 15, 0, 0, 0,
 };
 
 
@@ -100,7 +101,7 @@ byte cube_plugs[] = {
 byte
 cube_get_plugs(Cube *cube)
 {
-	return cube_plugs[cube->current_position * 7 + cube->type];
+	return cube_plugs[cube->current_position * PLUG_MAX + cube->type];
 }
 
 

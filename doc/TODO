@@ -1,13 +1,34 @@
- - rewrite the configure/make madness to fit mostly in the configure script.
- - remove the check for CTYPE_ROCK on :1376 and :1390 and find out why the
-   rocks are getting water...
+DISTRIBUTION:
+ - test configure on win32, haiku, wii, freebsd.
+
+DATA:
  - more tutorials
- - better music.
- - 'Text' items should cache their surface, even with effects, for one frame
-   to the next.
- - when destroying networks in a row, add combo effects to pts
+ - create a level2 music, a tad faster, when it gets harder.
  - create a boom sprite for the dynamite block.
  - Add a plane passing with random messages.
+
+GAME PLAY:
+ - show a little fountain/leak when a network is opened.
+ - make sure new moles are created when other die.
+ - when difficulty increases, more moles appear.
+ - medics and dynamite should not interfere with combos.
+ - let people enter their name without keyboard (consoles...)
+ - make sure the original few lines are not self-triggering.
+   (and all other newly generated lines actually)
+ - redefine what the difficulty changes.
+ - find out why the comboes do not work sometimes (add printf in
+   the zeroing logic).
+
+OPTIMIZATION:
+ - 'Text' items should cache their surface, even with effects, for one frame
+   to the next.
  - Keep the list of all the updated rect and only update those.
  - go through the XXX/TODOs, move magic numbers as constants...
- - make sure the original few lines are not self-triggering.
+
+DOCUMENTATION / SITE:
+ - startup flags.
+ - document the Combos, Avalanche, etc...
+ - move the site to be a little friendlier, and create some basic documentation.
+ - how to use medics
+
+

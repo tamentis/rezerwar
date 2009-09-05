@@ -57,14 +57,7 @@
 #define MAX_MOLES		8
 #define MOLE_TRAIL		48
 #define MAX_SCORETAGS		8
-
-/* Speed relative to difficulty */
-#define SPEED_NORMAL		1000
-#define SPEED_LESS5K		800
-#define SPEED_LESS10K		500
-#define SPEED_LESS25K		200
-#define SPEED_LESS50K		100
-#define SPEED_MAX		50
+#define MAX_COMBO		10
 
 /* Points for specific actions */
 #define POINTS_FIX_PIPE		500
@@ -494,6 +487,7 @@ typedef struct _board_s {
 	/* moles */
 	Mole *moles[MAX_MOLES];
 	int last_mole;
+	int max_moles;
 	/* pipes */
 	Pipe *pipes[BOARD_HEIGHT*2];
 	/* texts */
@@ -511,6 +505,8 @@ typedef struct _board_s {
 	void *prompt_data;
 	/* player stuff */
 	int score;
+	bool settled;		// a block settled during this loop
+	int combo;		// number of hits in a row
 	bool paused;		// stop the game flow when true
 	bool silent;		// do not show paused or score
 	bool gameover;		// stop the game completely on next tick
@@ -535,6 +531,7 @@ void		 board_prepopulate(Board *, int);
 void		 board_add_line(Board *);
 void		 board_add_points_from_cube(Board *, int, Cube *);
 void		 board_add_points(Board *, int, int, int);
+void		 board_set_difficulty_from_score(Board *);
 /* board/cube funcs */
 void		 board_add_cube(Board *);
 void		 board_trash_cube(Board *, Cube *);
