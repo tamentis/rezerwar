@@ -83,6 +83,56 @@ hiscore_load()
 	}
 }
 
+
+/**
+ * In prompt mode, capture all the characters from the keyboard until
+ * return. Return true when return was entered.
+ */
+bool
+handle_events_prompt(SDL_keysym keysym, Text *text)
+{
+	char ch;
+
+	if ((keysym.unicode & 0xFF80) != 0)
+		return false;
+
+	if (keysym.sym == SDLK_BACKSPACE) {
+		text_del_last_char(text);
+		return false;
+	}
+
+	if (keysym.sym == SDLK_RETURN) {
+		return true;
+	}
+
+	ch = keysym.unicode & 0x7F;
+	if (isalnum(ch) != 0)
+		text_add_char(text, ch);
+
+	return false;
+}
+
+
+bool
+prompt_polling(Text *prompt)
+{
+	SDL_Event event;
+	bool done = false;
+
+	while (SDL_PollEvent(&event)) {
+		if (event.type == SDL_JOYBUTTONDOWN) {
+			text_set_value(prompt, "wiiuser");
+			done = true;
+		}
+		if (event.type != SDL_KEYDOWN)
+			continue;
+		done = handle_events_prompt(event.key.keysym, prompt);
+	}
+
+	return done;
+}
+
+
 enum mtype
 hiscore_prompt() {
 	SDL_Surface *back = copy_screen();

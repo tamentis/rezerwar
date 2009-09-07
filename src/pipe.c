@@ -61,15 +61,19 @@ void
 board_render_pipes(Board *board)
 {
 	int i;
-	int offsets[] = { 0, 40, 80, 40 };
+	int offsets[] = {
+		0, 
+		PIPE_SPRITE_SIZE,
+		PIPE_SPRITE_SIZE * 2,
+		PIPE_SPRITE_SIZE
+	};
 	SDL_Rect src, dest;
 
-	/* Hard coded positions in the sprites file */
-	// TODO: move that as constants
-	src.x = 161;
-	src.y = 298;
-	src.w = dest.w = 40;
-	src.h = dest.h = 40;
+	/* Positions in the sprite file */
+	src.x = PIPE_SPRITE_LEFT;
+	src.y = PIPE_SPRITE_TOP;
+	src.w = dest.w = PIPE_SPRITE_SIZE;
+	src.h = dest.h = PIPE_SPRITE_SIZE;
 
 	for (i = 1; i < BOARD_HEIGHT * 2; i++) {
 		if (board->pipes[i]->status != -1) {

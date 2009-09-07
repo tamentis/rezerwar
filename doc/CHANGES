@@ -1,11 +1,18 @@
 Changes in 0.4:
 ===============
+ - dynamites are now explicitely exploding (bomberman-style)
  - improved in-game music
- - record hiscores even when quitting
  - added combo system (when completing networks in a row)
+ - record hiscores even when quitting
  - medic cubes will also serve as cube converter if not used
    against a broken side-pipe.
  - regulated speed and number of moles from score.
+ - fixed bug when blocks are overflowing.
+ - speeding up the current block doesn't make all the other blocks
+   fall faster, but all the other blocks are now falling faster by
+   default.
+ - higher score means faster rising floor, rising floors are now
+   missing left and right blocks, avoiding self-triggering lines.
 
 Changes in 0.3:
 ===============

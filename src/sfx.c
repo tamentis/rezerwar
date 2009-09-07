@@ -47,7 +47,7 @@ Mix_Chunk *menuselect;
 Mix_Chunk *splash;
 
 void
-init_audio()
+sfx_init()
 {
 	/* Open a mixer */
 	if (Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 2048) >= 0)

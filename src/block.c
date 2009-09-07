@@ -565,6 +565,10 @@ block_get_surface(Block *block)
 			i = y * block->size + x;
 			if (pos[i] > 0) {
 				cube = block->cubes[pos[i]-1];
+
+				if (cube == NULL)
+					continue;
+
 				cube_surface = cube_get_surface(cube);
 
 				dr.x = x * BSIZE;
@@ -577,16 +581,6 @@ block_get_surface(Block *block)
 	}
 
 	return s;
-}
-
-
-void
-block_get_rectangle(Block *block, SDL_Rect *r)
-{
-	r->w = block->size * BSIZE;
-	r->h = block->size * BSIZE;
-	r->x = block->x * BSIZE;
-	r->y = block->y * BSIZE;
 }
 
 

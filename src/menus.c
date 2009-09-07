@@ -287,7 +287,7 @@ menu_toggle_item(Menu *menu, MenuItem *item)
 		case TOGGLE_FULLSCREEN:
 			conf->fullscreen = !conf->fullscreen;
 #ifdef _WIN32
-			init_gfx();
+			gfx_init();
 #else
 			if (SDL_WM_ToggleFullScreen(screen) == 0)
 				fatal("Unable to toggle fullscreen/windowed mode.");
@@ -530,6 +530,9 @@ menu_runner(Menu *menu)
 }
 
 
+/**
+ * Instanciate the main menu
+ */
 int
 main_menu()
 {
@@ -537,14 +540,13 @@ main_menu()
 	int status;
 
 	menu = new_menu();
-	menu->x = -145;
-	menu->y = 155;
+	menu->x = MAIN_MENU_LEFT;
+	menu->y = MAIN_MENU_TOP;
 	menu->bg_image = dpath("gfx/gamemenu.bmp");
 
 	menu_load_main(menu);
 
 	sfx_play_music("music/menu.mp3");
-//	sfx_play_music("music/menu.ogg");
 	status = menu_runner(menu);
 
 	menu_kill(menu);

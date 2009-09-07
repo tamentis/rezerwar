@@ -318,7 +318,7 @@ text_effect_fadeout(Text *text, SDL_Surface *s)
 
 
 /**
- * Try to colorize. TODO, make this not 32-bit only.
+ * Try to colorize.
  */
 void
 text_effect_colorize(Text *text, SDL_Surface *s)
@@ -357,7 +357,6 @@ text_effect_colorize(Text *text, SDL_Surface *s)
 	default:
 		break;
 	}
-
 }
 
 

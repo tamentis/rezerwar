@@ -161,6 +161,36 @@ cube_new_rock()
 	return cube;
 }
 
+/**
+ * Create a medic.
+ */
+Cube *
+cube_new_medic()
+{
+	Cube *cube;
+
+	cube = cube_new(0);
+	cube->type = CTYPE_MEDIC;
+
+	return cube;
+}
+
+
+/**
+ * Create a bomb.
+ */
+Cube *
+cube_new_bomb()
+{
+	Cube *cube;
+
+	cube = cube_new(rand() % 4);
+	cube->type = CTYPE_BOMB;
+
+	return cube;
+}
+
+
 void
 cube_network_add(Cube *root, Cube *cube)
 {
@@ -286,6 +316,8 @@ cube_new_from_char(char c)
 		case 'T': cube = cube_new_type(2, CTYPE_TEE); break;
 		case '{': cube = cube_new_type(3, CTYPE_TEE); break;
 		case 'R': cube = cube_new_rock(); break;
+		case 'M': cube = cube_new_medic(); break;
+		case 'B': cube = cube_new_bomb(); break;
 		case '.':
 		default:
 			break;
@@ -349,16 +381,6 @@ cube_get_surface(Cube *cube)
 		surface_greyscale(s);
 
 	return s;
-}
-
-
-void
-cube_get_rectangle(Cube *cube, SDL_Rect *r)
-{
-	r->w = BSIZE;
-	r->h = BSIZE;
-	r->x = cube->x * BSIZE;
-	r->y = cube->y * BSIZE;
 }
 
 

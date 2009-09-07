@@ -1,29 +1,33 @@
-DISTRIBUTION:
+ROADMAP TO 0.4:
+ - go through the game's tutorials,
+    - add a tutorial about medics
+    - add a tutorial about moles
+ - find out why 'q' on the intro/description seems to hang.
  - test configure on win32, haiku, wii, freebsd.
+ - create a mario transition, optimized and clean, remove
+   the other ones.
+ - documentation.
+ - tab all the structs.
+ - add a comment on each func.
+
 
 DATA:
  - more tutorials
  - create a level2 music, a tad faster, when it gets harder.
- - create a boom sprite for the dynamite block.
  - Add a plane passing with random messages.
+ - create a medic overlay sprite for the medic block mode.
 
 GAME PLAY:
  - show a little fountain/leak when a network is opened.
- - make sure new moles are created when other die.
- - when difficulty increases, more moles appear.
- - medics and dynamite should not interfere with combos.
  - let people enter their name without keyboard (consoles...)
- - make sure the original few lines are not self-triggering.
-   (and all other newly generated lines actually)
- - redefine what the difficulty changes.
- - find out why the comboes do not work sometimes (add printf in
-   the zeroing logic).
+    * create 'Prompt' which wraps 'Text'
+    * add a blinking cursor to show the current position.
 
 OPTIMIZATION:
  - 'Text' items should cache their surface, even with effects, for one frame
    to the next.
  - Keep the list of all the updated rect and only update those.
- - go through the XXX/TODOs, move magic numbers as constants...
+ - make the transitions smarter.
 
 DOCUMENTATION / SITE:
  - startup flags.

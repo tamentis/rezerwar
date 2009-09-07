@@ -40,6 +40,7 @@
 extern Board *board;
 extern Configuration *conf;
 SDL_Surface *screen;
+Block *speedy;			// currently accelerated block
 
 
 /**
@@ -51,7 +52,10 @@ handle_events_keyup(SDL_Event *event)
 	switch ((int)event->key.keysym.sym) {
 		case SDLK_DOWN:
 		case SDLK_j:
-			board->block_speed_factor = 1;
+			if (board->current_block == speedy) {
+				speedy->speed *= 8;
+				speedy = NULL;
+			}
 			break;
 		case SDLK_RIGHT:
 		case SDLK_l:
@@ -66,54 +70,6 @@ handle_events_keyup(SDL_Event *event)
 	}
 
 	return MTYPE_NOP;
-}
-
-
-/**
- * In prompt mode, capture all the characters from the keyboard until
- * return. Return true when return was entered.
- */
-bool
-handle_events_prompt(SDL_keysym keysym, Text *text)
-{
-	char ch;
-
-	if ((keysym.unicode & 0xFF80) != 0)
-		return false;
-
-	if (keysym.sym == SDLK_BACKSPACE) {
-		text_del_last_char(text);
-		return false;
-	}
-
-	if (keysym.sym == SDLK_RETURN) {
-		return true;
-	}
-
-	ch = keysym.unicode & 0x7F;
-	if (isalnum(ch) != 0)
-		text_add_char(text, ch);
-
-	return false;
-}
-
-
-bool
-prompt_polling(Text *prompt)
-{
-	SDL_Event event;
-	bool done = false;
-
-	while (SDL_PollEvent(&event)) {
-		if (event.type == SDL_JOYBUTTONDOWN) {
-			text_set_value(prompt, "wiiuser");
-			done = true;
-		}
-		if (event.type != SDL_KEYDOWN) continue;
-		done = handle_events_prompt(event.key.keysym, prompt);
-	}
-
-	return done;
 }
 
 
@@ -250,7 +206,10 @@ handle_events_keydown(SDL_Event *event)
 			board_render(board);
 			break;
 		case down:
-			board->block_speed_factor = 10;
+			if (board->current_block != NULL) {
+				speedy = board->current_block;
+				speedy->speed /= 8;
+			}
 			break;
 		case fall:
 			board_block_fall(board);

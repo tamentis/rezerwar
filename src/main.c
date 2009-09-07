@@ -271,7 +271,7 @@ main(int ac, char **av)
 
 	init_conf(ac, av);
 
-	init_gfx();
+	gfx_init();
 
 	/* Initialize the cube randomizer */
 	cube_init_rmap();
@@ -284,10 +284,17 @@ main(int ac, char **av)
 	SDL_WM_SetCaption(VERSION, NULL);
 
 	if (need_audio(ac, av))
-		init_audio();
+		sfx_init();
 
 	sfx_load_library();
 	sfx_play_horn();
+
+	/* DEBUG / XXX */
+	/*
+	conf->current_level = r_strcp("debug");
+	status = game_loop(conf->current_level, 0);
+	return -1;
+	*/
 
 	/* Normal flow... */
 	intro_studio();

@@ -95,11 +95,9 @@ board_new(int difficulty)
 	b->current_block = NULL;
 	b->hold = NULL;
 	b->next_block = NULL;
-	b->block_speed_factor = 1;
 	b->remains = -1;
 	b->launch_next = false;
 	b->next_line = 1;
-	b->rising_speed = NEXTLINE;
 	b->time_limit = -1;
 
 	board_set_difficulty_from_score(b);
@@ -108,6 +106,9 @@ board_new(int difficulty)
 	b->last_mole = -1;
 	for (i = 0; i < MAX_MOLES; i++)
 		b->moles[i] = NULL;
+
+	/* Initial flames initialization */
+	board_initialize_flames(b);
 
 	/* Pipe status */
 	for (i = 0; i < BOARD_HEIGHT * 2; i++)
@@ -208,6 +209,7 @@ board_new_from_level(Level *level)
 	board->bqueue = r_malloc(sizeof(Block *) * board->bqueue_len);
 	for (i = 0; i < board->bqueue_len; i++) {
 		block = block_new_of_type(level->queue[i]->type);
+		block->speed = board->block_speed;
 		block->current_position = level->queue[i]->pos;
 		for (j = 0; j < level->queue[i]->cmap_len; j++) {
 			cube_kill(block->cubes[j]);
@@ -500,6 +502,9 @@ board_render(Board *board)
 	/* Redraw all the cubes. */
 	board_render_cubes(board);
 
+	/* Render all the explosions/flames */
+	board_render_flames(board);
+
 	/* Moles */
 	board_render_moles(board);
 
@@ -616,6 +621,7 @@ board_update(Board *board, uint32_t now)
 	 */
 	board_update_blocks(board, now);
 	board_update_cubes(board, now);
+	board_update_flames(board, now);
 	board_update_water(board, now);
 	board_update_moles(board, now);
 	board_update_pipes(board, now);
@@ -658,7 +664,7 @@ board_update(Board *board, uint32_t now)
 
 /**
  * Generate a random line of cube at the bottom and move everything up one
- * cube.
+ * cube. Do whatever you can to avoid self-triggering lines.
  */
 void
 board_add_line(Board *board)
@@ -666,6 +672,7 @@ board_add_line(Board *board)
 	int i;
 	Cube *cube;
 
+	/* Raise all the cubes of the board of one */
 	for (i = 0; i < (BOARD_WIDTH * BOARD_HEIGHT); i++) {
 		cube = board->cubes[i];
 
@@ -681,6 +688,7 @@ board_add_line(Board *board)
 		board->cubes[i - BOARD_WIDTH] = board->cubes[i];
 	}
 
+	/* Populate this new free line with random blocks */
 	board_prepopulate(board, 1);
 }
 
@@ -739,6 +747,8 @@ board_load_next_block(Board *board)
 		board->next_block = block_new_of_type(r);
 		break;
 	}
+
+	board->next_block->speed = board->block_speed;
 }
 
 
@@ -797,7 +807,6 @@ void
 board_render_blocks(Board *board)
 {
 	byte i;
-	SDL_Rect r;
 	Block *block;
 	SDL_Surface *s;
 
@@ -811,60 +820,50 @@ board_render_blocks(Board *board)
 			continue;
 
 		s = block_get_surface(block);
-		block_get_rectangle(block, &r);
 
-		r.x += board->offset_x;
-		r.y += board->offset_y;
+		gfx_toscreen(s, block->x * BSIZE + BOARD_LEFT,
+				block->y * BSIZE + BOARD_TOP);
 
-		SDL_BlitSurface(s, NULL, screen, &r);
-
-		SDL_FreeSurface(s);
+		gfx_free(s);
 	}
 }
 
 
 /**
- * Handle the graphic update the of the top "next" block.
+ * Handle the rendering of the top "next" block.
  */
 void
 board_render_next(Board *board)
 {
-	SDL_Surface *s;
-	SDL_Rect r;
+	SDL_Surface	*surface;
+	Block		*block = board->next_block;
 
-	if (board->next_block != NULL) {
-		s = block_get_surface(board->next_block);
-		block_get_rectangle(board->next_block, &r);
+	if (block != NULL) {
+		surface = block_get_surface(block);
 
-		/* Increment of the position of the preview window. */
-		r.x = 166 + BSIZE / 2;
-		r.y = 32 + BSIZE / 2;
-
-		SDL_BlitSurface(s, NULL, screen, &r);
-		SDL_FreeSurface(s);
+		gfx_toscreen(surface, 
+				block->x * BSIZE + NEXT_BLOCK_LEFT + BSIZE / 2,
+				block->y * BSIZE + NEXT_BLOCK_TOP + BSIZE / 2);
+		gfx_free(surface);
 	}
 }
 
 
 /**
- * Handle the graphic update the of the top "hold" block.
+ * Handle the rendering of the top "hold" block.
  */
 void
 board_render_hold(Board *board)
 {
-	SDL_Surface *s;
-	SDL_Rect r;
+	SDL_Surface	*surface;
+	Block		*block = board->hold;
 
-	if (board->hold != NULL) {
-		s = block_get_surface(board->hold);
-		block_get_rectangle(board->hold, &r);
+	if (block != NULL) {
+		surface = block_get_surface(block);
 
-		/* Increment of the position of the preview window. */
-		r.x = 60 + BSIZE / 2;
-		r.y = 222 + BSIZE / 2;
-
-		SDL_BlitSurface(s, NULL, screen, &r);
-		SDL_FreeSurface(s);
+		gfx_toscreen(surface, block->x * BSIZE + HOLD_LEFT + BSIZE / 2,
+				      block->y * BSIZE + HOLD_TOP + BSIZE / 2);
+		gfx_free(surface);
 	}
 }
 
@@ -876,16 +875,17 @@ board_render_hold(Board *board)
 void
 board_transfer_cubes(Board *board, Block *block)
 {
-	int x, y, i, j;
-	byte *pos = block->positions[block->current_position];
-	Cube *cube;
+	int	 x, y, i, j;
+	byte	*pos = block->positions[block->current_position];
+	Cube	*cube;
 
 	/*
 	 * This will let other functions in this loop know that a block
 	 * reach its final destination, it is reset to false at every
 	 * new loops.
 	 */
-	board->settled = true;
+	if (board->current_block == block)
+		board->settled = true;
 
 	for (y = 0; y < block->size; y++) {
 		for (x = 0; x < block->size; x++) {
@@ -950,21 +950,6 @@ board_kill_column(Board *board, int col)
 			continue;
 		board_trash_cube(board, board->cubes[i]);
 	}
-}
-
-
-/**
- * A Cube Bomb just dropped! Execute its explosion and clear it up!
- */
-void
-board_cube_bomb(Board *board, Cube *cube)
-{
-	if (cube->current_position % 2 == 0)
-		board_kill_row(board, cube->y);
-	else
-		board_kill_column(board, cube->x);
-
-	sfx_play_boom();
 }
 
 
@@ -1052,7 +1037,10 @@ board_cube_medic(Board *board, Cube *cube)
 	Pipe	*left_pipe = board->pipes[cube->y];
 	Pipe	*right_pipe = board->pipes[cube->y + BOARD_HEIGHT];
 	Cube	*side_cube;
-	
+
+	/* Medics shouldn't stop combos from happening, they are good things */
+	board->settled = false;
+
 	/* In front of a broken pipe on the left */
 	if (cube->x == 0 && left_pipe->status != -1) {
 		left_pipe->mole->trashed = true;
@@ -1070,7 +1058,7 @@ board_cube_medic(Board *board, Cube *cube)
 	/*
 	 * Find adjacent cubes and convert them so that they all have an 
 	 * opening toward this new cube. For now, convert all of them into
-	 * 'all' cubes, TODO: make it smarter and convert to better cubes.
+	 * 'all-way' cubes.
 	 */
 	} else {
 		/* Sides */
@@ -1093,21 +1081,27 @@ board_set_difficulty_from_score(Board *board)
 	if (board->score < 5000) {
 		board->block_speed = 1000;
 		board->max_moles = 2;
+		board->rising_speed = 30;
 	} else if (board->score < 10000) {
 		board->block_speed = 850;
 		board->max_moles = 3;
+		board->rising_speed = 25;
 	} else if (board->score < 15000) {
 		board->block_speed = 800;
 		board->max_moles = 4;
+		board->rising_speed = 25;
 	} else if (board->score < 20000) {
 		board->block_speed = 750;
 		board->max_moles = 5;
+		board->rising_speed = 20;
 	} else if (board->score < 25000) {
 		board->block_speed = 700;
 		board->max_moles = 6;
+		board->rising_speed = 20;
 	} else {
 		board->block_speed = 650;
 		board->max_moles = 7;
+		board->rising_speed = 15;
 	}
 }
 
@@ -1125,10 +1119,6 @@ board_update_blocks(Board *board, uint32_t now)
 	board->settled = false;
 
 	board_set_difficulty_from_score(board);
-
-	if (board->block_speed_factor > 1) {
-		board->block_speed /= board->block_speed_factor;
-	}
 
 	for (i = 0; i < board->block_count; i++) {
 		if (board->blocks[i] == NULL)
@@ -1152,19 +1142,21 @@ board_update_blocks(Board *board, uint32_t now)
  */
 void
 board_update_single_block(Board *board, uint32_t now, int i) {
-	Block *block = board->blocks[i];
+	Block	*block = board->blocks[i];
 
-	/* This block's tick has expired, we need to move it. */
-	if (block->falling && now - block->tick > board->block_speed) {
+	/* This block's tick has expired, we might need to move it. */
+	if (block->falling && now - block->tick > block->speed) {
+
 		/* Can it fit one unit lower? */
 		if (board_move_check(board, block, 0, 1) == 0) {
 			block->y++;
 			block->tick = now;
 		}
 
-		/* If the block didn't move, block it, and un-current */
+		/* If the block didn't move for a block-tick, it is settled. */
 		if (block->prev_y == block->y) {
 			block->falling = false;
+			board_transfer_cubes(board, block);
 			if (block == board->current_block) {
 				board->current_block = NULL;
 				if (block->y > 0) {
@@ -1176,7 +1168,6 @@ board_update_single_block(Board *board, uint32_t now, int i) {
 					return;
 				}
 			}
-			board_transfer_cubes(board, block);
 			block_kill(block);
 			board->blocks[i] = NULL;
 			return;
@@ -1206,7 +1197,7 @@ board_update_single_block(Board *board, uint32_t now, int i) {
 
 
 /**
- * move_check() - 
+ * move_check()
  * 	bside is the value telling if the cube is on the left of the whole
  * 		block (1) or on the right side (2).
  *
@@ -1214,20 +1205,29 @@ board_update_single_block(Board *board, uint32_t now, int i) {
  * 	0 when path is clear
  * 	3 when touching the bottom
  * 	1 when a cube from the left side blocked
- * 	2 when a cube from the right side blocked */
+ * 	2 when a cube from the right side blocked
+ * 	4 when another block is in the way
+ */
 byte
 board_move_check(Board *board, Block *block, Sint8 x, Sint8 y)
 {
-	byte mx, my;
-	byte bside;
-	int i, j;
-	byte *pos = block->positions[block->current_position];
+	byte	mx, my,
+		bside;	// cube on the left (1) or right(2) of whole block
+	int	i, j;
+	byte	*pos = block->positions[block->current_position];
 
-	/* Update the map. */
-//	board_update_map(board);
+	/* 
+	 * Another falling block in the way, this doesn't apply for 0;0 checks
+	 * as they are meant to check for rotations.
+	 */
+	if (board_get_block(board, block->x + x, block->y + y) != NULL &&
+			x + y != 0)
+		return 4;
 
-	/* For every cubes in this block, you need to check if there is a
-	 * space in whatever direction. */
+	/* 
+	 * For every cubes in this block, you need to check if there is a
+	 * space in whatever direction.
+	 */
 	for (my = 0; my < block->size; my++) {
 		for (mx = 0; mx < block->size; mx++) {
 			i = my * block->size + mx;
@@ -1248,7 +1248,7 @@ board_move_check(Board *board, Block *block, Sint8 x, Sint8 y)
 			/* Reach the right border. */
 			if (block->x + mx + x >= board->width)
 				return 2;
-			
+
 			/* There is a block in this direction. */
 			j = (my + block->y + y) * board->width + (mx + block->x + x);
 			if (board->cubes[j]) {
@@ -1276,7 +1276,6 @@ board_move_current_block_left(Board *board)
 	if (board_move_check(board, block, -1, 0) == 0) {
 		block->x--;
 	}
-//	board_dump_block_map(board);
 }
 
 
@@ -1317,8 +1316,10 @@ board_rotate_cw(Board *board, Block *block)
 
 	block_rotate_cw(block);
 
-	/* Check if the new position is conflicting, if the conflict is on the
-	 * left (1), x+1, if the conflict is on the right, x-1. */
+	/* 
+	 * Check if the new position is conflicting, if the conflict is on the
+	 * left (1), x+1, if the conflict is on the right, x-1.
+	 */
 	x = board_move_check(board, block, 0, 0);
 
 	if (x == 1 && board_move_check(board, block, 1, 0) == 0) {
@@ -1335,15 +1336,12 @@ board_rotate_cw(Board *board, Block *block)
 		return;
 	}
 
-	/* If we get that far, it's because we didn't manage to rotate the 
-	 * block properly... back up. */
+	/* 
+	 * If we get that far, it's because we didn't manage to rotate the 
+	 * block properly... back up.
+	 */
 	block_rotate_ccw(block);
 }
-
-
-/*
- * Cube related functions.
- */
 
 
 /**
@@ -1379,11 +1377,15 @@ board_update_cubes(Board *board, uint32_t now)
 		if (cube->type == CTYPE_ROCK)
 			continue;
 
-		/* Check if the cube has free space under itself, if yes 
-		 * disconnect it as a cube and create a new block. */
+		/* 
+		 * Check if the cube has free space under itself, if yes 
+		 * disconnect it as a cube and create a new block falling
+		 * much faster.
+		 */
 		type = board_get_area_type(board, cube->x, cube->y + 1);
 		if (type == ATYPE_FREE) {
 			block = block_new_one_from_cube(cube);
+			block->speed = 100;
 			block->existing_cubes = true;
 			board_add_block(board, block);
 			block->x = cube->x;
@@ -1391,9 +1393,6 @@ board_update_cubes(Board *board, uint32_t now)
 			board->cubes[i] = NULL;
 		}
 	}
-
-//	printf("update_cubes() count=%d blocks=%d\n", board->cube_count,
-//			board->block_count);
 
 	/* Check the cube count for CLEARALL levels. */
 	if (board->objective_type == OBJTYPE_CLEARALL && 
@@ -1411,24 +1410,22 @@ board_update_cubes(Board *board, uint32_t now)
 void
 board_render_cubes(Board *board)
 {
-	int i;
-	SDL_Rect r;
-	Cube *cube;
-	SDL_Surface *s;
-	int size = board->width * board->height;
+	int		 i;
+	int		 size = board->width * board->height;
+	SDL_Surface	*surface;
+	Cube		*cube;
 
 	for (i = 0; i < size; i++) {
 		cube = board->cubes[i];
-		if (cube == NULL) continue;
 
-		s = cube_get_surface(cube);
-		cube_get_rectangle(cube, &r);
+		if (cube == NULL)
+			continue;
 
-		r.x += board->offset_x;
-		r.y += board->offset_y;
+		surface = cube_get_surface(cube);
 
-		SDL_BlitSurface(s, NULL, screen, &r);
-		SDL_FreeSurface(s);
+		gfx_toscreen(surface, cube->x * BSIZE + BOARD_LEFT,
+				      cube->y * BSIZE + BOARD_TOP);
+		gfx_free(surface);
 	}
 }
 
@@ -1827,7 +1824,7 @@ board_prepopulate(Board *board, int lines)
 	int x, y;
 	Cube *cube;
 
-	for (x = 0; x < board->width; x++) {
+	for (x = 1; x < board->width - 1; x++) {
 		for (y = board->height - lines; y < board->height; y++) {
 			cube = cube_new_random();
 			cube->x = x;
@@ -1872,7 +1869,7 @@ board_hold(Board *board)
 void
 board_block_fall(Board *board)
 {
-	int offset = 0;
+	int offset = 1;
 	Block *block = board->current_block;
 
 	while (board_move_check(board, block, 0, offset) == 0)
@@ -1880,7 +1877,7 @@ board_block_fall(Board *board)
 
 	block->y += offset - 1;
 	block->prev_y = block->y;
-	block->tick += board->block_speed * 2;
+	block->tick += block->speed * 2;
 }
 
 

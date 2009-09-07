@@ -39,7 +39,7 @@ extern Uint32 key;
 extern Configuration *conf;
 
 void
-init_gfx()
+gfx_init()
 {
 	uint32_t sdl_flags = 0;
 
@@ -47,55 +47,6 @@ init_gfx()
 //	sdl_flags  = SDL_HWSURFACE|SDL_DOUBLEBUF;
 	sdl_flags |= conf->fullscreen == true ? SDL_FULLSCREEN : 0;
 	screen = SDL_SetVideoMode(640, 480, 16, sdl_flags);
-}
-
-void
-r_setpixel(Uint16 x, Uint16 y, Uint8 r, Uint8 g, Uint8 b)
-{
-	Uint32 *v32;
-	Uint32 c32;
-
-	switch (screen->format->BitsPerPixel) {
-		case 8:
-			printf("8bpp\n");
-			break;
-		case 16:
-			printf("16bpp\n");
-			break;
-		case 24:
-			printf("24bpp\n");
-			break;
-		case 32:
-			c32 = SDL_MapRGBA(screen->format, r, g, b, 100);
-//			c32 = SDL_MapRGB(screen->format, r, g, b);
-//			printf("32bpp @ %dx%d=%d -> %d\n", x, y, y * screen->w * 4 + x, c32);
-//			v32 = (Uint32*)screen->pixels + y * screen->w + x;
-			v32 = screen->pixels + (y * screen->w + x) * 4;
-			*v32 = c32;
-			break;
-		default:
-			printf("oops... unknown pixel format.\n");
-			exit(-1);
-	}
-}
-
-
-void
-r_setline(Uint16 x, Uint16 y, Uint16 w, Uint8 r, Uint8 g, Uint8 b)
-{
-	Uint16 i;
-
-	/* Don't bother for single drops. */
-	if (w == 1) {
-		r_setpixel(x, y, r, g, b);
-		return;
-	}
-
-	x = x - w / 2;
-
-	for (i = 0; i < w; i++) {
-		r_setpixel(x + i, y, r, g, b);
-	}
 }
 
 
@@ -108,11 +59,21 @@ white_screen()
 }
 
 
+/**
+ * Fill the given surface with black.
+ */
+void
+gfx_black(SDL_Surface *surf)
+{
+	memset(surf->pixels, 0, surf->w * surf->h *
+			surf->format->BytesPerPixel);
+}
+
+
 void
 black_screen(Uint8 s)
 {
-	memset(screen->pixels, 0, screen->w * screen->h *
-			screen->format->BytesPerPixel);
+	gfx_black(screen);
 	SDL_Flip(screen);
 	SDL_Delay(s * 1000);
 }
@@ -148,6 +109,31 @@ surface_greyscale(SDL_Surface *s)
 		}
 	}
 }
+
+
+/**
+ * Blit a given surface to screen at the given coordinates.
+ */
+void
+gfx_toscreen(SDL_Surface *surf, int x, int y)
+{
+	SDL_Rect dest;
+
+	dest.x = x;
+	dest.y = y;
+	dest.w = surf->w;
+	dest.h = surf->h;
+
+	SDL_BlitSurface(surf, NULL, screen, &dest);
+}
+
+
+void
+gfx_free(SDL_Surface *surf)
+{
+	SDL_FreeSurface(surf);
+}
+
 
 void
 surface_shutter(int start, int stop, int speed)
@@ -207,6 +193,22 @@ surface_shutter_open()
 {
 	surface_shutter(screen->h / 2 + 20, 0, -16);
 }
+
+
+/**
+ * Create a new surface with the given size.
+ */
+SDL_Surface *
+gfx_new(int width, int height)
+{
+	SDL_Surface *surface;
+
+	surface = SDL_CreateRGBSurface(0, width, height, 
+			screen->format->BitsPerPixel, 0, 0, 0, 0);
+
+	return surface;
+}
+
 
 SDL_Surface *
 new_of_size(SDL_Surface *s)
@@ -402,3 +404,8 @@ surface_fadeout(SDL_Surface *surf)
 	return 0;
 }
 
+void
+gfx_blitsprite(SDL_Rect *source, SDL_Rect *dest)
+{
+	SDL_BlitSurface(sprites, source, screen, dest);
+}
