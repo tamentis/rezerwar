@@ -281,11 +281,13 @@ main(int ac, char **av)
 	key = SDL_MapRGB(screen->format, 0, 255, 255);
 	SDL_WM_SetCaption(VERSION, NULL);
 
+#ifdef WITH_SOUND
 	if (need_audio(ac, av))
 		sfx_init();
 
 	sfx_load_library();
 	sfx_play_horn();
+#endif
 
 	/* DEBUG / XXX */
 	// return game_loop(NULL, 0);

@@ -1,4 +1,6 @@
 ROADMAP TO 0.4:
+ - revert to OGGs for normal builts, switch to MP3 only for Wii.
+ - accept a DESTDIR.
  - go through the game's tutorials,
     - add a tutorial about medics
     - add a tutorial about moles
