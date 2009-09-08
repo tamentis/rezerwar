@@ -2,14 +2,9 @@ ROADMAP TO 0.4:
  - go through the game's tutorials,
     - add a tutorial about medics
     - add a tutorial about moles
- - find out why 'q' on the intro/description seems to hang.
  - test configure on win32, haiku, wii, freebsd.
- - create a mario transition, optimized and clean, remove
-   the other ones.
  - documentation.
- - tab all the structs.
  - add a comment on each func.
-
 
 DATA:
  - more tutorials
@@ -24,6 +19,7 @@ GAME PLAY:
     * add a blinking cursor to show the current position.
 
 OPTIMIZATION:
+ - Get rid of the type 'Block'.
  - 'Text' items should cache their surface, even with effects, for one frame
    to the next.
  - Keep the list of all the updated rect and only update those.

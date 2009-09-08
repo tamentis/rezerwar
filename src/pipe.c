@@ -96,3 +96,14 @@ pipe_kill(Pipe *pipe)
 	r_free(pipe);
 }
 
+void
+pipe_fix(Board *board, Pipe *pipe)
+{
+	pipe->status = -1;
+
+	if (pipe->mole != NULL) {
+		pipe->mole->trashed = true;
+		board_add_points(board, POINTS_FIX_PIPE, pipe->mole->x, 
+					pipe->mole->y);
+	}
+}

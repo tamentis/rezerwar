@@ -25,11 +25,15 @@
  * SUCH DAMAGE.
  */
 
+/*
+ * Platform specific stuff
+ */
 #ifdef __WII__
-#include <gctypes.h>
+# include <gctypes.h>
+# define JOYSTICK_DEAD_ZONE	16384
+# define HAS_BOOL
 #endif
 
-/* OS stuff */
 #ifndef MAXPATHLEN
 # ifdef PATH_MAX
 #  define MAXPATHLEN PATH_MAX
@@ -38,26 +42,33 @@
 # endif /* PATH_MAX */
 #endif /* MAXPATHLEN */
 
-/* Main speed and flow control */
-#define MAXFPS			30
-#define TICK			10
 
-/* Board constants and other positionings */
+/*
+ * Graphic constants
+ */
+#define SCREEN_WIDTH		640
+#define SCREEN_HEIGHT		480
+#define SCREEN_BPP		16
 #define BOARD_LEFT		175
 #define BOARD_TOP		109
 #define BOARD_WIDTH		9
 #define BOARD_HEIGHT		10
 #define MAIN_MENU_TOP		155
 #define MAIN_MENU_LEFT		-145
-#define NEXT_BLOCK_TOP		32
-#define NEXT_BLOCK_LEFT		166
+#define NEXT_CUBE_TOP		32
+#define NEXT_CUBE_LEFT		166
 #define HOLD_TOP		222
 #define HOLD_LEFT		60
 #define PIPE_SPRITE_TOP		298
 #define PIPE_SPRITE_LEFT	161
 #define PIPE_SPRITE_SIZE	40
 
-/* A couple hard-coded sizes.. */
+
+/*
+ * Game internals settings
+ */
+#define MAXFPS			30
+#define TICK			10
 #define BSIZE			32
 #define FONT0_HEIGHT		19
 #define FONT1_HEIGHT		17
@@ -68,15 +79,19 @@
 #define MAX_COMBO		10	// biggest X-combo
 #define MAX_FLAMES		8	// max amount of simultaneous flames
 
-/* Points for specific actions */
+
+/*
+ * Points/Score values
+ */
 #define POINTS_FIX_PIPE		500
 #define POINTS_NO_HOLD		500
 #define POINTS_AVALANCHE	1000
 #define POINTS_NETWORK_FACTOR	16
 
-/* Controls related */
-#define JOYSTICK_DEAD_ZONE	16384
 
+/*
+ * Wii pad buttons (as of DevKitPro+SDL of Jul 2009)
+ */
 #ifdef __WII__
 enum wii_buttons {
 	WPAD_BUTTON_A,
@@ -89,66 +104,35 @@ enum wii_buttons {
 };
 #endif
 
-/* Block types */
-enum btype {
-	BLOCK_TYPE_TEE,		// 0
-	BLOCK_TYPE_ELL,
-	BLOCK_TYPE_JAY,
-	BLOCK_TYPE_ZEE,
-	BLOCK_TYPE_ESS,
-	BLOCK_TYPE_SQUARE,	// 5
-	BLOCK_TYPE_BAR,
-	BLOCK_TYPE_ONE,
-	BLOCK_TYPE_TWO,
-	BLOCK_TYPE_THREE,
-	BLOCK_TYPE_CORNER	// 10
-};
 
-/* Cube types */
-enum ctype {
-	CTYPE_EMPTY,		// 0
-	CTYPE_ANGLE,
-	CTYPE_TEE,
-	CTYPE_FLAT,
-	CTYPE_KNOB,
-	CTYPE_ALL,		// 5
-	CTYPE_BOMB,
-	CTYPE_MEDIC,
-	CTYPE_ROCK,
-	CTYPE_MAX
-};
-
-/* Transition types */
+/*
+ * Transition types
+ */
 enum ttype {
 	TTYPE_NONE,
 	TTYPE_SHUTTER_OPEN,
-	TTYPE_PIXEL_OPEN
+	TTYPE_PIXEL_OPEN,
+	TTYPE_GREY_CURTAIN,
 };
 
-/* Plug types */
-#define PLUG_NORTH		1
-#define PLUG_EAST		2
-#define PLUG_SOUTH		4
-#define PLUG_WEST		8
-
-/* Plug statuses */
-#define PSTAT_CONNECTED		7
-#define PSTAT_OPENED		1
-
-/* Text alignment */
-#define ALIGN_CENTER		-1
-
-/* Difficulties */
+/*
+ * Plug types and statuses
+ */
 enum {
-	DIFF_EASIEST,
-	DIFF_EASY,
-	DIFF_MEDIUM,
-	DIFF_HARD,
-	DIFF_ULTRA,
-	DIFF_LENGTH
+	PLUG_NORTH	= 1,
+	PLUG_EAST	= 2,
+	PLUG_SOUTH	= 4,
+	PLUG_WEST	= 8,
+};
+enum pstat {
+	PSTAT_OPENED	= 1,
+	PSTAT_CONNECTED	= 7,
 };
 
-/* Menu types */
+
+/* 
+ * Menu types (really 'section' type)
+ */
 enum mtype {
 	MTYPE_NOP,		// keep going / don't do anything different
 	MTYPE_QUIT,		// leave the game
@@ -166,75 +150,65 @@ enum mtype {
 	MTYPE_BREAK		// leave the current mode/menu (might QUIT).
 };
 
-/* Text Effect types */
-enum {
-	EFFECT_NONE    = 0,
-	EFFECT_SHAKE   = 1 << 0,
-	EFFECT_WAVE    = 1 << 1,
-	EFFECT_FADEOUT = 1 << 2,
-	EFFECT_FLOAT   = 1 << 3
-};
 
-/* Area types. */
+/*
+ * Area types (for the cube agnostic board search).
+ */
 enum {
 	ATYPE_FREE,
 	ATYPE_BOARD_BOTTOM,
 	ATYPE_BOARD_LEFT,
 	ATYPE_BOARD_RIGHT,
-	ATYPE_BLOCK
+	ATYPE_CUBE
 };
 
-/* Level Objective types. */
-enum {
-	OBJTYPE_NONE,
-	OBJTYPE_CLEARALL,
-	OBJTYPE_TIMED_BLOCKS,
-	OBJTYPE_TIMED_SCORE,
-	OBJTYPE_LINK,
-	OBJTYPE_LENGTH
-};
 
-/* Pre-define types */
-struct _board_s;
-struct _block_s;
+/*
+ * Structure prototypes
+ */
+typedef struct _board_s Board;
 struct _text_s;
+struct _queuedcube_s;
 
-/* Boolean and byte types, easier to read ;) */
+
+/*
+ * Extra types and typedefs
+ */
 typedef unsigned char byte;
-#ifndef __WII__
-typedef enum {
-	false,
-	true
-} bool;
+#ifndef HAS_BOOL
+  typedef enum { false, true } bool;
 #endif
 
 
-/* Memory Management functions */
+/*
+ * Memory Management
+ */
 void		*r_malloc(size_t);
 void		 r_free(void *);
 void		 r_checkmem();
 char		*r_strcp(char *);
 
 
-/* Event functions */
+/* 
+ * Event handling
+ */
 enum mtype	 handle_events(SDL_Event *);
 void		 wait_for_keymouse(void);
 int		 cancellable_delay(int);
 bool		 prompt_polling(struct _text_s *);
 
 
-/* Graphic related wrappers */
+/* 
+ * Graphic wrappers
+ */
 void		 gfx_init();
-int		 surface_fadein(SDL_Surface *, int);
-int		 surface_fadeout(SDL_Surface *);
-void		 surface_shutter_open();
-void		 surface_shutter_close();
-void		 surface_pixel_open();
-void		 surface_pixel_close();
-void		 surface_greyscale();
-SDL_Surface	*loadimage(char *);
-SDL_Surface	*copy_screen();
-void		 blit_modal(unsigned);
+int		 gfx_fadein(SDL_Surface *, int);
+int		 gfx_fadeout(SDL_Surface *);
+void		 gfx_shutter_open();
+void		 gfx_shutter_close();
+void		 gfx_greyscale();
+SDL_Surface	*gfx_copyscreen();
+void		 gfx_modal(unsigned);
 SDL_Surface	*gfx_new(int, int);
 void		 gfx_black(SDL_Surface *);
 void		 gfx_toscreen(SDL_Surface *, int, int);
@@ -242,26 +216,94 @@ void		 gfx_free(SDL_Surface *);
 void		 gfx_blitsprite(SDL_Rect *, SDL_Rect *);
 
 
-/* String related functions from OpenBSD */
+/*
+ * Audio wrappers
+ */
+void		 sfx_init();
+void		 sfx_toggle_mute(bool);
+void		 sfx_play_tick1();
+void		 sfx_play_tack1();
+void		 sfx_play_boom();
+void		 sfx_play_horn();
+void		 sfx_play_menunav();
+void		 sfx_play_menuselect();
+void		 sfx_play_lazer();
+void		 sfx_play_splash();
+void		 sfx_load_library();
+void		 sfx_unload_library();
+void		 sfx_play_music(char *);
+void		 sfx_stop_music();
+
+
+/*
+ * Error control
+ */
+void		 fatal(char *fmt, ...);
+
+
+/*
+ * File I/O
+ */
+char		*dpath(const char *org);
+char		*cpath(const char *org);
+
+
+/* 
+ * String related
+ */
 size_t		 strlcpy(char *dst, const char *src, size_t size);
 // char		*strsep(char **, const char *);
 
 
 /*
+ * Main menu
+ */
+int		 main_menu(void);
+int		 gameover_menu();
+
+
+/*
+ * Animations
+ */
+void		 sky_update(Board *, uint32_t);
+void		 sky_render(Board *);
+void		 chimneys_update(Board *, uint32_t);
+void		 chimneys_render(Board *);
+
+
+/*
  * Cube
  */
+enum ctype {
+	CTYPE_EMPTY,	// 0
+	CTYPE_ANGLE,
+	CTYPE_TEE,
+	CTYPE_FLAT,
+	CTYPE_KNOB,
+	CTYPE_ALL,	// 5
+	CTYPE_BOMB,
+	CTYPE_MEDIC,
+	CTYPE_ROCK,
+	CTYPE_MAX
+};
+
 typedef struct _cube_s {
-	int current_position;
-	int x;
-	int y;
-	int type;
-	int water;
-	int network_integrity;
-	int network_size;
-	int fade_status;
-	bool trashed;
-	struct _cube_s **network;
-	struct _cube_s *root;
+	int	 index;			// position on the board map.
+	int	 current_position;
+	int	 x;
+	int	 y;
+	int	 prev_y;		// 'y' one tick earlier
+	enum ctype type;
+	int	 water;
+	int	 network_integrity;
+	int	 network_size;
+	int	 fade_status;
+	bool	 trashed;
+	int	 speed;
+	uint32_t tick;
+	bool	 falling;
+	struct _cube_s	**network;
+	struct _cube_s	*root;
 } Cube;
 
 void		 cube_init_rmap();
@@ -269,6 +311,7 @@ Cube		*cube_new(byte);
 Cube		*cube_new_type(byte, int);
 Cube		*cube_new_from_char(char);
 void		 cube_kill(Cube *);
+Cube		*cube_new_one(bool);
 Cube		*cube_new_random();
 Cube		*cube_new_random_max(int);
 Cube		*cube_new_random_mask(unsigned int);
@@ -284,35 +327,45 @@ void		 cube_network_flush(Cube *);
 void		 cube_network_taint(Cube *);
 int		 cube_get_abs_x(Cube *);
 int		 cube_get_abs_y(Cube *);
+void		 cube_landing(Board *, Cube *);
+void		 cube_sync_map(Board *, Cube *);
 
 
 /*
  * Text
  */
+enum {
+	EFFECT_NONE    = 0,
+	EFFECT_SHAKE   = 1 << 0,
+	EFFECT_WAVE    = 1 << 1,
+	EFFECT_FADEOUT = 1 << 2,
+	EFFECT_FLOAT   = 1 << 3
+};
+
 typedef struct _text_s {
-	int x;			// position on the screen
-	int y;
-	int width;		// size of the text surface (rendered)
-	int height;
-	bool colorized;		// fast check to skip the colorization.
-	byte color1_r;		// text colors
-	byte color1_g;
-	byte color1_b;
-	byte color2_r;
-	byte color2_g;
-	byte color2_b;
-	int effect;		// bit map of effects
-	int fx_fade_data;	// fade value
-	int fx_wave_data;	// sinus value
-	int fx_float_data;	// float value
-	char *value;		// actual c-string text
-	int length;		// num of chars in the value
-	int max_length;		// max num of chars
-	int line_spacing;	// num. of pixels between lines
-	bool trashed;		// kill on next tick
-	bool centered;		// horizontal centering
-	bool temp;		// trash on next move
-	int font;		// font idx
+	int	 length;	// num of chars in the value
+	int	 max_length;	// max num of chars
+	char	*value;		// actual c-string text
+	int	 line_spacing;	// num. of pixels between lines
+	int	 x;		// position on the screen
+	int	 y;
+	int	 width;		// size of the text surface (rendered)
+	int	 height;
+	bool	 colorized;	// fast check to skip the colorization.
+	byte	 color1_r;	// text colors
+	byte	 color1_g;
+	byte	 color1_b;
+	byte	 color2_r;
+	byte	 color2_g;
+	byte	 color2_b;
+	int	 effect;	// bit map of effects
+	int	 fx_fade_data;	// fade value
+	int	 fx_wave_data;	// sinus value
+	int	 fx_float_data;	// float value
+	bool	 trashed;	// kill on next tick
+	bool	 centered;	// horizontal centering
+	bool	 temp;		// trash on next move
+	int	 font;		// font idx
 } Text;
 
 Text		*text_new(char *);
@@ -328,14 +381,15 @@ void		 text_add_char(Text *, char);
 void		 text_blit(Text *, SDL_Surface *);
 
 
-/* HiScore structure */
+/* 
+ * HiScore
+ */
 typedef struct _hiscore {
-	int score;
-	char name[16];
-	time_t date;
+	int	 score;
+	char	 name[16];
+	time_t	 date;
 } HiScore;
 
-/* HiScore functions */
 void		 hiscore_add(char *, int);
 void		 hiscore_show();
 enum mtype	 hiscore_prompt();
@@ -343,87 +397,63 @@ bool 		 hiscore_check(int);
 void		 hiscore_free();
 
 
-/* Level related structures */
-struct _queuedblock_s;
+/*
+ * Level
+ */
+enum {
+	OBJTYPE_NONE,
+	OBJTYPE_CLEARALL,
+	OBJTYPE_TIMED_CUBES,
+	OBJTYPE_TIMED_SCORE,
+	OBJTYPE_LINK,
+	OBJTYPE_LENGTH
+};
+
 typedef struct _level_s {
 	char	*name;
 	char	*description;
 	byte	*cmap;
-	struct _queuedblock_s **queue;
 	size_t	 queue_len;
-	bool	 allow_dynamite;
+	int	 max_moles;		// number of moles in the level
+	int	 dead_pipes;		// number of dead pipes at start
+	bool	 allow_bomb;
+	bool	 allow_medic;
 	int	 objective_type;
 	char	*next;
-	int	 max_blocks;		// max blocks per level
+	int	 max_cubes;		// max cubes per level
 	int	 time_limit;		// max seconds per level
 	int	 rising_speed;		// seconds between floor rising
+	struct _queuedcube_s **queue;
 } Level;
-typedef struct _queuedblock_s {
+
+typedef struct _queuedcube_s {
 	int	 type;
 	int	 pos;
 	size_t	 cmap_len;
 	byte	*cmap;
-} QueuedBlock;
+} QueuedCube;
 
-/* Level functions */
 Level		*lvl_load(char *);
 void		 lvl_dump(Level *);
 void		 lvl_kill(Level *);
 
 
-/* Block structure */
-typedef struct _block_s {
-	bool	 falling;
-	byte	 size;
-	byte	**positions;
-	Cube	**cubes;
-	int	 cube_count;
-	int	 current_position;
-	int	 x;
-	int	 y;
-	int	 speed;
-	int	 prev_y;
-	uint32_t tick;
-	int	 type;
-	bool	 existing_cubes;
-} Block;
-
-/* Block-related functions */
-Block		*block_new(byte);
-void		 block_kill(Block *);
-SDL_Surface	*block_get_surface(Block *);
-Block		*block_new_one_from_cube(Cube *);
-Block		*block_new_one(bool);
-Block		*block_new_two();
-Block		*block_new_tee();
-Block		*block_new_ell();
-Block		*block_new_jay();
-Block		*block_new_zee();
-Block		*block_new_ess();
-Block		*block_new_square();
-Block		*block_new_bar();
-Block		*block_new_random();
-Block		*block_new_of_type(int);
-void		 block_rotate_cw(Block *);
-void		 block_rotate_ccw(Block *);
-
-
 /*
- * Flame stuff
+ * Flame
  */
 typedef struct _flame_s {
+	int	 type;	
+	int	 pos;
+	uint32_t tick;
+	int	 state;
 	struct _board_s	*board;
-	int		 type;	
-	int		 pos;
-	uint32_t	 tick;
-	int		 state;
 } Flame;
 
 void		 flame_kill(Flame *);
 
 
 /*
- * Mole stuff
+ * Mole
  */
 typedef struct _mole_s {
 	struct _board_s *board;
@@ -451,66 +481,63 @@ void		 mole_destroys_right_pipe(Mole *);
 
 
 /*
- * Pipe stuff
+ * Pipe
  */
 typedef struct _pipe_s {
 	uint32_t tick;
-	int status;
-	Mole *mole;
+	int	 status;
+	Mole	*mole;
 } Pipe;
 
 Pipe		*pipe_new();
 void		 pipe_kill(Pipe *);
 
 
-/* Configuration structure (keep data between games) */
+/*
+ * Configuration stuff
+ */
 typedef struct _configuration {
-	int difficulty;
-	char *current_level;
-	char *next_level;
-	int last_score;
-	bool sound;
-	bool fullscreen;
+	char	*current_level;
+	char	*next_level;
+	int	 last_score;
+	bool	 sound;
+	bool	 fullscreen;
 } Configuration;
 
 
 /*
  * Board stuff
  */
-typedef struct _board_s {
+struct _board_s {
 	/* main characteristics */
 	byte		 width;
 	byte		 height;
 	byte		 offset_x;
 	byte		 offset_y;
-	int		 difficulty;
 	char		 bgfilename[256];
 	SDL_Surface	*bg;
 	enum ttype	 transition;
 	/* cubes */
 	int		 cube_count;
 	Cube		**cubes;
-	bool		 allow_dynamite;
+	bool		 allow_bomb;
 	uint32_t	 next_line;
 	uint32_t	 elapsed;	// msec passed since start.
-	/* cubes - bomb/flames */
-	Flame		*flames[MAX_FLAMES];
-	int		 last_flame;
-	/* blocks */
-	int		 block_speed;
-	Block		**blocks;
-	int		 block_count;
-	Block		*current_block;
-	Block		*next_block;
-	Block		*hold;
-	Block		**bqueue;
-	size_t		 bqueue_len;
-	int		 remains;	// number of blocks to end of level
-	bool		 launch_next;	// launch the next block at next update tick
+	int		 cube_speed;
+	Cube		*current_cube;
+	Cube		*next_cube;
+	Cube		*hold;
+	Cube		**cqueue;
+	size_t		 cqueue_len;
+	int		 remains;	// number of cubes to end of level
+	bool		 launch_next;	// launch the next cube at next tick
 	byte		 moving_left;
 	byte		 moving_right;
 	unsigned int	 lateral_tick;
 	int		 lateral_speed;
+	/* cubes - bomb/flames */
+	Flame		*flames[MAX_FLAMES];
+	int		 last_flame;
 	/* moles */
 	Mole		*moles[MAX_MOLES];
 	int		 last_mole;
@@ -532,7 +559,7 @@ typedef struct _board_s {
 	void		*prompt_data;
 	/* player stuff */
 	int		 score;
-	bool		 settled;	// a block settled during this loop
+	bool		 settled;	// a cube settled during this loop
 	int		 combo;		// number of hits in a row
 	bool		 paused;	// stop the game flow when true
 	bool		 silent;	// do not show paused or score
@@ -542,11 +569,12 @@ typedef struct _board_s {
 	int		 time_limit;	// remaining time (-1 is unlimited)
 	int		 rising_speed;	// speed at which we add lines
 	/* current level */
+	char		 current_level[MAXPATHLEN];
 	int		 objective_type;
 	char		*next_level;
-} Board;
+};
 
-Board		*board_new(int);
+Board		*board_new();
 Board		*board_new_from_level(Level *);
 void		 board_kill(Board *);
 void		 board_loadbg(Board *, char *);
@@ -568,37 +596,30 @@ void		 board_spread_water(Board *, Cube *, Cube *, int);
 void		 board_update_water(Board *, uint32_t);
 void		 board_update_cubes(Board *, uint32_t);
 Cube		*board_get_cube(Board *, int, int);
-Block		*board_get_block(Board *, int, int);
 void		 board_run_avalanche(Board *, Cube *);
 void		 board_run_avalanche_column(Board *, Cube *);
 int		 board_get_area_type(Board *, int, int);
+void		 board_render_next(Board *);
+void		 board_render_hold(Board *);
+void		 board_launch_next_cube(Board *);
+void		 board_load_next_cube(Board *);
+void		 board_change_next_cube(Board *);
+void		 board_move_current_cube_left(Board *);
+void		 board_move_current_cube_right(Board *);
+byte		 board_move_check(Board *, Cube *, Sint8, Sint8);
+void		 board_rotate_cw(Board *);
+void		 board_update_map(Board *);
+void		 board_cube_medic(Board *, Cube *);
+void		 board_kill_row(Board *, int);
+void		 board_kill_column(Board *, int);
+void		 board_hold(Board *);
+void		 board_cube_fall(Board *);
 /* board/flame board/bomb */
 void		 board_cube_bomb(Board *, Cube *);
 void		 board_spawn_flame(Board *, int, int);
 void		 board_initialize_flames(Board *);
 void		 board_update_flames(Board *, uint32_t);
 void		 board_render_flames(Board *);
-/* board/block funcs */
-void		 board_render_blocks(Board *);
-void		 board_render_next(Board *);
-void		 board_render_hold(Board *);
-void		 board_update_blocks(Board *, uint32_t);
-void		 board_update_single_block(Board *, uint32_t, int);
-void		 board_add_block(Board *, Block *);
-void		 board_launch_next_block(Board *);
-void		 board_load_next_block(Board *);
-void		 board_change_next_block(Board *);
-void		 board_move_current_block_left(Board *);
-void		 board_move_current_block_right(Board *);
-byte		 board_move_check(Board *, Block *, Sint8, Sint8);
-void		 board_rotate_cw(Board *, Block *);
-void		 board_update_map(Board *);
-void		 board_dump_block_map(Board *);
-void		 board_cube_medic(Board *, Cube *);
-void		 board_kill_row(Board *, int);
-void		 board_kill_column(Board *, int);
-void		 board_hold(Board *);
-void		 board_block_fall(Board *);
 /* board/text funcs */
 Text		*board_add_text(Board *, char *, int, int);
 /* board/mole funcs */
@@ -606,40 +627,3 @@ void		 board_update_moles(Board *, uint32_t);
 void		 board_spawn_mole(Board *);
 /* board/pipe funcs */
 void		 board_render_pipes(Board *);
-
-
-/* Main menu */
-int		 main_menu(void);
-int		 gameover_menu();
-
-
-/* Animations */
-void		 sky_update(Board *, uint32_t);
-void		 sky_render(Board *);
-void		 chimneys_update(Board *, uint32_t);
-void		 chimneys_render(Board *);
-
-
-/* Audio functions */
-void		 sfx_init();
-void		 sfx_toggle_mute(bool);
-void		 sfx_play_tick1();
-void		 sfx_play_tack1();
-void		 sfx_play_boom();
-void		 sfx_play_horn();
-void		 sfx_play_menunav();
-void		 sfx_play_menuselect();
-void		 sfx_play_lazer();
-void		 sfx_play_splash();
-void		 sfx_load_library();
-void		 sfx_unload_library();
-void		 sfx_play_music(char *);
-void		 sfx_stop_music();
-
-
-/* Error control */
-void		 fatal(char *fmt, ...);
-
-/* File I/O */
-char		*dpath(const char *org);
-char		*cpath(const char *org);

@@ -2,7 +2,7 @@
 
 
 OBJECTS+=main.o menus.o events.o level.o hiscore.o \
-	board.o block.o cube.o text.o path.o \
+	board.o cube.o text.o path.o \
 	memory.o fatal.o sfx.o gfx.o \
 	strlcpy.o chimneys.o sky.o mole.o pipe.o bomb.o
 

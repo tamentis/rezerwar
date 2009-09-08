@@ -13,6 +13,8 @@ Changes in 0.4:
    default.
  - higher score means faster rising floor, rising floors are now
    missing left and right blocks, avoiding self-triggering lines.
+ - fixed a bug where the score would show up in tutorial mode when
+   hitting pause.
 
 Changes in 0.3:
 ===============

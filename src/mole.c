@@ -39,7 +39,7 @@ extern SDL_Surface *sprites;
 extern Uint32 key;
 
 SDL_Surface *mole_mask = NULL;
-int mask_max;
+unsigned int mask_max = 0;
 
 
 #define MOLE_WIDTH 	18
@@ -358,7 +358,7 @@ void
 mole_generate_valid_position(int *x, int *y)
 {
 	char *v1, *v2;
-	int index;
+	unsigned int index;
 	bool invalid = true;
 
 	mole_load_mask();
@@ -387,7 +387,7 @@ mole_load_mask()
 		r_free(path);
 		if (mole_mask == NULL)
 			fatal("Unable to load mole mask.");
-		mask_max = mole_mask->w * mole_mask->h;
+		mask_max = mole_mask->w * mole_mask->h - MOLE_WIDTH;
 	}
 }
 

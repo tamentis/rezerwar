@@ -40,7 +40,7 @@
 extern Board *board;
 extern Configuration *conf;
 SDL_Surface *screen;
-Block *speedy;			// currently accelerated block
+Cube *speedy;			// currently accelerated cube
 
 
 /**
@@ -52,7 +52,7 @@ handle_events_keyup(SDL_Event *event)
 	switch ((int)event->key.keysym.sym) {
 		case SDLK_DOWN:
 		case SDLK_j:
-			if (board->current_block == speedy) {
+			if (board->current_cube == speedy) {
 				speedy->speed *= 8;
 				speedy = NULL;
 			}
@@ -133,16 +133,16 @@ handle_events_keydown(SDL_Event *event)
 		case SDLK_ESCAPE:
 		case SDLK_q:
 			board->gameover = true;
-//			action = menu;
+			if (board->modal)
+				action = menu;
 			break;
 		case SDLK_F12:
 			action = fps;
 			break;
-		/*
 		case SDLK_F11:
 			board_spawn_mole(board);
+			board_dump_cube_map(board);
 			break;
-		*/
 		case SDLK_LEFT:
 		case SDLK_h:
 			action = left;
@@ -178,44 +178,48 @@ handle_events_keydown(SDL_Event *event)
 		}
 	}
 
+	/* If a modal is present, ignore everything but menu and pause. */
+	if (board->modal == true && action != menu && action != pause)
+		return MTYPE_NOP;
+
 	switch (action) {
 		case menu:
-			return MTYPE_SUBMENU;;
+			return MTYPE_SUBMENU;
 			break;
 		case fps:
 			board->show_fps = !board->show_fps;
 			break;
 		case left:
-			board_move_current_block_left(board);
+			board_move_current_cube_left(board);
 			board_render(board);
 			board->lateral_tick = 0;
 			board->moving_left = 4;
 			break;
 		case right:
-			board_move_current_block_right(board);
+			board_move_current_cube_right(board);
 			board_render(board);
 			board->lateral_tick = 0;
 			board->moving_right = 4;
 			break;
 		case leftonce:
-			board_move_current_block_left(board);
+			board_move_current_cube_left(board);
 			board_render(board);
 			break;
 		case rightonce:
-			board_move_current_block_right(board);
+			board_move_current_cube_right(board);
 			board_render(board);
 			break;
 		case down:
-			if (board->current_block != NULL) {
-				speedy = board->current_block;
+			if (board->current_cube != NULL) {
+				speedy = board->current_cube;
 				speedy->speed /= 8;
 			}
 			break;
 		case fall:
-			board_block_fall(board);
+			board_cube_fall(board);
 			break;
 		case rotate_cw:
-			board_rotate_cw(board, NULL);
+			board_rotate_cw(board);
 			break;
 		case pause:
 			board_toggle_pause(board);

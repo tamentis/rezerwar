@@ -135,7 +135,7 @@ prompt_polling(Text *prompt)
 
 enum mtype
 hiscore_prompt() {
-	SDL_Surface *back = copy_screen();
+	SDL_Surface *back = gfx_copyscreen();
 	Text *title, *name, *prompt;
 	bool done = false;
 
@@ -162,7 +162,7 @@ hiscore_prompt() {
 		done = prompt_polling(prompt);
 		
 		SDL_BlitSurface(back, NULL, screen, NULL);
-		blit_modal(160);
+		gfx_modal(160);
 		text_blit(title, screen);
 		text_blit(name, screen);
 		text_blit(prompt, screen);
@@ -172,7 +172,7 @@ hiscore_prompt() {
 
 	/* Restore the surface just in case ... */
 	SDL_BlitSurface(back, NULL, screen, NULL);
-	blit_modal(160);
+	gfx_modal(160);
 
 	/* Record the score */
 	if (prompt->length > 0)

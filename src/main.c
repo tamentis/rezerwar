@@ -66,11 +66,11 @@ intro_studio(void)
 	if (intro == NULL)
 		fatal("Unable to load tdc intro image.");
 
-	x = surface_fadein(intro, 4);
+	x = gfx_fadein(intro, 4);
 	if (x == 0)
 		x = cancellable_delay(1);
 
-	SDL_FreeSurface(intro);
+	gfx_free(intro);
 }
 
 
@@ -100,9 +100,7 @@ has_flag(int ac, char **av, char *flag)
 void
 init_conf(int ac, char **av)
 {
-
 	conf = r_malloc(sizeof(Configuration));
-	conf->difficulty = DIFF_EASIEST;
 	conf->current_level = NULL;
 	conf->next_level = NULL;
 	conf->sound = true;
@@ -131,11 +129,11 @@ game_loop(char *levelname, enum ttype trans)
 	sfx_play_music("music/level1.mp3");
 
 	/*
-	 * Without explicit level name, start the board with 4 lines of blocks
+	 * Without explicit level name, start the board with 4 lines of cubes
 	 * and two moles.
 	 */
 	if (levelname == NULL) {
-		board = board_new(conf->difficulty);
+		board = board_new();
 		board_prepopulate(board, 4);
 
 	/* With a level name, load everything from the level. */
@@ -146,8 +144,8 @@ game_loop(char *levelname, enum ttype trans)
 		lvl_kill(level);
 	}
 	board->transition = trans;
-	board_load_next_block(board);
-	board_launch_next_block(board);
+	board_load_next_cube(board);
+	board_launch_next_cube(board);
 
 	/*
 	 * Main loop, every TICK (~10ms)
@@ -290,11 +288,9 @@ main(int ac, char **av)
 	sfx_play_horn();
 
 	/* DEBUG / XXX */
-	/*
-	conf->current_level = r_strcp("debug");
-	status = game_loop(conf->current_level, 0);
-	return -1;
-	*/
+	// return game_loop(NULL, 0);
+	// return game_loop("tuto_04", 0);
+	return game_loop("tuto_08", 0);
 
 	/* Normal flow... */
 	intro_studio();
@@ -334,12 +330,11 @@ main(int ac, char **av)
 			loop = false;
 			break;
 		case MTYPE_PLAIN:
-			surface_pixel_close();
-//			surface_shutter_close();
-			status = game_loop(NULL, TTYPE_PIXEL_OPEN);
+			gfx_shutter_close();
+			status = game_loop(NULL, TTYPE_SHUTTER_OPEN);
 			break;
 		case MTYPE_START:
-			surface_shutter_close();
+			gfx_shutter_close();
 			r_free(conf->current_level);
 			conf->current_level = r_strcp("tuto_01");
 

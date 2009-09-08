@@ -30,6 +30,6 @@ R....RRRR
 
 # Level variables
 $ObjectiveType: CLEARALL
-$MaxBlocksAllowed: 2
+$MaxCubesAllowed: 2
 $NextLevel: tuto_02
 

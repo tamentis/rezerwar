@@ -56,6 +56,54 @@ int crm_def[] = {
 
 
 /**
+ * Cube constructor
+ */
+Cube *
+cube_new(byte start_pos)
+{
+	Cube *cube;
+
+	cube = r_malloc(sizeof(Cube));
+
+	/* Prepare positions space. */
+	cube->current_position = start_pos;
+	cube->type = CTYPE_ANGLE;
+
+	cube->index = 0;
+	cube->x = 0;
+	cube->y = 0;
+	cube->prev_y = -1;
+
+	cube->water = 0;
+	cube->falling = false;
+
+	cube->network_integrity = 1;
+	cube->network_size = 0;
+	cube->network = NULL;
+	cube->root = NULL;
+
+	cube->tick = 0;
+
+	cube->fade_status = 0;
+
+	cube->trashed = 0;
+
+	return cube;
+}
+
+/**
+ * Cube destructor
+ */
+void
+cube_kill(Cube *cube)
+{
+	cube_network_flush(cube);
+	r_free(cube);
+}
+
+
+
+/**
  * Initialize the Cube Random map from the above defines.
  */
 void
@@ -75,8 +123,8 @@ cube_init_rmap()
 
 
 
-/* The following defines the plugs (opened pipe) on the specific cube styles
- * as defined in the block.png file. It is represented as 4 bits as follow:
+/* The following defines the plugs (opened pipe) on the specific cube styles.
+ * It is represented as 4 bits as follow:
  *
  *     1
  *   +---+
@@ -105,33 +153,6 @@ cube_get_plugs(Cube *cube)
 }
 
 
-Cube *
-cube_new(byte start_pos)
-{
-	Cube *cube;
-
-	cube = r_malloc(sizeof(Cube));
-
-	/* Prepare positions space. */
-	cube->current_position = start_pos;
-	cube->type = CTYPE_ANGLE;
-
-	cube->x = 0;
-	cube->y = 0;
-
-	cube->water = 0;
-
-	cube->network_integrity = 1;
-	cube->network_size = 0;
-	cube->network = NULL;
-	cube->root = NULL;
-
-	cube->fade_status = 0;
-
-	cube->trashed = 0;
-
-	return cube;
-}
 
 /**
  * Shortcut to assign the type directly.
@@ -326,15 +347,6 @@ cube_new_from_char(char c)
 	return cube;
 }
 
-
-void
-cube_kill(Cube *cube)
-{
-	cube_network_flush(cube);
-	r_free(cube);
-}
-
-
 SDL_Surface *
 cube_get_surface(Cube *cube)
 {
@@ -343,7 +355,7 @@ cube_get_surface(Cube *cube)
 	SDL_Rect *dst = NULL;
 	int fs = cube->fade_status;
 	
-	/* All blocks are fixed size. Set DestRect and SourceRect. */
+	/* All cubes are fixed size. Set DestRect and SourceRect. */
 	src.w = BSIZE;
 	src.h = BSIZE;
 	src.y = cube->current_position * BSIZE;
@@ -378,7 +390,7 @@ cube_get_surface(Cube *cube)
 
 	/* Once again, if we are fading this dude, we should greyscale him */
 	if (fs > 0)
-		surface_greyscale(s);
+		gfx_greyscale(s);
 
 	return s;
 }
@@ -453,4 +465,51 @@ int
 cube_get_abs_y(Cube *cube)
 {
 	return BOARD_TOP + cube->y * BSIZE;
+}
+
+Cube *
+cube_new_one(bool allow_bomb)
+{
+	unsigned int mask = 0xFFFFFFFF;
+	Cube *cube;
+
+	if (allow_bomb != true) {
+		mask ^= 1 << CTYPE_BOMB;
+	}
+
+	/* No auto-rocks, no empties */
+	mask ^= 1 << CTYPE_EMPTY;
+	mask ^= 1 << CTYPE_ROCK;
+
+	cube = cube_new_random_mask(mask);
+	cube->falling = true;
+
+	return cube;
+}
+
+
+void
+cube_sync_map(Board *board, Cube *cube)
+{
+	int index = cube->y * board->width + cube->x;
+
+	/* Don't worry, be happy */
+	if (index == cube->index)
+		return;
+
+	/* This cube was off the map, don't worry about the trail */
+	if (cube->index != -1)
+		board->cubes[cube->index] = NULL;
+
+	/* Cubes on hold and trashed cubes are kept off the map */
+	if (cube == board->hold || cube->trashed == true) {
+		cube->index = -1;
+		return;
+	}
+
+	if (board->cubes[index] != NULL)
+		fatal("Cube overlap!");
+
+	board->cubes[index] = cube;
+	cube->index = index;
 }

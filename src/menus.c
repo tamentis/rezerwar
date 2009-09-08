@@ -34,7 +34,6 @@
 #include "rezerwar.h"
 
 enum toggle_types {
-	TOGGLE_DIFFICULTY,
 	TOGGLE_SOUND,
 	TOGGLE_FULLSCREEN
 };
@@ -139,19 +138,6 @@ menuitem_kill(MenuItem *item)
 
 
 void
-menu_item_set_difficulty(MenuItem *item)
-{
-	char *diff_t[] = {
-		"Difficulty: Easiest",
-		"Difficulty: Easy",
-		"Difficulty: Medium",
-		"Difficulty: Hard",
-		"Difficulty: Ultra" };
-
-	text_set_value(item->text, diff_t[conf->difficulty]);
-}
-
-void
 menu_item_set_sound(MenuItem *item)
 {
 	char *sound_t[] = {
@@ -226,21 +212,15 @@ menu_load_gameover(Menu *menu, bool allow_next_level)
 
 
 /**
- * For this menu we keep a reference to the difficulty menu item so we can load its
+ * For this menu we keep a reference to the sound menu item so we can load its
  * value/name properly after.
  */
 void
 menu_load_options(Menu *menu)
 {
-	MenuItem /* *diff_item,*/ *sound_item, *fs_item;
+	MenuItem *sound_item, *fs_item;
 
 	flush_menu_items(menu);
-
-	/*
-	diff_item = add_item_to_menu(menu, "difficulty", MTYPE_TOGGLE, 
-			TOGGLE_DIFFICULTY, 0);
-	menu_item_set_difficulty(diff_item);
-	*/
 
 	sound_item = add_item_to_menu(menu, "sound/music", MTYPE_TOGGLE,
 			TOGGLE_SOUND, 0);
@@ -277,13 +257,6 @@ void
 menu_toggle_item(Menu *menu, MenuItem *item)
 {
 	switch (item->subtype) {
-		/* Difficulty */
-		case TOGGLE_DIFFICULTY:
-			conf->difficulty++;
-			if (conf->difficulty >= DIFF_LENGTH)
-				conf->difficulty = 0;
-			menu_item_set_difficulty(item);
-			break;
 		case TOGGLE_FULLSCREEN:
 			conf->fullscreen = !conf->fullscreen;
 #ifdef _WIN32
@@ -335,7 +308,7 @@ menu_render(Menu *menu)
 {
 	int i;
 	MenuItem *item;
-	SDL_Surface *s;
+	SDL_Surface *surf;
 
 	for (i = 0; i < menu->length; i++) {
 		item = menu->items[i];
@@ -349,13 +322,14 @@ menu_render(Menu *menu)
 			item->text->colorized = false;
 			item->text->effect &= ~EFFECT_WAVE;
 		}
-		s = text_get_surface(item->text);
-		if (s == NULL)
+
+		surf = text_get_surface(item->text);
+		if (surf == NULL)
 			continue;
 
 		text_get_rectangle(item->text, &(item->rect));
-		SDL_BlitSurface(s, NULL, screen, &(item->rect));
-		SDL_FreeSurface(s);
+		SDL_BlitSurface(surf, NULL, screen, &(item->rect));
+		gfx_free(surf);
 	}
 }
 
@@ -493,12 +467,12 @@ menu_runner(Menu *menu)
 		if (menu->bg_refresh == true) {
 			if (menu->bg_image != NULL) {
 				intro = SDL_LoadBMP(menu->bg_image);
-				surface_fadein(intro, 16);
+				gfx_fadein(intro, 16);
 			} else if (menu->bg_surface != NULL) {
 				SDL_BlitSurface(menu->bg_surface, NULL,
 						intro, NULL);
 			} else {
-				intro = copy_screen();
+				intro = gfx_copyscreen();
 			}
 			menu->bg_refresh = false;
 		}
@@ -512,7 +486,7 @@ menu_runner(Menu *menu)
 			SDL_BlitSurface(intro, NULL, screen, NULL);
 
 			if (menu->modal == true)
-				blit_modal(160);
+				gfx_modal(160);
 
 			menu_render(menu);
 			SDL_Flip(screen);
@@ -566,7 +540,7 @@ gameover_menu(enum mtype status)
 		allow_next_level = false;
 
 	/* Dump a modal and a title before running the menu */
-	blit_modal(160);
+	gfx_modal(160);
 	switch (status) {
 		case MTYPE_GAMEOVER_WIN:
 			title = text_new("Congratulations!");

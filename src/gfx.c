@@ -38,24 +38,19 @@ extern SDL_Surface *sprites;
 extern Uint32 key;
 extern Configuration *conf;
 
+
+/**
+ * Initialize the video sub-system.
+ */
 void
 gfx_init()
 {
 	uint32_t sdl_flags = 0;
 
-	sdl_flags  = SDL_SWSURFACE;
-//	sdl_flags  = SDL_HWSURFACE|SDL_DOUBLEBUF;
+//	sdl_flags  = SDL_SWSURFACE;
+	sdl_flags  = SDL_HWSURFACE|SDL_DOUBLEBUF;
 	sdl_flags |= conf->fullscreen == true ? SDL_FULLSCREEN : 0;
-	screen = SDL_SetVideoMode(640, 480, 16, sdl_flags);
-}
-
-
-void
-white_screen()
-{
-	memset(screen->pixels, 255, screen->w * screen->h *
-			screen->format->BytesPerPixel);
-	SDL_Flip(screen);
+	screen = SDL_SetVideoMode(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP, sdl_flags);
 }
 
 
@@ -70,24 +65,16 @@ gfx_black(SDL_Surface *surf)
 }
 
 
-void
-black_screen(Uint8 s)
-{
-	gfx_black(screen);
-	SDL_Flip(screen);
-	SDL_Delay(s * 1000);
-}
-
 /**
  * Take a surface and convert each pixel into a greyscaled equivalent.
  */
 void
-surface_greyscale(SDL_Surface *s)
+gfx_greyscale(SDL_Surface *s)
 {
-	int i, max = s->w * s->h;
-	byte r, g, b, v;
-	Uint32 *c32;
-	Uint16 *c16;
+	int	 i, max = s->w * s->h;
+	byte	 r, g, b, v;
+	Uint32	*c32;
+	Uint16	*c16;
 
 	if (s->format->BitsPerPixel == 16) {
 		for (i = 0; i < max; i++) {
@@ -136,11 +123,12 @@ gfx_free(SDL_Surface *surf)
 
 
 void
-surface_shutter(int start, int stop, int speed)
+gfx_shutter(int start, int stop, int speed)
 {
-	SDL_Surface *org;
-	SDL_Rect top, bottom;
-	int i;
+	SDL_Surface	*org = NULL;
+	SDL_Rect	 top, bottom;
+	int		 i;
+	uint32_t	 loop_start;
 
 	/* If the shutter is going backward, you need to dump the original
 	 * screen every time */
@@ -161,9 +149,12 @@ surface_shutter(int start, int stop, int speed)
 	bottom.x = 0;
 	bottom.y = screen->h - start;
 
-	/* Loop 'max' times and every time, dump first the original and then
-	 * a increasingly transparent 'surf' */
+	/* 
+	 * Loop 'max' times and every time, dump first the original and then
+	 * a increasingly transparent 'surf'
+	 */
 	for (i = start; start < stop ? i < stop : i > stop; i += speed) {
+		loop_start = SDL_GetTicks();
 		/* Only need to blit the original when we open. */
 		if (start > stop)
 			SDL_BlitSurface(org, NULL, screen, NULL);
@@ -175,23 +166,30 @@ surface_shutter(int start, int stop, int speed)
 		bottom.y -= speed;
 
 		SDL_Flip(screen);
-		SDL_Delay(10);
+		SDL_Delay(20 - (SDL_GetTicks() - loop_start));
 	}
 
 	if (start > stop)
 		SDL_FreeSurface(org);
 }
 
+/**
+ * Grow a black border up and down around the current image.
+ */
 void
-surface_shutter_close()
+gfx_shutter_close()
 {
-	surface_shutter(0, screen->h / 2 + 20, 16);
+	gfx_shutter(0, screen->h / 2 + 20, 16);
 }
 
+
+/**
+ * Start on black and open the shutter to reveal the image.
+ */
 void
-surface_shutter_open()
+gfx_shutter_open()
 {
-	surface_shutter(screen->h / 2 + 20, 0, -16);
+	gfx_shutter(screen->h / 2 + 20, 0, -16);
 }
 
 
@@ -210,8 +208,11 @@ gfx_new(int width, int height)
 }
 
 
+/**
+ * Create a new surface, using the same size and format as the given one.
+ */
 SDL_Surface *
-new_of_size(SDL_Surface *s)
+gfx_new_samesize(SDL_Surface *s)
 {
 	SDL_Surface *org;
 	org = SDL_CreateRGBSurface(0, s->w, s->h, s->format->BitsPerPixel,
@@ -219,83 +220,15 @@ new_of_size(SDL_Surface *s)
 	return org;
 }
 
-SDL_Surface *
-surface_subsample(SDL_Surface *org, int factor)
-{
-	SDL_Surface *pix = new_of_size(org);
-	unsigned ssize = org->w * org->h;
-	unsigned i, j, bpp;
-	Uint32 *v;
-	Uint8 r, g, b;
-
-	bpp = org->format->BytesPerPixel;
-
-	for (i = 0; i < ssize - factor; i += factor) {
-		v = org->pixels + i * bpp;
-		SDL_GetRGB(*v, org->format, &r, &g, &b);
-		for (j = 0; j < factor; j++) {
-			v = pix->pixels + (i + j) * bpp;
-			*v = SDL_MapRGB(org->format, r, g, b);
-		}
-	}
-
-	return pix;
-}
-
-/**
- * Progressively sub-sample the original surface.
- */
-void
-surface_pixel_close()
-{
-	SDL_Surface *org, *pix;
-	int psize;
-
-	org = copy_screen();
-
-	/* Number of frame, increase of one pixel each time... */
-	for (psize = 1; psize < 65; psize <<= 1) {
-		pix = surface_subsample(org, psize);
-		SDL_BlitSurface(pix, NULL, screen, NULL);
-		SDL_FreeSurface(pix);
-		SDL_Flip(screen);
-		SDL_Delay(40);
-	}
-
-	SDL_FreeSurface(org);
-}
-
-/**
- * Progressively sub-sample the original surface.
- */
-void
-surface_pixel_open()
-{
-	SDL_Surface *org, *pix;
-	int psize;
-
-	org = copy_screen();
-
-	/* Number of frame, increase of one pixel each time... */
-	for (psize = 64; psize > 0; psize >>= 1) {
-		pix = surface_subsample(org, psize);
-		SDL_BlitSurface(pix, NULL, screen, NULL);
-		SDL_FreeSurface(pix);
-		SDL_Flip(screen);
-		SDL_Delay(40);
-	}
-
-	SDL_FreeSurface(org);
-}
 
 /**
  * Create a copy of the screen and return it as a new SDL_Surface, don't
  * forget to free it after usage.
  */
 SDL_Surface *
-copy_screen()
+gfx_copyscreen()
 {
-	SDL_Surface *org = new_of_size(screen);
+	SDL_Surface *org = gfx_new_samesize(screen);
 
 	SDL_BlitSurface(screen, NULL, org, NULL);
 
@@ -308,7 +241,7 @@ copy_screen()
  * aborted by a keystroke.
  */
 int
-surface_fadein(SDL_Surface *surf, int speed)
+gfx_fadein(SDL_Surface *surf, int speed)
 {
 	Uint8 i;
 	int r = 0;
@@ -317,7 +250,7 @@ surface_fadein(SDL_Surface *surf, int speed)
 	int max = 255 / speed;
 
 	/* Create a dump of the current screen to fade from */
-	org = copy_screen();
+	org = gfx_copyscreen();
 
 	/* Loop 'max' times and every time, dump first the original and then
 	 * a increasingly transparent 'surf' */
@@ -345,45 +278,13 @@ surface_fadein(SDL_Surface *surf, int speed)
 	return r;
 }
 
-void
-blit_cursor(int style, int x, int y)
-{
-	SDL_Rect src, dest;
-
-	src.w = src.h = dest.w = dest.h = 24;
-
-	src.x = 270 + 24 * style;
-	src.y = 174;
-
-	dest.x = x - 12;
-	dest.y = y - 2;
-
-	SDL_BlitSurface(sprites, &src, screen, &dest);
-}
-
-/**
- * Dump a faded black surface on the screen.
- */
-void
-blit_modal(unsigned opacity)
-{
-	SDL_Surface *m;
-
-	m = SDL_CreateRGBSurface(0, screen->w, screen->h, 
-			screen->format->BitsPerPixel, 0, 0, 0, 0);
-	SDL_FillRect(m, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
-	SDL_SetAlpha(m, SDL_SRCALPHA|SDL_RLEACCEL, opacity);
-	SDL_BlitSurface(m, NULL, screen, NULL);
-
-	SDL_FreeSurface(m);
-}
 
 /**
  * Fade a surface out of the screen (to black). If a keystroke is recorded,
  * return 1.
  */
 int
-surface_fadeout(SDL_Surface *surf)
+gfx_fadeout(SDL_Surface *surf)
 {
 	Uint8 i;
 	SDL_Event event;
@@ -404,8 +305,32 @@ surface_fadeout(SDL_Surface *surf)
 	return 0;
 }
 
+
+/**
+ * Dump a faded black surface on the screen.
+ */
+void
+gfx_modal(unsigned opacity)
+{
+	SDL_Surface *m;
+
+	m = SDL_CreateRGBSurface(0, screen->w, screen->h, 
+			screen->format->BitsPerPixel, 0, 0, 0, 0);
+	SDL_FillRect(m, NULL, SDL_MapRGB(screen->format, 0, 0, 0));
+	SDL_SetAlpha(m, SDL_SRCALPHA|SDL_RLEACCEL, opacity);
+	SDL_BlitSurface(m, NULL, screen, NULL);
+
+	SDL_FreeSurface(m);
+}
+
+
+/**
+ * Blit a sprite to screen given a source and destination rectangle. This is
+ * really a tiny convenience wrapper.
+ */
 void
 gfx_blitsprite(SDL_Rect *source, SDL_Rect *dest)
 {
 	SDL_BlitSurface(sprites, source, screen, dest);
 }
+

@@ -1,0 +1,34 @@
+
+Lesson 7: Medic 101
+
+In normal circumstances, you wouldn't be able
+to solve this problem.\n
+Fortunately we invented the 'medic' cube, it
+conveniently convert adjacent cubes to
+'all-way' cubes.\n
+You have to solve this one with the 5 given 
+cubes, no more, no less.
+
+.........
+.........
+.........
+.........
+.........
+.........
+.........
+---...---
+RRRR.RRRR
+RR<--->RR
+
+# Those are defined backward, starts from the bottom
+70-
+70-
+70T
+70|
+70M
+
+# Level objective type
+$ObjectiveType: CLEARALL
+$AllowDynamite: FALSE
+$MaxCubesAllowed: 5
+$NextLevel: tuto_08

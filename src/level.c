@@ -33,6 +33,42 @@
 
 #include "rezerwar.h"
 
+/**
+ * Level constructor
+ */
+Level *
+lvl_new()
+{
+	Level *level;
+
+	level = malloc(sizeof(Level));
+	level->name = NULL;
+	level->description = NULL;
+	level->next = NULL;
+	level->queue = NULL;
+	level->queue_len = 0;
+	level->allow_bomb = true;
+	level->rising_speed = -1;
+	level->time_limit = -1;
+	level->max_moles = 0;
+	level->dead_pipes = 0;
+	level->cmap = malloc(sizeof(byte) * BOARD_WIDTH * BOARD_HEIGHT);
+
+	return level;
+}
+
+/**
+ * Level destructor
+ */
+void
+lvl_kill(Level *level)
+{
+	r_free(level->name);
+	free(level->description);
+	r_free(level);
+}
+
+
 /*************************
 * LEVEL PSEUDO VARIABLES *
 *************************/
@@ -65,19 +101,33 @@ void
 lvl_var_allowdynamite(Level *level, char *value)
 {
 	if (strcmp(value, "TRUE") == 0) {
-		level->allow_dynamite = true;
+		level->allow_bomb = true;
 	} else if (strcmp(value, "FALSE") == 0) {
-		level->allow_dynamite = false;
+		level->allow_bomb = false;
 	} else {
 		fatal("Unknown value for BOOLEAN 'AllowDynamite'");
 	}
 }
 
-/* $MaxBlocksAllowed */
+/* $DeadPipes */
 void
-lvl_var_maxblocksallowed(Level *level, char *value)
+lvl_var_deadpipes(Level *level, char *value)
 {
-	level->max_blocks = atoi(value);
+	level->dead_pipes = atoi(value);
+}
+
+/* $MaxCubesAllowed */
+void
+lvl_var_maxcubesallowed(Level *level, char *value)
+{
+	level->max_cubes = atoi(value);
+}
+
+/* $MaxMoles */
+void
+lvl_var_maxmoles(Level *level, char *value)
+{
+	level->max_moles = atoi(value);
 }
 
 /* $TimeLimit */
@@ -141,8 +191,12 @@ lvl_splitvar(Level *level, byte *lbuf, size_t len)
 		lvl_var_nextlevel(level, c);
 	else if (strcmp("AllowDynamite", l) == 0)
 		lvl_var_allowdynamite(level, c);
-	else if (strcmp("MaxBlocksAllowed", l) == 0)
-		lvl_var_maxblocksallowed(level, c);
+	else if (strcmp("MaxCubesAllowed", l) == 0)
+		lvl_var_maxcubesallowed(level, c);
+	else if (strcmp("MaxMoles", l) == 0)
+		lvl_var_maxmoles(level, c);
+	else if (strcmp("DeadPipes", l) == 0)
+		lvl_var_deadpipes(level, c);
 	else if (strcmp("TimeLimit", l) == 0)
 		lvl_var_timelimit(level, c);
 	else if (strcmp("RisingSpeed", l) == 0)
@@ -151,27 +205,6 @@ lvl_splitvar(Level *level, byte *lbuf, size_t len)
 		fatal("Syntax error: unknown variable: \"%s\".", l);
 }
 
-/**
- * Level constructor
- */
-Level *
-lvl_new()
-{
-	Level *level;
-
-	level = malloc(sizeof(Level));
-	level->name = NULL;
-	level->description = NULL;
-	level->next = NULL;
-	level->queue = NULL;
-	level->queue_len = 0;
-	level->allow_dynamite = true;
-	level->rising_speed = -1;
-	level->time_limit = -1;
-	level->cmap = malloc(sizeof(byte) * BOARD_WIDTH * BOARD_HEIGHT);
-
-	return level;
-}
 
 /**
  * Return a freshly loaded level.
@@ -264,8 +297,8 @@ lvl_load(char *name)
 			if (offset < 4)
 				fatal("Syntax error on line %d: cube definition erroneous.", lineno);
 			level->queue = realloc(level->queue, 
-					sizeof(QueuedBlock*) * (i + 1));
-			level->queue[i] = malloc(sizeof(QueuedBlock));
+					sizeof(QueuedCube*) * (i + 1));
+			level->queue[i] = malloc(sizeof(QueuedCube));
 			level->queue[i]->type = lbuf[0] - 48;
 			level->queue[i]->pos = lbuf[1] - 48;
 			level->queue[i]->cmap_len = offset - 3;
@@ -302,7 +335,9 @@ lvl_dump(Level *level)
 	printf("MAP:%s\n", level->cmap);
 	printf("QUEUE\n");
 
-	printf("ALLOW_DYNAMITE: %d\n", level->allow_dynamite);
+	printf("ALLOW_BOMB: %d\n", level->allow_bomb);
+	printf("MOLES: %d\n", level->max_moles);
+	printf("DEADPIPES: %d\n", level->dead_pipes);
 
 	for (i = 0; i < level->queue_len; i++) {
 		printf(" - type=%d, pos=%d, cubes(%zu)=",
@@ -314,16 +349,5 @@ lvl_dump(Level *level)
 		}
 		printf("\n");
 	}
-}
-
-/**
- * Level destructor
- */
-void
-lvl_kill(Level *level)
-{
-	r_free(level->name);
-	free(level->description);
-	r_free(level);
 }
 

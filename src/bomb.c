@@ -125,7 +125,7 @@ board_update_flames(Board *board, uint32_t now)
  * Rendering of all the flames.
  */
 #define FLAME_LEFT	160
-#define FLAME_TOP	337
+#define FLAME_TOP	339
 void
 board_render_flames(Board *board)
 {
