@@ -220,6 +220,7 @@ void		 gfx_blitsprite(SDL_Rect *, SDL_Rect *);
  * Audio wrappers
  */
 void		 sfx_init();
+void		 sfx_kill();
 void		 sfx_toggle_mute(bool);
 void		 sfx_play_tick1();
 void		 sfx_play_tack1();
@@ -311,7 +312,7 @@ Cube		*cube_new(byte);
 Cube		*cube_new_type(byte, int);
 Cube		*cube_new_from_char(char);
 void		 cube_kill(Cube *);
-Cube		*cube_new_one(bool);
+Cube		*cube_new_one(bool, bool);
 Cube		*cube_new_random();
 Cube		*cube_new_random_max(int);
 Cube		*cube_new_random_mask(unsigned int);
@@ -436,6 +437,7 @@ typedef struct _queuedcube_s {
 Level		*lvl_load(char *);
 void		 lvl_dump(Level *);
 void		 lvl_kill(Level *);
+bool		 lvl_bool(const char *);
 
 
 /*
@@ -491,6 +493,7 @@ typedef struct _pipe_s {
 
 Pipe		*pipe_new();
 void		 pipe_kill(Pipe *);
+void		 pipe_fix(Board *, Pipe *);
 
 
 /*
@@ -521,6 +524,7 @@ struct _board_s {
 	int		 cube_count;
 	Cube		**cubes;
 	bool		 allow_bomb;
+	bool		 allow_medic;
 	uint32_t	 next_line;
 	uint32_t	 elapsed;	// msec passed since start.
 	int		 cube_speed;

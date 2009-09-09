@@ -2,13 +2,11 @@
 Lesson 8: Medic 102
 
 The 'medic' have more than one use.\n
-In normal mode, clumsy moles will destroy your
-pipes and will stop you from completing networks.\n
-When a pipe is down, the only way to fix it is to
-bring a 'medic' cube in front of it. In this
-level, all the bottom pipes are down. With your
-limited amount of pipes, don't try to climb, 
-get ready for the 'medic'.
+During game, a few things could end up breaking
+your supplying pipes (e.g. moles), 'Medic' cubes
+can be used to fix these pipes.\n
+In this lesson, you will need to fix the pipes
+before you connect the two sides.
 
 .........
 R.......R
@@ -30,7 +28,7 @@ R.......R
 70-
 
 # Level objective type
-$ObjectiveType: CLEARALL
+$ObjectiveType: LINK
 $AllowDynamite: FALSE
 $DeadPipes: 2
-$NextLevel: tuto_08
+$NextLevel: tuto_09

@@ -128,6 +128,7 @@ board_new()
 	b->success = false;
 	b->silent = false;
 	b->allow_bomb = true;
+	b->allow_medic = true;
 	b->objective_type = OBJTYPE_NONE;
 	board_set_difficulty_from_score(b);
 
@@ -215,6 +216,7 @@ board_new_from_level(Level *level)
 	/* Copy level related stuff */
 	board->objective_type = level->objective_type;
 	board->allow_bomb = level->allow_bomb;
+	board->allow_medic = level->allow_medic;
 	if (level->next)
 		board->next_level = r_strcp(level->next);
 	if (level->max_cubes)
@@ -712,7 +714,8 @@ board_load_next_cube(Board *board)
 		board->cqueue[board->cqueue_len - 1] = NULL;
 		board->cqueue_len--;
 	} else {
-		board->next_cube = cube_new_one(board->allow_bomb);
+		board->next_cube = cube_new_one(board->allow_bomb,
+				board->allow_medic);
 	}
 
 	board->next_cube->speed = board->cube_speed;
@@ -991,6 +994,7 @@ board_cube_medic(Board *board, Cube *cube)
 	}
 
 	board_trash_cube(board, cube);
+	sfx_play_menuselect();
 }
 
 
@@ -1511,6 +1515,13 @@ board_spread_attempt(Board *board, Cube *cube, Cube *root, Sint8 ox, Sint8 oy,
 			break;
 		case ATYPE_CUBE:
 			n = board_get_cube(board, cube->x + ox, cube->y + oy);
+
+			/* Falling blocks should not be part of any network */
+			if (n->falling && cube_plug_match(cube, src_plug)) {
+				root->network_integrity = 0;
+				return;
+			}
+
 			status = cube_get_plug_status(cube, src_plug, n, 
 					dest_plug);
 			if (status == PSTAT_CONNECTED)

@@ -5,8 +5,8 @@
 <app version="1">
   <name>Rezerwar</name>
   <coder>Tamentis</coder>
-  <version>0.2</version>
-  <release_date>20090628</release_date>
+  <version>0.4</version>
+  <release_date>20090831</release_date>
   <short_description>Block n Pipes Puzzle Game</short_description> 
   <long_description>Rezerwar is a puzzle game that could be quickly described as the unlegitimate child of a known block game and the average pipe game.</long_description> 
 </app>

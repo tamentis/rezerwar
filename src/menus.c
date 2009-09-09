@@ -520,7 +520,7 @@ main_menu()
 
 	menu_load_main(menu);
 
-	sfx_play_music("music/menu.mp3");
+	sfx_play_music("music/menu.ogg");
 	status = menu_runner(menu);
 
 	menu_kill(menu);

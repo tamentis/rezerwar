@@ -128,7 +128,7 @@ gfx_shutter(int start, int stop, int speed)
 	SDL_Surface	*org = NULL;
 	SDL_Rect	 top, bottom;
 	int		 i;
-	uint32_t	 loop_start;
+	uint32_t	 loop_start, elapsed;
 
 	/* If the shutter is going backward, you need to dump the original
 	 * screen every time */
@@ -166,7 +166,9 @@ gfx_shutter(int start, int stop, int speed)
 		bottom.y -= speed;
 
 		SDL_Flip(screen);
-		SDL_Delay(20 - (SDL_GetTicks() - loop_start));
+		elapsed = SDL_GetTicks() - loop_start;
+		if (elapsed < 20)
+			SDL_Delay(20 - elapsed);
 	}
 
 	if (start > stop)

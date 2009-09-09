@@ -1,24 +1,34 @@
 
 Lesson 5
 
-Same story, all you need is to clear all the
-cube-pipes from the board.
+Same story, you just need to clear all the pipes.\n
+You can do it with style, or you can do it quick
+and dirty, it's up to you. In the real world, the
+bigger network will give more points!\n
+Oh by the way, for the first time you will need
+to rotate the blocks to complete this level.\n
+If you want to retry, just press 'Q'.
 
 .........
-RR.....RR
-R.......R
-R.......R
-R....RRRR
-....P----
-...PJRRRR
-...{RRRRR
-..-JRRRRR
+RRRR.RRRR
+RRRR.RRF-
+RR....R|R
+7R.RR.R|R
+|R.RR|R|R
+L....JR|R
+R|RRRRR|R
+RL-----JR
 RRRRRRRRR
 
 # Those are defined backward, starts from the bottom
 70-
 70-
+70J
+70F
+70|
 70-
+70T
+70T
 70-
 70-
 70-
@@ -26,5 +36,6 @@ RRRRRRRRR
 # Level objective type
 $ObjectiveType: CLEARALL
 $AllowDynamite: FALSE
+$AllowMedic: FALSE
 $NextLevel: tuto_06
 

@@ -15,6 +15,7 @@ Changes in 0.4:
    missing left and right blocks, avoiding self-triggering lines.
  - fixed a bug where the score would show up in tutorial mode when
    hitting pause.
+ - support for Haiku/BeOS (thanks to Luc Schrijvers for the help)
 
 Changes in 0.3:
 ===============

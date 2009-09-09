@@ -2,7 +2,10 @@
 Lesson 4
 
 Raising the difficulty a little bit. This level
-requires the elimination of all the pipe-blocks.
+requires the elimination of all the pipes.\n
+You are given 8 flat pipes and you will need
+each of them to complete this lesson, there is only
+one solution.\n
 Don't worry about the rocks.
 
 .........
@@ -25,14 +28,10 @@ RRRRRRRRR
 70-
 70-
 70-
-70-
-70-
-70-
-70-
-70-
 
 # Level objective type
 $ObjectiveType: CLEARALL
 $AllowDynamite: FALSE
+$MaxCubesAllowed: 8
 $NextLevel: tuto_05
 

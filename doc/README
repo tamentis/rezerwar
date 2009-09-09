@@ -1,59 +1,51 @@
-Rezerwar - a big mess of networked blocks and pipes 
-Copyright (C) Bertrand Janin (tamentis@neopulsar.org)
+rezerwar - a big mess of networked piped cubes
+
 
 WTF?
--------------------------------------------------------------------------------
-  Rezerwar is a puzzle game that could be quickly described as the illegitimate
-  child of a known tetromino game and a pipe game. This child was ditched out
-  of the house early and enjoyed a wanderer life stealing toys from other kids.
+------------------------------------------------------------------------
+  Rezerwar is a puzzle game that could be quickly described as the
+  illegitimate child of a known tetromino game and a pipe game. I
+  adopted this bastard child and tried to give it some life.
 
-
-DISCLAIMER
--------------------------------------------------------------------------------
-  This is not a finished game, it could be renamed "My never-ending 2d puzzle
-  pet project game". The game might evolve radically or not change for 10
-  years. But it's OpenSource, so feel free to destroy/construct with me. I am
-  not responsible in case of damage, material or psychological.
+  I started it as a tetris-clone, it actually had real tetrominoes at
+  some point, rain was involved with water physics at another point.
 
 
 INSTALL
--------------------------------------------------------------------------------
-  From source, you will need gcc, make and SDL. If you plan on altering the
-  gfx, sfx or musics, you will need mikmod (musics), inkscape (gfx), lame and
-  the gimp.
+------------------------------------------------------------------------
+  From source, you will need gcc, GNU make, SDL and SDL_mixer. If you
+  plan on altering any of the data, you will need some more tools such
+  as inkscape, the gimp, oggenc, schism tracker, etc..
 
-  Use ./configure to setup the build environment, with your platform as only
-  parameter. For example:
+  Use ./configure to setup the build environment, unless your platform
+  is undetected in which case you can try a close match as first
+  parameter.
 
-  ./configure Linux
-  make
-  make install
+      ./configure
+      make
+      sudo make install
 
-  The install will put all the data files in /usr/share/games/rezerwar and 
-  the game will be installed in /usr/games. Feel free to edit this in 
-  config.h and Makefile.
+  If you are porting/packaging rezerwar, most of the destination 
+  directory can be specified as environment variable to the ./configure.
 
 
 WINDOWS
--------------------------------------------------------------------------------
-  On win32 you need to install msys and mingw32 to compile rezerwar. If you
-  feel like creating a Visual Studio project file, go crazy.
-
-  ./configure Win32
-  make
+------------------------------------------------------------------------
+  On win32 you need to install msys and mingw32 to compile rezerwar. If
+  you feel like creating a Visual Studio project file, please share.
 
 
 NINTENDO WII
--------------------------------------------------------------------------------
-  You need DevKitPro to build rezerwar on the Wii.
+------------------------------------------------------------------------
+  You need DevKitPro to build rezerwar on the Wii, and you will need to
+  run configure this way:
 
-  ./configure Wii
-  make
+      ./configure Wii
 
 
-SOUNDS
--------------------------------------------------------------------------------
-  Edited/resampled with Audacity from sounds on freesound.org:
+SOUNDS, MUSIC & GRAPHICS
+------------------------------------------------------------------------
+  Sounds were edited/resampled with Audacity from freesound.org sounds:
     - Start Horn by Vann Westfold
     - Rotating sound "Clock Ticking" by jackstrebor
     - Falling block "deepkickclean" by johnnypanic
@@ -63,69 +55,88 @@ SOUNDS
     - Menu Select "f3-sfx-menu-select.wav" by broumbroum
     - Drowning mole "ELEMENTS_WATER_02_Phasin-bubbles.wav" by suonho
 
+  Backgrounds & sprites were created with Inkscape and The Gimp.
 
-GRAPHICS
--------------------------------------------------------------------------------
-  Created with Inkscape and The Gimp by myself.
-
-
-MUSIC
--------------------------------------------------------------------------------
-  Created with ChibiTracker by myself too.
+  Music was created with ChibiTracker then SchismTracker.
 
 
 HOW TO PLAY
--------------------------------------------------------------------------------
-  You have to position falling blocks to align their pipes and let water
-  "flow" to create "networks". You get points by closing networks, the
-  bigger the network, the more points you get. From time to time you will
-  get a Dynamite, this will help you clear your path.
+------------------------------------------------------------------------
+  Cubes with pipes are falling from the top, you need to use your arrow
+  or vi keys to let the cubes fall in an organized manner. When pipes
+  are connecting to the left or right side of the board, blue or green
+  water will flow through them. The goal of this game is to get high
+  scores, in order to get points you need to complete the longest
+  networks of pipes (with water) as fast as possible. You may also
+  gain points from:
 
-  You also might get annoyed by the moles digging around your board. If they
-  blow a pipe, this pipe won't be able to give water until you fix it with
-  a medic cube.
+    - Fixing a broken pipe
+    - Completing a 'red' network
+    - Not using the 'Hold' key, at all
 
 
-AVALANCHE
--------------------------------------------------------------------------------
-  When a network is connected from one end of the screen to the next... the
-  water turns red. As soon as the network is completely closed, the network
-  is destroyed and with it all the cube below it. This is the most score
-  rewarding trick in Rezerwar.
+SPECIAL CUBES
+------------------------------------------------------------------------
+  Dynamite: This cube will destroy a complete row or column. It does not
+      produce any points but will usually be helpful to get out of some
+      complex situation. It could also be annoying as you might now want
+      anything to be destroyed. In this case, you need to find the
+      safest place for it to explod.
 
+  Medic: This cube has two functions. First it will transform all the
+      cubes above, below and aside of itself into 'all-way' cubes,
+      helping to solve complex and stuck networks. The second function
+      is to fix a broken pipe (see lower), which give points.
+
+
+MOLES
+------------------------------------------------------------------------
+  Appart from the stress of organisation, you will also have little
+  moles crawling around your rezerwar. Then wander, sleep and sometimes
+  bump into your supplying pipes. When this happens, the supplying pipe
+  will blow, drowning the mole. This pipe won't be able to supply water
+  until you bring a medic cube in front of it.
+
+
+RED NETWORKS
+------------------------------------------------------------------------
+  When a network is connected from one end of the screen to the next...
+  the water turns red. As soon as the network is completely closed, the
+  network is destroyed and with it all the cube below it. This is the
+  most score rewarding trick in Rezerwar.
+
+
+COMBOS
+------------------------------------------------------------------------
+  If you keep on completing networks, without interruption, you will
+  raise your combo level and every point you make will be multiplicated
+  by this value.
+  
 
 LEVEL FORMAT
--------------------------------------------------------------------------------
+------------------------------------------------------------------------
   The levels are simple text files, here are the rules to edit/create them:
   
-   - The lines starting with '#' are ignored completely.
-   - Blank lines (i.e. no char at all) are used as delimiters.
+   - The lines starting with '#' are ignored
+   - Blank lines (i.e. no char at all) are used as delimiters
    - The first non-blank line is the title of the level (Max 64)
    - The first paragraph after the title and a blank line is the
      description of the level, it will appear as soon as the level
      loads.
    - The set of characters after represent the grid of the initial
      cubes.
+   - The next chunk is a definition of the cubes to be sent to the
+     player, in reverse order. Letter equivalents could be found
+     in the source file 'cube.c'.
+   - After that, the lines starting with '$' are all variables
+     defining level internals.
 
 
-UPDATES, PATCHES, LEVELS, MUSICS, etc.:
--------------------------------------------------------------------------------
-  I do accept all contributions, just drop me a mail at tamentis@neopulsar.org
-  and I'll include your stuff in the next release, if there is any ;)
-
-  One good start is to checkout the SVN to get the real full source dump and
-  ./configure Debug.
+AUTHOR(s)
+------------------------------------------------------------------------
+  For now... just me:
+    Bertrand Janin <tamentis@neopulsar.org>
+    Website: http://tamentis.com/
 
 
-KNOWN ISSUES / TODO
--------------------------------------------------------------------------------
- - wii: bug - the music chirps from time to time, I have no idea why.
- - wii: bug - no way to enter your name in hiscores, defaults to 'wiiuser'.
- - wii: bug - no way to accelerate the fall of a block.
- - wii: add a screen to explain what buttons to use
- - wii: transitions are slow and buggy
- - all: add more tutorial levels.
- - all: complete the musics
-
-
-vim:expandtab ts=2 sw=2:
+vim:expandtab ts=2 sw=2 tw=72:

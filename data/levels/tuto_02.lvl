@@ -1,22 +1,21 @@
-# This is the first tutorial level of Rezerwar
-# (c) 2009 Bertrand Janin
-#
 
 Lesson 2
 
-Alright, you just learned how to get rid
-of blocks in rezerwar, you need to create
-a full network.\n
-Now try to connect the two side of the 
-board... you are given all the block type,
-you don't need a perfect network, just
-enough to run water.
+Good job!\n
+Now let's get a little more creative... You will
+see that the water from the left and the right
+have a different color.\n
+When those two types of water are mixed together,
+the water turns red and once the network is
+completed, it will generate a lot of points.\n
+It has some other benefits you will discover as
+you play better.
 
 .........
-R.......R
-R.......R
-R.......R
-R.......R
+RRR...RRR
+RRR...RRR
+RR.....RR
+RR.....RR
 R.......R
 R.......R
 R..RRR..R
@@ -28,11 +27,9 @@ R..F-7..R
 70-
 70-
 70-
-70-
-70-
-70-
 
 # Level objective type
+$MaxCubesAllowed: 4
 $AllowDynamite: FALSE
 $ObjectiveType: LINK
 $NextLevel: tuto_03

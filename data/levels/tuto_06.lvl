@@ -1,32 +1,31 @@
 
 Lesson 6
 
-Alright, here is a cool little level. Try to
-keep it simple and think fast, your time is
-counted.
+This one is all about timing. You have 45 seconds
+to build around the tower to connect the two sides.\n
+The pipes are random so don't blame me for the
+selection.\n
+Don't hesitate to eliminate useless blocks as they
+come or they will stand in your way.
 
 .........
 .........
 .........
 .........
-.........
-.........
-.F-...-7.
-FJR...RLT
-JRRR_RRRL
+....R....
+....R....
+....R....
+....R....
+..JRRRL..
 RRRRRRRRR
 
 # Those are defined backward, starts from the bottom
-70-
-70-
-70<
-70>
-70T
-70+
+70J
 
 # Level objective type
-$ObjectiveType: CLEARALL
+$ObjectiveType: LINK
 $AllowDynamite: FALSE
-$TimeLimit: 20
+$AllowMedic: FALSE
+$TimeLimit: 45
 $NextLevel: tuto_07
 

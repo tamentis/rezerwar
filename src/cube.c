@@ -468,14 +468,16 @@ cube_get_abs_y(Cube *cube)
 }
 
 Cube *
-cube_new_one(bool allow_bomb)
+cube_new_one(bool allow_bomb, bool allow_medic)
 {
 	unsigned int mask = 0xFFFFFFFF;
 	Cube *cube;
 
-	if (allow_bomb != true) {
+	if (allow_bomb != true)
 		mask ^= 1 << CTYPE_BOMB;
-	}
+
+	if (allow_medic != true)
+		mask ^= 1 << CTYPE_MEDIC;
 
 	/* No auto-rocks, no empties */
 	mask ^= 1 << CTYPE_EMPTY;

@@ -1,17 +1,16 @@
-# This is the first tutorial level of Rezerwar
-# (c) 2009 Bertrand Janin
-#
 
 Lesson 1
 
 Welcome to Rezerwar!\n
 In this game you need to create networks of
 pipes. To accomplish this, you will have to 
-position falling pipe-blocks to create a
-nicely connected plumbing master piece.\n
+position falling pipes to create a nicely
+connected plumbing master piece.\n
+When a network is all closed, it is complete
+and will disappear giving you points.\n
 In this first example, you are given two 
-pipe-blocks, just use your common sense to
-complete the given network.
+flat pipes, just use your common sense to
+complete the given network, no need to rotate.
 
 .........
 R.......R

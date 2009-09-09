@@ -21,8 +21,8 @@ include $(DEVKITPPC)/wii_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	rezerwar
 BUILD		:=	build_wii
-SOURCES		:=	src
-INCLUDES	:=	src
+SOURCES		:=	.
+INCLUDES	:=	.
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -94,7 +94,7 @@ $(BUILD):
 	make -C $(BUILD) -f $(CURDIR)/Makefile
 	mkdir -p wii_final
 	cp $(TARGET).dol wii_final/boot.dol
-	cp -f data/wii/* wii_final/
+	cp -f ../data/wii/* wii_final/
 
 #---------------------------------------------------------------------------------
 clean:
@@ -102,7 +102,7 @@ clean:
 
 #---------------------------------------------------------------------------------
 distclean: clean
-	rm -f Makefile MkConf config.h
+	rm -f Makefile config.h
 #---------------------------------------------------------------------------------
 run:
 	wiiload $(TARGET).dol

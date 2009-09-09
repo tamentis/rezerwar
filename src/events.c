@@ -231,7 +231,7 @@ handle_events_keydown(SDL_Event *event)
 			/* SDL on win32 is unable to toggle video mode... */
 			conf->fullscreen = !conf->fullscreen;
 #ifdef _WIN32
-			init_gfx();
+			gfx_init();
 #else
 			if (SDL_WM_ToggleFullScreen(screen) == 0)
 				fatal("Unable to toggle fullscreen/windowed mode.");

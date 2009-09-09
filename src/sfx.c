@@ -58,6 +58,13 @@ sfx_init()
 }
 
 
+void
+sfx_kill()
+{
+	Mix_CloseAudio();
+}
+
+
 Mix_Chunk*
 sfx_load_sample(char *filename)
 {

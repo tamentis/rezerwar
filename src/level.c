@@ -48,9 +48,11 @@ lvl_new()
 	level->queue = NULL;
 	level->queue_len = 0;
 	level->allow_bomb = true;
+	level->allow_medic = true;
 	level->rising_speed = -1;
 	level->time_limit = -1;
 	level->max_moles = 0;
+	level->max_cubes = 0;
 	level->dead_pipes = 0;
 	level->cmap = malloc(sizeof(byte) * BOARD_WIDTH * BOARD_HEIGHT);
 
@@ -98,15 +100,16 @@ lvl_var_nextlevel(Level *level, char *value)
 
 /* $AllowDynamite */
 void
-lvl_var_allowdynamite(Level *level, char *value)
+lvl_var_allowdynamite(Level *level, const char *value)
 {
-	if (strcmp(value, "TRUE") == 0) {
-		level->allow_bomb = true;
-	} else if (strcmp(value, "FALSE") == 0) {
-		level->allow_bomb = false;
-	} else {
-		fatal("Unknown value for BOOLEAN 'AllowDynamite'");
-	}
+	level->allow_bomb = lvl_bool(value);
+}
+
+/* $AllowMedic */
+void
+lvl_var_allowmedic(Level *level, const char *value)
+{
+	level->allow_medic = lvl_bool(value);
 }
 
 /* $DeadPipes */
@@ -336,6 +339,7 @@ lvl_dump(Level *level)
 	printf("QUEUE\n");
 
 	printf("ALLOW_BOMB: %d\n", level->allow_bomb);
+	printf("ALLOW_MEDIC: %d\n", level->allow_medic);
 	printf("MOLES: %d\n", level->max_moles);
 	printf("DEADPIPES: %d\n", level->dead_pipes);
 
@@ -351,3 +355,15 @@ lvl_dump(Level *level)
 	}
 }
 
+bool
+lvl_bool(const char *value)
+{
+	if (strcmp(value, "TRUE") == 0) {
+		return true;
+	} else if (strcmp(value, "FALSE") == 0) {
+		return false;
+	}
+
+	fatal("Unknown value for BOOLEAN: %s", value);
+	return false;
+}

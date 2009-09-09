@@ -1,10 +1,11 @@
 
 Lesson 3
 
-Alright this one is pretty cool. Once again
-you have to connect the two side, but to do
-so you have to go above a bunch of rocks.\n
-Good luck.
+The goal of this level is to link the two sides
+of the rezerwar.\n
+To accomplish this, you are given 20 'all-way'
+pipes, place them however you want, as long as 
+you manage to connect the two sides.
 
 .........
 R.......R
@@ -12,12 +13,15 @@ R.......R
 R.......R
 R.......R
 R.......R
+.........
 ....R....
-....R....
-....R....
-RRRRRRRRR
+R...R...R
+RR.RRR.RR
 
 # Those are defined backward, starts from the bottom
+70+
+70+
+70+
 70+
 70+
 70+
@@ -39,5 +43,6 @@ RRRRRRRRR
 # Level objective type
 $ObjectiveType: LINK
 $AllowDynamite: FALSE
+$MaxCubesAllowed: 20
 $NextLevel: tuto_04
 

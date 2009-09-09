@@ -33,7 +33,6 @@
 #endif
 
 #include "SDL.h"
-#include "SDL_mixer.h"
 
 #include "rezerwar.h"
 #include "config.h"
@@ -126,7 +125,7 @@ game_loop(char *levelname, enum ttype trans)
 	enum mtype	status = 0;	// current mode (menu, game, etc..)
 	SDL_Event	event;		// last loop event
 
-	sfx_play_music("music/level1.mp3");
+	sfx_play_music("music/level1.ogg");
 
 	/*
 	 * Without explicit level name, start the board with 4 lines of cubes
@@ -289,10 +288,9 @@ main(int ac, char **av)
 	sfx_play_horn();
 #endif
 
-	/* DEBUG / XXX */
+	/* DEBUG */
 	// return game_loop(NULL, 0);
-	// return game_loop("tuto_04", 0);
-	return game_loop("tuto_08", 0);
+	// return game_loop("tuto_end", 0);
 
 	/* Normal flow... */
 	intro_studio();
@@ -348,7 +346,7 @@ main(int ac, char **av)
 	/* Death and cleanup */
 	SDL_FreeSurface(sprites);
 	sfx_unload_library();
-	Mix_CloseAudio();
+	sfx_kill();
 	hiscore_free();
 	r_free(conf->next_level);
 	r_free(conf);

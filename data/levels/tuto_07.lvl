@@ -1,10 +1,12 @@
 
 Lesson 7: Medic 101
 
+Get rid of all the pipes...\n
 In normal circumstances, you wouldn't be able
-to solve this problem.\n
+to solve this problem because the bottom pipes
+have no openings.\n
 Fortunately we invented the 'medic' cube, it
-conveniently convert adjacent cubes to
+conveniently converts adjacent cubes to
 'all-way' cubes.\n
 You have to solve this one with the 5 given 
 cubes, no more, no less.
@@ -22,10 +24,10 @@ RR<--->RR
 
 # Those are defined backward, starts from the bottom
 70-
-70-
 70T
 70|
 70M
+70|
 
 # Level objective type
 $ObjectiveType: CLEARALL

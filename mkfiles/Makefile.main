@@ -1,4 +1,4 @@
-# $Id: Makefile.unix 391 2009-08-10 12:59:28Z tamentis $
+# $Id$
 
 all: build
 
@@ -38,6 +38,6 @@ install:
 	install -m 644 data/gfx/*.bmp ${TARGET_DATA}/gfx/
 	install -m 644 data/levels/* ${TARGET_DATA}/levels/
 	install -m 644 data/sfx/*.wav ${TARGET_DATA}/sfx/
-	install -m 644 data/music/*.mp3 ${TARGET_DATA}/music/
+	install -m 644 data/music/*.ogg ${TARGET_DATA}/music/
 	install -m 755 src/rezerwar ${TARGET_BIN}/
 
