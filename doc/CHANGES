@@ -1,3 +1,9 @@
+Changes in 0.x:
+===============
+ - added DESTDIR for the final make install
+   (thanks to Vincent Petry (PVince81@yahoo.fr) for the patch)
+
+
 Changes in 0.4:
 ===============
  - dynamites are now explicitely exploding (bomberman-style)
