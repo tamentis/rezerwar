@@ -194,6 +194,8 @@ lvl_splitvar(Level *level, byte *lbuf, size_t len)
 		lvl_var_nextlevel(level, c);
 	else if (strcmp("AllowDynamite", l) == 0)
 		lvl_var_allowdynamite(level, c);
+	else if (strcmp("AllowMedic", l) == 0)
+		lvl_var_allowmedic(level, c);
 	else if (strcmp("MaxCubesAllowed", l) == 0)
 		lvl_var_maxcubesallowed(level, c);
 	else if (strcmp("MaxMoles", l) == 0)

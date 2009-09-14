@@ -1,8 +1,9 @@
-Changes in 0.x:
-===============
+Changes in 0.4.1:
+=================
  - added DESTDIR for the final make install
-   (thanks to Vincent Petry (PVince81@yahoo.fr) for the patch)
-
+   Thanks to Vincent Petry (PVince81@yahoo.fr) for the patch
+ - fixed AllowMedic crashing on tutorial level 5
+   Thanks to Annette Kalbow (annette@kalbow.com) for the patch.
 
 Changes in 0.4:
 ===============
