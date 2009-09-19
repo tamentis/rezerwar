@@ -1,0 +1,27 @@
+
+End of Tutorial
+
+That's it for this version.\n
+Feel free to create more lessons, the format
+is not too complex, and send them to be
+included in the game.
+
+.........
+R.......R
+RR.....RR
+RRR...RRR
+RRRR.RRRR
+RRRR.RRRR
+----.----
+RRRRRRRRR
+RRRRRRRRR
+RRRRRRRRR
+
+# Those are defined backward, starts from the bottom
+70-
+
+# Level objective type
+$ObjectiveType: CLEARALL
+$AllowDynamite: FALSE
+$MaxCubesAllowed: 1
+$NextLevel: tuto_end

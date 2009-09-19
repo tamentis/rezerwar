@@ -1,0 +1,34 @@
+
+Lesson 9: Dynamite 101
+
+In some strange conditions, you might be stuck
+and have no medic at hand. This is where the
+dynamite comes in handy, it will destroy an
+entire row or column, depending on its
+orientation.\n
+Your time is counted, find the weak parts of
+this pre-filled rezerwar and blow them up!\n
+You have 4 blocks and 10 seconds.
+
+.........
+R.......R
+R.......R
+R.......R
+........R
+........R
+.^L-7}JRR
+RF-7|L7F-
+-JR||R||R
+RRRLJRLJR
+
+# Those are defined backward, starts from the bottom
+707
+70F
+70B
+
+# Level objective type
+$ObjectiveType: CLEARALL
+$AllowDynamite: FALSE
+$MaxCubesAllowed: 3
+$TimeLimit: 10
+$NextLevel: tuto_end
