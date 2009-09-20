@@ -27,7 +27,7 @@ RRRLJRLJR
 70B
 
 # Level objective type
-$ObjectiveType: CLEARALL
+$ObjectiveType: LINK
 $AllowDynamite: FALSE
 $MaxCubesAllowed: 3
 $TimeLimit: 10

@@ -550,7 +550,7 @@ board_gameover(Board *board)
 		board->score += POINTS_NO_HOLD;
 
 	/* The player made a hiscore! */
-	if (hiscore_check(board->score) == true) {
+	if (board->objective_type == OBJTYPE_NONE && hiscore_check(board->score) == true) {
 		conf->last_score = board->score;
 		return MTYPE_GAMEOVER_HISCORE;
 	}

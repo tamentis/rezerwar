@@ -1,9 +1,13 @@
+Changes in 0.x:
+===============
+
 Changes in 0.4.1:
 =================
  - added DESTDIR for the final make install
    Thanks to Vincent Petry (PVince81@yahoo.fr) for the patch
  - fixed AllowMedic crashing on tutorial level 5
    Thanks to Annette Kalbow (annette@kalbow.com) for the patch.
+ - fixed tutorial mode going absurdly to hiscores =/
 
 Changes in 0.4:
 ===============

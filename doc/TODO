@@ -1,3 +1,6 @@
+BUILD:
+ - move the VERSION in configure to centralize everything,
+
 DATA:
  - more tutorials
  - create a level2 music, a tad faster, when it gets harder.
@@ -5,6 +8,8 @@ DATA:
  - create a medic overlay sprite for the medic block mode.
 
 GAME PLAY:
+ - make menus smarter with paging?
+ - allow users to pick their tutorial in a list.
  - show a little fountain/leak when a network is opened.
  - let people enter their name without keyboard (consoles...)
     * create 'Prompt' which wraps 'Text'
@@ -27,4 +32,4 @@ WII
  - bug - no way to accelerate the fall of a block.
  - add a screen to explain what buttons to use
  - transitions are slow and buggy
-
+ - get meta.xml updated from configure.

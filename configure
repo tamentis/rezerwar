@@ -163,6 +163,7 @@ case $* in
 	-d)
 		echo "Cleaning up for distribution..."
 		distclean
+		exit
 		;;
 	-dw)
 		distclean win32

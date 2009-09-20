@@ -38,7 +38,7 @@
 #include "config.h"
 
 
-#define VERSION "rezerwar 0.4"
+#define VERSION "rezerwar 0.4.1"
 
 
 Board *board;
@@ -290,7 +290,7 @@ main(int ac, char **av)
 
 	/* DEBUG */
 	// return game_loop(NULL, 0);
-	// return game_loop("tuto_end", 0);
+	// return game_loop("tuto_09", 0);
 
 	/* Normal flow... */
 	intro_studio();
