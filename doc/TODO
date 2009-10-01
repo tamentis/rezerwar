@@ -1,5 +1,8 @@
 BUILD:
  - move the VERSION in configure to centralize everything,
+ - add make uninstall.
+ - if a file is not found in the datapath, always look in ./data and ../data
+   so the game can run without install.
 
 DATA:
  - more tutorials
