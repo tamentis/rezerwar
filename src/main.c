@@ -166,6 +166,9 @@ game_loop(char *levelname, enum ttype trans)
 		now = SDL_GetTicks();
 		status = board_update(board, now);
 
+		if (status != MTYPE_NOP)
+			break;
+
 		/* Print FPS... every seconds. */
 		if (now - lastfps > 1000) {
 			if (board->show_fps) {

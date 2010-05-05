@@ -645,6 +645,8 @@ board_update(Board *board, uint32_t now)
 	if (board->rising_speed > -1 && board->next_line <= now) {
 		if (board->next_line != 1) {
 			board_add_line(board);
+			if (board->gameover == true)
+				return board_gameover(board);
 			/* Delay the current cube's tick, looks better */
 			board->current_cube->tick = now;
 			board->current_cube->prev_y--;
@@ -684,15 +686,17 @@ board_add_line(Board *board)
 		if (cube == NULL)
 			continue;
 
-		if (i < board->width) {
+		if (i < board->width) { // cube in the first row
 			board->gameover = true;
-			continue;
+			return;
 		}
 
 		cube->y--;
 
-		if (cube->y < 0)
+		if (cube->y < 0) {
 			board->gameover = true;
+			return;
+		}
 
 		cube_sync_map(board, cube);
 	}
