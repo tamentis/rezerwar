@@ -1,0 +1,7 @@
+# use glob syntax.
+syntax: regexp
+\.o$
+\.ogg$
+src/rezerwar
+src/config.h
+Makefile

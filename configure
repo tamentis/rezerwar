@@ -44,6 +44,41 @@ check_sdl() {
 	return 0
 }
 
+# check_sdl_mixer() - Check if SDL_mixer is installed (assumes we have sdl)
+check_sdl_mixer() {
+	echo -n "Checking for SDL_mixer... "
+
+	cat > test_sdl_mixer.c <<EOF
+#include <stdio.h>
+#include "SDL_mixer.h"
+
+struct _s { int major; int minor; int patch; } version;
+main() {
+	SDL_MIXER_VERSION(&version);
+	printf("%d.%d.%d\n", version.major, version.minor, version.patch);
+	return 0;
+}
+EOF
+
+	if ! gcc `sdl-config --cflags` test_sdl_mixer.c -o test_sdl_mixer; then
+		echo "SDL_mixer not found =/"
+		rm -f test_sdl_mixer*
+		exit
+	fi
+
+	SDLMIXVERSION=`./test_sdl_mixer`
+	if [ -z "$SDLMIXVERSION" ]; then
+		echo "SDL_mixer found but unable to produce proper output."
+		rm -f test_sdl_mixer*
+		exit
+	fi
+
+	echo "found ($SDLMIXVERSION)"
+	rm -f test_sdl_mixer*
+
+	return 0
+}
+
 
 # clean() - Remove config, Makefiles...
 clean() {
@@ -180,6 +215,7 @@ get_os $*
 case $OS in
 Linux|Unix|POSIX|*BSD)
 	check_sdl
+	check_sdl_mixer
 	[ -z "$PREFIX" ]	&& PREFIX="/usr"
 	[ -z "$TARGET_BIN" ]	&& TARGET_BIN="$PREFIX/games"
 	[ -z "$TARGET_DOC" ]	&& TARGET_DOC="$PREFIX/share/doc/rezerwar"
@@ -189,12 +225,14 @@ Linux|Unix|POSIX|*BSD)
 	;;
 Debug)
 	check_sdl
+	check_sdl_mixer
 	CFG_DATAPATH="../data"
 	CFG_CFGPATH=".rezerwar"
 	MK_EXTRACFLAGS="-ggdb"
 	;;
 Haiku|BeOS)
 	check_sdl
+	check_sdl_mixer
 	[ -z "$PREFIX" ]	&& PREFIX="/boot/apps/rezerwar"
 	[ -z "$TARGET" ]	&& TARGET="$PREFIX"
 	TARGET_BIN="$TARGET"
