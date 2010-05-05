@@ -402,7 +402,6 @@ mole_load_mask()
 	/* Find the valid pixel value from the bottom of the image */
 	value = mole_mask->pixels;
 	valid_value = *value == 0 ? 1 : 0;
-	printf("VALID VALUE: %hhu\n", valid_value);
 }
 
 
