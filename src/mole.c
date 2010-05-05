@@ -41,6 +41,9 @@ extern Uint32 key;
 SDL_Surface *mole_mask = NULL;
 unsigned int mask_max = 0;
 
+/* Pixel values to look for in the mask, will be changed on load_mask */
+char valid_value = 0;
+
 
 #define MOLE_WIDTH 	18
 #define MOLE_HEIGHT	18
@@ -173,7 +176,7 @@ mole_move_check(Mole *mole)
 	index = mole_mask->w * y + x;
 	v1 = mole_mask->pixels + index;
 	v2 = mole_mask->pixels + index + MOLE_WIDTH;
-	if (*v1 == 0 && *v2 == 0)
+	if (*v1 == valid_value && *v2 == valid_value)
 		return true;
 
 	return false;
@@ -358,7 +361,7 @@ void
 mole_generate_valid_position(int *x, int *y)
 {
 	char *v1, *v2;
-	unsigned int index;
+	unsigned int index, recursion_check = 0;
 	bool invalid = true;
 
 	mole_load_mask();
@@ -367,8 +370,12 @@ mole_generate_valid_position(int *x, int *y)
 		index = (rand() * 10) % mask_max;
 		v1 = mole_mask->pixels + index;
 		v2 = mole_mask->pixels + index + MOLE_WIDTH;
-		if (*v1 == 0 && *v2 == 0)
+		if (*v1 == valid_value && *v2 == valid_value)
 			invalid = false;
+		recursion_check++;
+		if (recursion_check > 1024) {
+			fatal("Unable to find a spot for the moles (wrong mask?).");
+		}
 	}
 
 	*y = index / mole_mask->w;
@@ -380,15 +387,22 @@ void
 mole_load_mask()
 {
 	char *path;
+	char *value;
 
-	if (mole_mask == NULL) {
-		path = dpath("gfx/molemask.bmp");
-		mole_mask = SDL_LoadBMP(path);
-		r_free(path);
-		if (mole_mask == NULL)
-			fatal("Unable to load mole mask.");
-		mask_max = mole_mask->w * mole_mask->h - MOLE_WIDTH;
-	}
+	if (mole_mask != NULL)
+		return;
+
+	path = dpath("gfx/molemask.bmp");
+	mole_mask = SDL_LoadBMP(path);
+	r_free(path);
+	if (mole_mask == NULL)
+		fatal("Unable to load mole mask.");
+	mask_max = mole_mask->w * mole_mask->h - MOLE_WIDTH;
+
+	/* Find the valid pixel value from the bottom of the image */
+	value = mole_mask->pixels;
+	valid_value = *value == 0 ? 1 : 0;
+	printf("VALID VALUE: %hhu\n", valid_value);
 }
 
 
