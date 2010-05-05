@@ -1,0 +1,57 @@
+Author:
+-----------------------------------------------------------------------
+    Bertrand Janin
+        email: tamentis@neopulsar.org
+        summary: http://tamentis.com/
+
+Contributors (chronological):
+-----------------------------------------------------------------------
+    Vincent Petry
+        email: PVince81@yahoo.fr
+        changesets: 5a26a26731f2
+        summary: Added support for DESTDIR
+
+    Annette Kalbow
+        email: annette@kalbow.com
+        changesets: 22268c513fb5
+        summary: Fixed AllowMedic
+
+    Tony Lainson
+        changesets: 83cbfc0a5cea
+        summary: forgot to commit last levels in 0.4.0, fixed in 0.4.1
+
+    Jason Woofenden
+        website: http://jasonwoof.com/
+        changesets: e08aa4172c20
+        summary: Fixed segfault on colliding blocks after game over.
+
+Porters and Packagers:
+-----------------------------------------------------------------------
+    Dimitry Marakasov
+        email: amdmi3@FreeBSD.org
+        summary: Added rezerwar to FreeBSD
+
+    Vincent Petry
+        email: PVince81@yahoo.fr
+        summary: Created a package for OpenSUSE
+    
+    Christophe Lefebvre
+        email: chtof62@gmail.com
+        summary: Created a package for Gentoo
+
+    Dany Martineau
+        email: dany.luc.martineau@gmail.com
+        summary: Created a package for Arch Linux
+
+    Larry Hajali
+        email: larryhaja[at]gmail[dot]com
+        summary: Created a package for Slackware
+
+    HopeZ
+        email: hopez13[at]gmail{dot}com
+        summary: GP2X WIZ port
+
+    Spot / Up Rough
+        website: http://www.uprough.net/
+        summary: Amiga OS4 port
+

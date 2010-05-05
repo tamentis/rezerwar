@@ -1,5 +1,13 @@
 Changes in 0.x:
 ===============
+ - moved to bitbucket
+ - fixed a segfault when blocks would collide on the last row on game over,
+   patch contributed by Jason Woofenden (http://jasonwoof.com/).
+ - added checks for SDL_mixer in ./configure
+ - updated Makefile for musics to use 'xmp' instead of 'mikmod'
+ - fixed spelling of the game in the in-game menu
+ - added recursion check for the mole location in case the mask didn't
+   build properly.
 
 Changes in 0.4.1:
 =================
