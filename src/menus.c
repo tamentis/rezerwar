@@ -207,7 +207,7 @@ menu_load_gameover(Menu *menu, bool allow_next_level)
 		add_item_to_menu(menu, "next level", MTYPE_NEXTLEVEL, 0, 0);
 	add_item_to_menu(menu, "replay level", MTYPE_REPLAY, 0, 0);
 	add_item_to_menu(menu, "main menu", MTYPE_BREAK, 1, 0);
-	add_item_to_menu(menu, "quit rzwar", MTYPE_QUIT, 0, 0);
+	add_item_to_menu(menu, "quit rezerwar", MTYPE_QUIT, 0, 0);
 }
 
 
