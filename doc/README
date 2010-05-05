@@ -28,6 +28,9 @@ INSTALL
   If you are porting/packaging rezerwar, most of the destination 
   directory can be specified as environment variable to the ./configure.
 
+  If you loaded rezerwar from svn/hg/... you will need to build the
+  data first, go in data/ and type make.
+
 
 WINDOWS
 ------------------------------------------------------------------------
