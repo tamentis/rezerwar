@@ -1,5 +1,5 @@
-Changes in 0.x:
-===============
+Changes in 0.4.2:
+=================
  - moved to bitbucket
  - fixed a segfault when blocks would collide on the last row on game over,
    patch contributed by Jason Woofenden (http://jasonwoof.com/).
@@ -8,6 +8,8 @@ Changes in 0.x:
  - fixed spelling of the game in the in-game menu
  - added recursion check for the mole location in case the mask didn't
    build properly.
+ - added 'uninstall' target to Makefile.
+ - removed all the $Id$ tags.
 
 Changes in 0.4.1:
 =================
