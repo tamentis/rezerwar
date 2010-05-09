@@ -1,6 +1,5 @@
-# $Id$
-
-NSIS=/E/NSIS/makensis.exe
+NSIS?=/E/NSIS/makensis.exe
+INSTALL?=/usr/bin/install
 
 all: build
 
@@ -34,16 +33,26 @@ dist: restore
 	rm -f doc/DOWNLOADS
 
 install:
-	mkdir -p ${TARGET_BIN} ${TARGET_DOC} ${TARGET_DATA}
-	mkdir -p ${TARGET_DATA}/gfx
-	mkdir -p ${TARGET_DATA}/music
-	mkdir -p ${TARGET_DATA}/sfx
-	mkdir -p ${TARGET_DATA}/levels
-	mkdir -p ${TARGET_DOC}
-	install -m 644 doc/* ${TARGET_DOC}/
-	install -m 644 data/gfx/*.bmp ${TARGET_DATA}/gfx/
-	install -m 644 data/levels/* ${TARGET_DATA}/levels/
-	install -m 644 data/sfx/*.wav ${TARGET_DATA}/sfx/
-	install -m 644 data/music/*.ogg ${TARGET_DATA}/music/
-	install -m 755 src/rezerwar ${TARGET_BIN}/
+	${INSTALL} -d ${TARGET_BIN} ${TARGET_DOC} ${TARGET_DATA}
+	${INSTALL} -d ${TARGET_DATA}/gfx
+	${INSTALL} -d ${TARGET_DATA}/music
+	${INSTALL} -d ${TARGET_DATA}/sfx
+	${INSTALL} -d ${TARGET_DATA}/levels
+	${INSTALL} -d ${TARGET_DOC}
+	${INSTALL} -m 644 doc/* ${TARGET_DOC}/
+	${INSTALL} -m 644 data/gfx/*.bmp ${TARGET_DATA}/gfx/
+	${INSTALL} -m 644 data/levels/* ${TARGET_DATA}/levels/
+	${INSTALL} -m 644 data/sfx/*.wav ${TARGET_DATA}/sfx/
+	${INSTALL} -m 644 data/music/*.ogg ${TARGET_DATA}/music/
+	${INSTALL} -m 755 src/rezerwar ${TARGET_BIN}/
 
+uninstall:
+	rm -f ${TARGET_BIN}/rezerwar
+	rm -f ${TARGET_DATA}/gfx/*.bmp
+	rm -f ${TARGET_DATA}/music/*.ogg
+	rm -f ${TARGET_DATA}/sfx/*.wav
+	rm -f ${TARGET_DATA}/levels/*.lvl
+	rm -f ${TARGET_DOC}/*
+	rmdir --ignore-fail-on-non-empty ${TARGET_BIN} ${TARGET_DATA}/gfx \
+		${TARGET_DATA}/music ${TARGET_DATA}/sfx ${TARGET_DATA}/levels \
+		${TARGET_DATA} ${TARGET_DOC}

@@ -1,5 +1,4 @@
-/* $Id$
- *
+/*
  * Copyright (c) 2008,2009 Bertrand Janin <tamentis@neopulsar.org>
  * All rights reserved.
  *

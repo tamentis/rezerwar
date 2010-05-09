@@ -1,6 +1,5 @@
-/* $Id$
- *
- * Copyright (c) 2008,2009 Bertrand Janin <tamentis@neopulsar.org>
+/*
+ * Copyright (c) 2008-2010 Bertrand Janin <tamentis@neopulsar.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,9 +35,6 @@
 
 #include "rezerwar.h"
 #include "config.h"
-
-
-#define VERSION "rezerwar 0.4.1"
 
 
 Board *board;

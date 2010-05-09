@@ -1,6 +1,3 @@
-# $Id$
-#
-
 all: gfx_build music_build
 
 music_build:
