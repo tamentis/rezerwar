@@ -52,21 +52,32 @@ FunctionEnd
 !insertmacro MUI_LANGUAGE "English"
 
 Function LaunchLink
-  ExecShell "" "$SMPROGRAMS\rezerwar\rezerwar.exe"
+  ExecShell "" "$SMPROGRAMS\rezerwar\rezerwar.lnk"
 FunctionEnd
-
-
 
 ; Main installation section
 Section "rezerwar, the game"
 
   SectionIn RO
 
+  CreateDirectory "$INSTDIR\data"
+  CreateDirectory "$INSTDIR\data\gfx"
+  CreateDirectory "$INSTDIR\data\sfx"
+  CreateDirectory "$INSTDIR\data\levels"
+  CreateDirectory "$INSTDIR\data\music"
+
+  SetOutPath $INSTDIR
+  File src\rezerwar.exe dlls\*.dll
+  SetOutPath $INSTDIR\data\gfx
+  File data\gfx\*.bmp
+  SetOutPath $INSTDIR\data\sfx
+  File data\sfx\*.wav
+  SetOutPath $INSTDIR\data\music
+  File data\music\*.ogg
+  SetOutPath $INSTDIR\data\levels
+  File data\levels\*.lvl
   SetOutPath $INSTDIR
   
-  ; Package everything but the setup.exe (of course)
-  File /r /x ..\install.exe .
-
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\tamentis.com\rezerwar "Install_Dir" "$INSTDIR"
   
@@ -79,8 +90,8 @@ Section "rezerwar, the game"
 
   ; Delete all the Start-> stuff and re-create it.
   CreateDirectory "$SMPROGRAMS\rezerwar"
-  CreateShortCut "$SMPROGRAMS\rezerwar.lnk" "$INSTDIR\rezerwar.exe" "" "$INSTDIR\rezerwar.exe" 0 
-  CreateShortCut "$SMPROGRAMS\uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0 
+  CreateShortCut "$SMPROGRAMS\rezerwar\rezerwar.lnk" "$INSTDIR\rezerwar.exe" "" "$INSTDIR\rezerwar.exe" 0 
+  CreateShortCut "$SMPROGRAMS\rezerwar\uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0 
   CreateShortCut "$DESKTOP\rezerwar.lnk" "$INSTDIR\rezerwar.exe" ""
 
   ; Remove all the configuration stuff (to clear caching completely).
@@ -100,6 +111,7 @@ Section "Uninstall"
 
   ; Desktop
   RMDir /r "$SMPROGRAMS\rezerwar"
+  Delete "$DESKTOP\rezerwar.lnk"
 SectionEnd
 
 

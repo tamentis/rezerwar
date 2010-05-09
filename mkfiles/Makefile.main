@@ -1,5 +1,7 @@
 # $Id$
 
+NSIS=/E/NSIS/makensis.exe
+
 all: build
 
 build: ${EXTRA_BUILD}
@@ -8,6 +10,10 @@ build: ${EXTRA_BUILD}
 build_win32:
 	${MAKE} -C data/gfx/icons/
 	${MAKE} -C src win32
+
+install.exe: data/win32/install.nsi
+	cp -f data/win32/install.nsi .
+	${NSIS} install.nsi
 
 clean:
 	${MAKE} -C src/ clean
