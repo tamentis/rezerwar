@@ -17,19 +17,21 @@ install.exe: data/win32/install.nsi
 clean:
 	${MAKE} -C src/ clean
 
-distclean: clean restore
+distclean: clean
 	${MAKE} -C src/ clean
 
-dist: restore
-	find . -name ".svn" -exec rm -rf {} \;
+dist:
+	rm -rf .hg*
 	rm -f data/Makefile
 	rm -f data/gfx/Makefile
 	rm -rf data/wii/
+	rm -rf data/win32/
 	rm -f data/gfx/*.xcf
 	rm -f data/gfx/*.svg
 	rm -rf data/gfx/tools/
 	rm -rf data/gfx/icons/
 	rm -f data/music/*.it
+	rm -f data/music/Makefile
 	rm -f doc/DOWNLOADS
 
 install:

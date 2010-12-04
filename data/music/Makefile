@@ -11,6 +11,9 @@ level1.ogg: level1.it
 #	lame $(LAME_OPTS) "rezerwar - Level 1" level1.wav level1.mp3
 #	rm -f level1.wav
 
+level1.mp3: level1.it
+	xmp -d wav --output-file=- level1.it | lame - level1.mp3
+
 menu.ogg: menu.it
 	xmp -d wav --output-file=- menu.it | oggenc $(OGGENC_OPTS) - -o menu.ogg
 	vorbiscomment $(COMMENT_OPTS) -t 'TITLE=Rezerwar - Title' menu.ogg
